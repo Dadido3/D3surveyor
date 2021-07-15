@@ -12,12 +12,11 @@ type Site struct {
 
 	Name string
 
-	Rooms  map[string]*Room
 	Points map[string]*Point
 
-	// Capture devices and their data.
+	// Capture and measurement devices.
 	//Photos map[string]*Photo
-	DistanceMeasurements map[string]*DistanceMeasurement
+	Rangefinders map[string]*Rangefinder
 	//TripodMeasurements map[string]*TripodMeasurement
 }
 
@@ -28,10 +27,10 @@ func NewSite(name string) (*Site, error) {
 	}
 
 	site := &Site{
-		shortIDGen: shortIDGen,
-		Name:       name,
-		Rooms:      map[string]*Room{},
-		Points:     map[string]*Point{},
+		shortIDGen:   shortIDGen,
+		Name:         name,
+		Points:       map[string]*Point{},
+		Rangefinders: map[string]*Rangefinder{},
 	}
 
 	return site, nil
@@ -52,7 +51,4 @@ var globalSite *Site = MustNewSite("test")
 func init() {
 	globalSite.NewPoint("1")
 	globalSite.NewPoint("2")
-
-	//globalSite.NewRoom("A")
-	//globalSite.NewRoom("B")
 }

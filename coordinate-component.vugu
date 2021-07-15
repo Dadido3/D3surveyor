@@ -1,9 +1,9 @@
 <span>
-	<span vg-if="c.BindValue != nil && c.Editable">
-		<label for="X">X:</label> <input input="number" .value="c.BindValue.X" name="X" @change="c.handleChange(event)"></input>
-		<label for="Y">Y:</label> <input input="number" .value="c.BindValue.Y" name="Y" @change="c.handleChange(event)"></input>
-		<label for="Z">Z:</label> <input input="number" .value="c.BindValue.Z" name="Z" @change="c.handleChange(event)"></input>
-	</span>
+	<form vg-if="c.BindValue != nil && c.Editable">
+		<label for="X">X:</label> <input type="number" required .value="c.BindValue.X" name="X" @change="c.handleChange(event)"></input>
+		<label for="Y">Y:</label> <input type="number" required .value="c.BindValue.Y" name="Y" @change="c.handleChange(event)"></input>
+		<label for="Z">Z:</label> <input type="number" required .value="c.BindValue.Z" name="Z" @change="c.handleChange(event)"></input>
+	</form>
 	<span vg-if="c.BindValue != nil && !c.Editable">
 		<span>X: </span><span vg-content="c.BindValue.X"></span>
 		<span>Y: </span><span vg-content="c.BindValue.Y"></span>

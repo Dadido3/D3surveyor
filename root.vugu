@@ -2,12 +2,11 @@
 	<ul>
 		<li><button>Close</button></li>
 		<li><button @click='c.Navigate("/", nil)'>Overview</button></li>
-		<li><button @click='c.Navigate("/rooms", nil)'>Rooms</button></li>
+		<li><button @click='c.Navigate("/rangefinders", nil)'>Rangefinders</button></li>
 		<li><button @click='c.Navigate("/points", nil)'>Points</button></li>
 	</ul>
 
 	<vg-comp expr="c.Body"></vg-comp>
 
-	<main:PagePoints :Site="globalSite"></main:PagePoints>
 </div>
 

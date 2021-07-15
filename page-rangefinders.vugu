@@ -1,0 +1,19 @@
+<div>
+	<h1>Rangefinders (<span vg-content="len(c.Site.Rangefinders)"></span>)</h1>
+	<button @click="c.handleAdd()">Add</button>
+
+	<div vg-for="rangefinderKey, rangefinder := range c.Site.Rangefinders">
+		<span vg-content="rangefinder.Name"></span>
+		<button @click='c.Navigate("/rangefinder/" + rangefinderKey, nil)'>Edit</button>
+		<button @click="rangefinder.Delete()">Del</button>
+
+		<div vg-for="measurmentKey, measurment := range rangefinder.Measurements">
+			<button @click='c.Navigate("/rangefinder/" + rangefinder.Key() + "/measurement/" + measurmentKey, nil)'>Edit</button>
+			<button @click="measurment.Delete()">Del</button>
+		</div>
+	</div>
+</div>
+
+<script type="application/x-go">
+
+</script>

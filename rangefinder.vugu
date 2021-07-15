@@ -1,0 +1,22 @@
+<div>
+	<h1>Rangefinder (<span vg-content="c.Key()"></span>)</h1>
+
+	<label for="name">Name:</label>
+	<vgform:Input type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+
+	<label for="accuracy">Accuracy:</label>
+	<main:DistanceInputComponent name="accuracy" :BindValue="&c.Accuracy"></main:DistanceInputComponent>
+
+	<h2>Measurements:</h2>
+
+	<button @click="c.handleAdd()">Add</button>
+
+	<div vg-for="measurmentKey, measurment := range c.Measurements">
+		<button @click='c.Navigate("/rangefinder/" + c.Key() + "/measurement/" + measurmentKey, nil)'>Edit</button>
+		<button @click="measurment.Delete()">Del</button>
+	</div>
+</div>
+
+<script type="application/x-go">
+	import "github.com/vugu/vugu/vgform"
+</script>
