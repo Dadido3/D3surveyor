@@ -1,0 +1,9 @@
+<div>
+	This page doesn't exist.
+</div>
+
+<script type="application/x-go">
+
+type PageNotFound struct {}
+
+</script>

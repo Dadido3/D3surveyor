@@ -1,0 +1,14 @@
+<div>
+	<h1>Points (<span vg-content="len(c.Site.Points)"></span>)</h1>
+	<button @click="c.handleAdd()">Add</button>
+	<div vg-for="pointKey, point := range c.Site.Points">
+		<span vg-content="point.Name"></span>
+		<main:CoordinateComponent :BindValue="&point.Position"></main:CoordinateComponent>
+		<button @click='c.Navigate("/point/" + pointKey, nil)'>Edit</button>
+		<button @click="point.Delete()">Del</button>
+	</div>
+</div>
+
+<script type="application/x-go">
+
+</script>

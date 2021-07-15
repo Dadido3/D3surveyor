@@ -1,0 +1,9 @@
+<div>
+	This entity doesn't exist.
+</div>
+
+<script type="application/x-go">
+
+type PageNonExistant struct {}
+
+</script>

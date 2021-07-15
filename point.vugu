@@ -1,0 +1,13 @@
+<div>
+	<h1>Point (<span vg-content="c.Key()"></span>)</h1>
+
+	<label for="name">Name:</label>
+	<vgform:Input type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+
+	<main:CoordinateComponent :Editable="true" :BindValue="&c.Position"></main:CoordinateComponent>
+
+</div>
+
+<script type="application/x-go">
+	import "github.com/vugu/vugu/vgform"
+</script>
