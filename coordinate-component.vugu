@@ -1,8 +1,8 @@
 <span>
 	<form vg-if="c.BindValue != nil && c.Editable">
-		<label for="X">X:</label> <input type="number" required .value="c.BindValue.X" name="X" @change="c.handleChange(event)"></input>
-		<label for="Y">Y:</label> <input type="number" required .value="c.BindValue.Y" name="Y" @change="c.handleChange(event)"></input>
-		<label for="Z">Z:</label> <input type="number" required .value="c.BindValue.Z" name="Z" @change="c.handleChange(event)"></input>
+		<label for="x">X:</label> <main:DistanceInputComponent name="x" :BindValue="&c.BindValue.X"></main:DistanceInputComponent>
+		<label for="y">Y:</label> <main:DistanceInputComponent name="y" :BindValue="&c.BindValue.Y"></main:DistanceInputComponent>
+		<label for="z">Z:</label> <main:DistanceInputComponent name="z" :BindValue="&c.BindValue.Z"></main:DistanceInputComponent>
 	</form>
 	<span vg-if="c.BindValue != nil && !c.Editable">
 		<span>X: </span><span vg-content="c.BindValue.X"></span>

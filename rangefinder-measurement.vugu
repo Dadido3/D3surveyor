@@ -1,5 +1,14 @@
 <div>
+	<button @click='c.Navigate("/rangefinder/" + c.rangefinder.Key(), nil)'>Back</button>
 	<h1>Rangefinder measurement <span vg-content="c.Key()"></span></h1>
 
-	
+	<label for="p1">Point 1:</label>
+	<main:PointSelectionComponent name="p1" :Site="c.rangefinder.site" :BindValue="&c.P1"></main:PointSelectionComponent>
+
+	<label for="p2">Point 2:</label>
+	<main:PointSelectionComponent name="p2" :Site="c.rangefinder.site" :BindValue="&c.P2"></main:PointSelectionComponent>
+
+	<label for="distance">Measured distance:</label>
+	<main:DistanceInputComponent name="distance" min="0" :BindValue="&c.MeasuredDistance"></main:DistanceInputComponent>
+
 </div>

@@ -1,3 +1,7 @@
-<div>
-	Point selection bla
-</div>
+<span>
+	<vgform:Select vg-attr='c.AttrMap' :Value='vgform.StringPtrDefault(c.BindValue, "")' :Options='c.options.Title()'></vgform:Select>
+</span>
+
+<script type="application/x-go">
+import "github.com/vugu/vugu/vgform"
+</script>

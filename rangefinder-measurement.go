@@ -2,9 +2,12 @@ package main
 
 import (
 	"time"
+
+	"github.com/vugu/vgrouter"
 )
 
 type RangefinderMeasurement struct {
+	vgrouter.NavigatorRef
 	rangefinder *Rangefinder
 	key         string
 

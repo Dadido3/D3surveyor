@@ -5,7 +5,7 @@
 	<vgform:Input type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
 
 	<label for="accuracy">Accuracy:</label>
-	<main:DistanceInputComponent name="accuracy" :BindValue="&c.Accuracy"></main:DistanceInputComponent>
+	<main:DistanceInputComponent name="accuracy" min="0" :BindValue="&c.Accuracy"></main:DistanceInputComponent>
 
 	<h2>Measurements:</h2>
 
