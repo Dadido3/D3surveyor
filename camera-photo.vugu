@@ -2,9 +2,5 @@
 	<button @click='c.Navigate("/camera/" + c.camera.Key(), nil)'>Back</button>
 	<h1>Photo <span vg-content="c.Key()"></span></h1>
 
-	<img :src='"data:image/gif;base64," + base64.StdEncoding.EncodeToString(c.ImageData)'></img>
+	<main:ImageComponent :BindValue="&c.ImageData"></main:ImageComponent>
 </div>
-
-<script type="application/x-go">
-	import "encoding/base64"
-</script>

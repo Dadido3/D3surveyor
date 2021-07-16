@@ -66,7 +66,7 @@ func (c *Camera) handleFileChange(event vugu.DOMEvent) {
 
 		c.Navigate("/camera/"+c.Key()+"/photo/"+photo.Key(), nil)
 
-		return nil // js.Undefined() will crash when "github.com/vugu/vugu/js" is used
+		return js.Undefined()
 	}))
 
 	imgFile := js.Global().Get("document").Call("getElementById", "photo-upload").Get("files").Index(0)
