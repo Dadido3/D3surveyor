@@ -1,0 +1,26 @@
+<div>
+	<h1>Camera (<span vg-content="c.Key()"></span>)</h1>
+
+	<label for="name">Name:</label>
+	<vgform:Input type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+
+	<label for="accuracy">Accuracy:</label>
+	<main:DistanceInputComponent name="accuracy" min="0" :BindValue="&c.AngAccuracy"></main:DistanceInputComponent>
+
+	<label for="fov">Field of view:</label>
+	<main:DistanceInputComponent name="fov" min="0" :BindValue="&c.LongSideFOV"></main:DistanceInputComponent>
+
+	<h2>Photos:</h2>
+
+	<input type="file" id="photo-upload" @change="c.handleFileChange(event)">
+
+	<div vg-for="photoKey, photo := range c.Photos">
+		<button @click='c.Navigate("/camera/" + c.Key() + "/photo/" + photoKey, nil)'>Edit</button>
+		<button @click="photo.Delete()">Del</button>
+	</div>
+</div>
+
+<script type="application/x-go">
+	import "github.com/vugu/vugu/vgform"
+</script>
+

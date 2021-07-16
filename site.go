@@ -5,6 +5,7 @@ import (
 	"github.com/vugu/vgrouter"
 )
 
+// Site is the root container for all measurements, points and constraints of a place/site.
 type Site struct {
 	vgrouter.NavigatorRef
 
@@ -15,7 +16,7 @@ type Site struct {
 	Points map[string]*Point
 
 	// Capture and measurement devices.
-	//Photos map[string]*Photo
+	Cameras      map[string]*Camera
 	Rangefinders map[string]*Rangefinder
 	//TripodMeasurements map[string]*TripodMeasurement
 }
@@ -30,6 +31,7 @@ func NewSite(name string) (*Site, error) {
 		shortIDGen:   shortIDGen,
 		Name:         name,
 		Points:       map[string]*Point{},
+		Cameras:      map[string]*Camera{},
 		Rangefinders: map[string]*Rangefinder{},
 	}
 

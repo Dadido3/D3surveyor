@@ -28,6 +28,26 @@ func vuguSetup(buildEnv *vugu.BuildEnv, eventEnv vugu.EventEnv) vugu.Builder {
 			root.Body = globalSite
 		}))
 
+	router.MustAddRouteExact("/points",
+		vgrouter.RouteHandlerFunc(func(rm *vgrouter.RouteMatch) {
+			root.Body = &PagePoints{Site: globalSite}
+		}))
+
+	router.MustAddRoute("/point/:key",
+		vgrouter.RouteHandlerFunc(func(rm *vgrouter.RouteMatch) {
+			keyParams := rm.Params["key"]
+			if len(keyParams) < 1 {
+				root.Body = &PageNotFound{}
+				return
+			}
+			key := keyParams[0]
+			if point, ok := globalSite.Points[key]; ok {
+				root.Body = point
+			} else {
+				root.Body = &PageNonExistant{}
+			}
+		}))
+
 	router.MustAddRouteExact("/rangefinders",
 		vgrouter.RouteHandlerFunc(func(rm *vgrouter.RouteMatch) {
 			root.Body = &PageRangefinders{Site: globalSite}
@@ -68,12 +88,12 @@ func vuguSetup(buildEnv *vugu.BuildEnv, eventEnv vugu.EventEnv) vugu.Builder {
 			}
 		}))
 
-	router.MustAddRouteExact("/points",
+	router.MustAddRouteExact("/cameras",
 		vgrouter.RouteHandlerFunc(func(rm *vgrouter.RouteMatch) {
-			root.Body = &PagePoints{Site: globalSite}
+			root.Body = &PageCameras{Site: globalSite}
 		}))
 
-	router.MustAddRoute("/point/:key",
+	router.MustAddRoute("/camera/:key",
 		vgrouter.RouteHandlerFunc(func(rm *vgrouter.RouteMatch) {
 			keyParams := rm.Params["key"]
 			if len(keyParams) < 1 {
@@ -81,8 +101,28 @@ func vuguSetup(buildEnv *vugu.BuildEnv, eventEnv vugu.EventEnv) vugu.Builder {
 				return
 			}
 			key := keyParams[0]
-			if point, ok := globalSite.Points[key]; ok {
-				root.Body = point
+			if camera, ok := globalSite.Cameras[key]; ok {
+				root.Body = camera
+			} else {
+				root.Body = &PageNonExistant{}
+			}
+		}))
+
+	router.MustAddRoute("/camera/:key1/photo/:key2",
+		vgrouter.RouteHandlerFunc(func(rm *vgrouter.RouteMatch) {
+
+			key1Params, key2Params := rm.Params["key1"], rm.Params["key2"]
+			if len(key1Params) < 1 || len(key2Params) < 1 {
+				root.Body = &PageNotFound{}
+				return
+			}
+			key1, key2 := key1Params[0], key2Params[0]
+			if camera, ok := globalSite.Cameras[key1]; ok {
+				if photo, ok := camera.Photos[key2]; ok {
+					root.Body = photo
+				} else {
+					root.Body = &PageNonExistant{}
+				}
 			} else {
 				root.Body = &PageNonExistant{}
 			}

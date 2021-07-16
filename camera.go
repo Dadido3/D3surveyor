@@ -1,0 +1,82 @@
+package main
+
+import (
+	"log"
+	"time"
+
+	_ "image/jpeg"
+	_ "image/png"
+
+	"github.com/vugu/vgrouter"
+	"github.com/vugu/vugu"
+	"github.com/vugu/vugu/js"
+)
+
+type Camera struct {
+	vgrouter.NavigatorRef
+	site *Site
+	key  string
+
+	Name      string
+	CreatedAt time.Time
+
+	AngAccuracy float64 // Accuracy of the measurement in radians.
+
+	LongSideFOV float64 // The field of view of the longest side of every image in radians.
+
+	Photos map[string]*CameraPhoto
+}
+
+func (s *Site) NewCamera(name string) *Camera {
+	key := s.shortIDGen.MustGenerate()
+
+	c := &Camera{
+		site:        s,
+		key:         key,
+		Name:        name,
+		CreatedAt:   time.Now(),
+		AngAccuracy: 0.2, // Assume ~10 deg of accuracy.
+		LongSideFOV: 1.2, // Start with ~70 deg of FOV.
+		Photos:      map[string]*CameraPhoto{},
+	}
+
+	s.Cameras[key] = c
+
+	return c
+}
+
+func (c *Camera) handleFileChange(event vugu.DOMEvent) {
+	fileReader := js.Global().Get("FileReader").New()
+	fileReader.Call("addEventListener", "loadend", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		buffer := fileReader.Get("result")
+		uint8Array := js.Global().Get("Uint8Array").New(buffer)
+
+		imageData := make([]byte, uint8Array.Length())
+		js.CopyBytesToGo(imageData, uint8Array)
+
+		event.EventEnv().Lock()
+		defer event.EventEnv().UnlockRender()
+
+		photo, err := c.NewPhoto(imageData)
+		if err != nil {
+			log.Printf("Couldn't load image: %v", err)
+			// TODO: Somehow tell the user the image couldn't be loaded
+			return nil
+		}
+
+		c.Navigate("/camera/"+c.Key()+"/photo/"+photo.Key(), nil)
+
+		return nil // js.Undefined() will crash when "github.com/vugu/vugu/js" is used
+	}))
+
+	imgFile := js.Global().Get("document").Call("getElementById", "photo-upload").Get("files").Index(0)
+	fileReader.Call("readAsArrayBuffer", imgFile)
+}
+
+func (c *Camera) Key() string {
+	return c.key
+}
+
+func (c *Camera) Delete() {
+	delete(c.site.Cameras, c.Key())
+}

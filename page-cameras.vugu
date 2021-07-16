@@ -1,0 +1,19 @@
+<div>
+	<h1>Camera (<span vg-content="len(c.Site.Cameras)"></span>)</h1>
+	<button @click="c.handleAdd()">Add</button>
+
+	<div vg-for="cameraKey, camera := range c.Site.Cameras">
+		<span vg-content="camera.Name"></span>
+		<button @click='c.Navigate("/camera/" + cameraKey, nil)'>Edit</button>
+		<button @click="camera.Delete()">Del</button>
+
+		<div vg-for="photoKey, photo := range camera.Photos">
+			<button @click='c.Navigate("/camera/" + camera.Key() + "/photo/" + photoKey, nil)'>Edit</button>
+			<button @click="photo.Delete()">Del</button>
+		</div>
+	</div>
+</div>
+
+<script type="application/x-go">
+
+</script>
