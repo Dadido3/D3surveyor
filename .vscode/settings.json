@@ -3,5 +3,9 @@
         "shortid",
         "vgrouter",
         "vugu"
-    ]
+    ],
+    "go.toolsEnvVars": {
+        "GOOS": "js",
+        "GOARCH": "wasm"
+    },
 }

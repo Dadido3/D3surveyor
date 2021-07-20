@@ -1,0 +1,4 @@
+<div>
+	<button>Delete point</button>
+	<canvas width="1000" height="1000" vg-js-create="c.canvasCreated(value)" style="touch-action:none"></canvas>
+</div>

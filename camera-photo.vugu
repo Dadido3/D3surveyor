@@ -2,5 +2,6 @@
 	<button @click='c.Navigate("/camera/" + c.camera.Key(), nil)'>Back</button>
 	<h1>Photo <span vg-content="c.Key()"></span></h1>
 
-	<main:ImageComponent :BindValue="&c.ImageData"></main:ImageComponent>
+	<main:CameraPhotoComponent :Photo="c"></main:CameraPhotoComponent>
+
 </div>

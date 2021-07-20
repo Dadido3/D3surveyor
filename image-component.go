@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/vugu/vugu/js"
 )
 
@@ -19,8 +17,8 @@ func (c *ImageComponent) handlePopulate(imgElement js.Value) {
 	js.CopyBytesToJS(dst, *c.BindValue)
 
 	dstArray := js.Global().Get("Array").New(dst)
-	blob := js.Global().Get("Blob").New(dstArray, js.ValueOf(map[string]interface{}{"type": "image/jpg"}))
+	blob := js.Global().Get("Blob").New(dstArray, js.ValueOf(map[string]interface{}{"type": "image/*"}))
 	url := js.Global().Get("URL").Call("createObjectURL", blob)
-	fmt.Println(url.String())
 	imgElement.Set("src", url)
+
 }
