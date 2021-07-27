@@ -74,17 +74,31 @@ func (c *CameraPhotoComponent) canvasCreated(canvas js.Value) {
 		case "mouse":
 			canvas.Call("setPointerCapture", pointerID)
 			xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
+			// Store current pointer.
 			c.ongoingMouseDrags[pointerID] = CameraPhotoComponentEventCoordinate{
 				xCan: xCan,
 				yCan: yCan,
+			}
+			// Check if current selection is still the one under the pointer.
+			point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
+			if c.selectedPoint != point {
+				c.selectedPoint = nil
+				c.canvasRedraw(canvas)
 			}
 
 		case "touch":
 			canvas.Call("setPointerCapture", event.Get("pointerId"))
 			xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
+			// Store current pointer.
 			c.ongoingTouches[pointerID] = CameraPhotoComponentEventCoordinate{
 				xCan: xCan,
 				yCan: yCan,
+			}
+			// Check if current selection is still the one under the pointer.
+			point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
+			if c.selectedPoint != point {
+				c.selectedPoint = nil
+				c.canvasRedraw(canvas)
 			}
 
 		default:
@@ -101,12 +115,19 @@ func (c *CameraPhotoComponent) canvasCreated(canvas js.Value) {
 
 		pointerID := event.Get("pointerId").Int()
 		inputType := event.Get("pointerType").String()
+		xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
 		switch inputType {
 		case "mouse":
-			xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
 			if ongoingMouseDrag, ok := c.ongoingMouseDrags[pointerID]; ok {
-				c.originX += xCan - ongoingMouseDrag.xCan
-				c.originY += yCan - ongoingMouseDrag.yCan
+				if c.selectedPoint != nil {
+					// Drag selected point.
+					c.selectedPoint.x += (xCan - ongoingMouseDrag.xCan) / c.scale / float64(c.Photo.ImageConf.Width)
+					c.selectedPoint.y += (yCan - ongoingMouseDrag.yCan) / c.scale / float64(c.Photo.ImageConf.Height)
+				} else {
+					// Drag viewport.
+					c.originX += xCan - ongoingMouseDrag.xCan
+					c.originY += yCan - ongoingMouseDrag.yCan
+				}
 
 				c.ongoingMouseDrags[pointerID] = CameraPhotoComponentEventCoordinate{
 					xCan: xCan,
@@ -126,9 +147,15 @@ func (c *CameraPhotoComponent) canvasCreated(canvas js.Value) {
 			switch len(c.ongoingTouches) {
 			case 1:
 				if ongoingTouch, ok := c.ongoingTouches[pointerID]; ok {
-					xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
-					c.originX += xCan - ongoingTouch.xCan
-					c.originY += yCan - ongoingTouch.yCan
+					if c.selectedPoint != nil {
+						// Drag selected point.
+						c.selectedPoint.x += (xCan - ongoingTouch.xCan) / c.scale / float64(c.Photo.ImageConf.Width)
+						c.selectedPoint.y += (yCan - ongoingTouch.yCan) / c.scale / float64(c.Photo.ImageConf.Height)
+					} else {
+						// Drag viewport.
+						c.originX += xCan - ongoingTouch.xCan
+						c.originY += yCan - ongoingTouch.yCan
+					}
 
 					c.ongoingTouches[pointerID] = CameraPhotoComponentEventCoordinate{
 						xCan: xCan,
@@ -137,7 +164,6 @@ func (c *CameraPhotoComponent) canvasCreated(canvas js.Value) {
 				}
 			case 2:
 				if ongoingTouch, ok := c.ongoingTouches[pointerID]; ok {
-					xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
 
 					// Get the other touch event, scale the viewport accordingly to the change in finger distance.
 					for otherPointerID, ongoingOtherTouch := range c.ongoingTouches {
@@ -177,14 +203,30 @@ func (c *CameraPhotoComponent) canvasCreated(canvas js.Value) {
 
 		pointerID := event.Get("pointerId").Int()
 		inputType := event.Get("pointerType").String()
+		xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
 		switch inputType {
 		case "mouse":
 			canvas.Call("releasePointerCapture", pointerID)
+			// Reset highlighted point.
 			c.highlightedPoint = nil
+			// Get element selection.
+			point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
+			if c.selectedPoint != point {
+				c.selectedPoint = point
+				c.canvasRedraw(canvas)
+			}
 			delete(c.ongoingMouseDrags, pointerID)
 
 		case "touch":
 			canvas.Call("releasePointerCapture", pointerID)
+
+			// Get element selection.
+			point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
+			if c.selectedPoint != point {
+				c.selectedPoint = point
+				c.canvasRedraw(canvas)
+			}
+
 			delete(c.ongoingTouches, pointerID)
 
 		default:
@@ -195,8 +237,8 @@ func (c *CameraPhotoComponent) canvasCreated(canvas js.Value) {
 	})
 	canvas.Call("addEventListener", "pointerup", handlePointerUp)
 	canvas.Call("addEventListener", "pointercancel", handlePointerUp)
-	canvas.Call("addEventListener", "pointerout", handlePointerUp)
-	canvas.Call("addEventListener", "pointerLeave", handlePointerUp)
+	//canvas.Call("addEventListener", "pointerout", handlePointerUp)
+	//canvas.Call("addEventListener", "pointerLeave", handlePointerUp)
 
 	canvas.Call("addEventListener", "dblclick", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		event := args[0]
@@ -204,25 +246,20 @@ func (c *CameraPhotoComponent) canvasCreated(canvas js.Value) {
 		xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
 		xVir, yVir := c.transformCanvasToVirtual(xCan, yCan)
 
-		point := c.Photo.NewPoint()
-		point.x, point.y = xVir/float64(c.Photo.ImageConf.Width), yVir/float64(c.Photo.ImageConf.Height)
-
-		c.canvasRedraw(canvas)
+		point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
+		if point == nil {
+			point := c.Photo.NewPoint()
+			point.x, point.y = xVir/float64(c.Photo.ImageConf.Width), yVir/float64(c.Photo.ImageConf.Height)
+			c.canvasRedraw(canvas)
+		}
 
 		return js.Undefined()
 	}))
 
 	canvas.Call("addEventListener", "click", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		event := args[0]
+		//event := args[0]
 
-		xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
-
-		// Get element selection.
-		point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
-		if c.selectedPoint != point {
-			c.selectedPoint = point
-			c.canvasRedraw(canvas)
-		}
+		//xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
 
 		return js.Undefined()
 	}))
