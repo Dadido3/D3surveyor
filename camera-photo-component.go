@@ -16,15 +16,13 @@ type CameraPhotoComponentEventCoordinate struct {
 type CameraPhotoComponent struct {
 	Photo *CameraPhoto
 
-	drawCtx js.Value
-	img     js.Value // A JS image object containing the photo via URL to the blob. The data is stored in the CameraPhoto object "Photo".
-
 	// Canvas state variables. // TODO: Put most of the "scrollable/zoomable canvas" logic in its own module for reusability
-	scale               float64 // Ratio between Canvas and virtual coordinates.
-	originX, originY    float64 // Origin in canvas coordinates. // TODO: Use specific type for DOM, Canvas and virtual coordinates, so that you can't mix them up
-	canWidth, canHeight float64 // Width and height in canvas pixels.
-
+	scale                     float64 // Ratio between Canvas and virtual coordinates.
+	originX, originY          float64 // Origin in canvas coordinates. // TODO: Use specific type for DOM, Canvas and virtual coordinates, so that you can't mix them up
+	canWidth, canHeight       float64 // Width and height in canvas pixels.
 	canWidthDOM, canHeightDOM float64 // Width and height of the canvas in dom pixels.
+
+	cachedImg js.Value // Cached js image object.
 
 	ongoingMouseDrags map[int]CameraPhotoComponentEventCoordinate
 	ongoingTouches    map[int]CameraPhotoComponentEventCoordinate
@@ -35,20 +33,15 @@ type CameraPhotoComponent struct {
 }
 
 func (c *CameraPhotoComponent) canvasCreated(canvas js.Value) {
-
+	// TODO: Put this into a resize event or something similar
 	c.canWidth, c.canHeight = canvas.Get("width").Float(), canvas.Get("height").Float()
 	rect := canvas.Call("getBoundingClientRect")
 	c.canWidthDOM, c.canHeightDOM = rect.Get("width").Float(), rect.Get("height").Float()
 
-	c.drawCtx = canvas.Call("getContext", "2d")
+	c.canvasRedraw(canvas)
+}
 
-	c.img = js.Global().Get("Image").New()
-	c.img.Set("src", c.Photo.jsImageURL)
-
-	if c.scale == 0 {
-		c.setScale(1, 0, 0)
-	}
-
+func (c *CameraPhotoComponent) Init(ctx vugu.InitCtx) {
 	if c.ongoingMouseDrags == nil {
 		c.ongoingMouseDrags = make(map[int]CameraPhotoComponentEventCoordinate)
 	}
@@ -56,7 +49,13 @@ func (c *CameraPhotoComponent) canvasCreated(canvas js.Value) {
 		c.ongoingTouches = make(map[int]CameraPhotoComponentEventCoordinate)
 	}
 
-	c.canvasRedraw(canvas)
+	if c.scale == 0 {
+		c.setScale(1, 0, 0)
+	}
+}
+
+func (c *CameraPhotoComponent) handleDelete(event vugu.DOMEvent) {
+
 }
 
 func (c *CameraPhotoComponent) handleContextMenu(event vugu.DOMEvent) {
@@ -288,14 +287,14 @@ func (c *CameraPhotoComponent) setScale(newScale, xPivot, yPivot float64) {
 }
 
 // transformUnscaled sets the transformation matrix to have its origin at the given virtual coordinate, but the scale is set to 1.
-func (c *CameraPhotoComponent) transformUnscaled(xVir, yVir float64) {
+func (c *CameraPhotoComponent) transformUnscaled(drawCtx js.Value, xVir, yVir float64) {
 	xCan, yCan := c.transformVirtualToCanvas(xVir, yVir)
-	c.drawCtx.Call("setTransform", 1, 0, 0, 1, xCan, yCan)
+	drawCtx.Call("setTransform", 1, 0, 0, 1, xCan, yCan)
 }
 
 // transformScaled sets the transformation matrix to represent the origin and scaling values.
-func (c *CameraPhotoComponent) transformScaled() {
-	c.drawCtx.Call("setTransform", c.scale, 0, 0, c.scale, c.originX, c.originY)
+func (c *CameraPhotoComponent) transformScaled(drawCtx js.Value) {
+	drawCtx.Call("setTransform", c.scale, 0, 0, c.scale, c.originX, c.originY)
 }
 
 // getClosestPoint returns the closest mapped point to the given canvas coordinates.
@@ -314,51 +313,58 @@ func (c *CameraPhotoComponent) getClosestPoint(xCan, yCan, maxDistSqr float64) (
 }
 
 func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
-	c.drawCtx.Set("shadowBlur", 0)
+	drawCtx := canvas.Call("getContext", "2d")
 
-	c.drawCtx.Call("setTransform", 1, 0, 0, 1, 0, 0)
-	c.drawCtx.Call("clearRect", 0, 0, c.canWidth, c.canHeight)
-	c.transformScaled()
+	if c.cachedImg.IsUndefined() {
+		c.cachedImg = js.Global().Get("Image").New()
+		c.cachedImg.Set("src", c.Photo.jsImageURL)
+	}
 
-	c.drawCtx.Call("drawImage", c.img, 0, 0)
+	drawCtx.Set("shadowBlur", 0)
 
-	c.transformUnscaled(10, 50)
-	c.drawCtx.Set("fillStyle", "white")
-	c.drawCtx.Set("font", "30px Arial")
-	c.drawCtx.Call("fillText", fmt.Sprintf("image %d, %d, %f", c.Photo.ImageConf.Width, c.Photo.ImageConf.Height, rand.Float64()), 0, 0)
+	drawCtx.Call("setTransform", 1, 0, 0, 1, 0, 0)
+	drawCtx.Call("clearRect", 0, 0, c.canWidth, c.canHeight)
+	c.transformScaled(drawCtx)
 
-	c.drawCtx.Set("lineWidth", 1)
-	c.drawCtx.Set("lineCap", "butt")
-	c.drawCtx.Set("fillStyle", "green")
-	c.drawCtx.Set("shadowOffsetX", 0)
-	c.drawCtx.Set("shadowOffsetY", 0)
-	c.drawCtx.Set("shadowColor", "white")
+	drawCtx.Call("drawImage", c.cachedImg, 0, 0)
+
+	c.transformUnscaled(drawCtx, 10, 50)
+	drawCtx.Set("fillStyle", "white")
+	drawCtx.Set("font", "30px Arial")
+	drawCtx.Call("fillText", fmt.Sprintf("image %d, %d, %f", c.Photo.ImageConf.Width, c.Photo.ImageConf.Height, rand.Float64()), 0, 0)
+
+	drawCtx.Set("lineWidth", 1)
+	drawCtx.Set("lineCap", "butt")
+	drawCtx.Set("fillStyle", "green")
+	drawCtx.Set("shadowOffsetX", 0)
+	drawCtx.Set("shadowOffsetY", 0)
+	drawCtx.Set("shadowColor", "white")
 	for _, point := range c.Photo.points {
 		if point == c.selectedPoint {
-			c.drawCtx.Set("strokeStyle", "white")
+			drawCtx.Set("strokeStyle", "white")
 		} else if point == c.highlightedPoint {
-			c.drawCtx.Set("strokeStyle", "gray")
+			drawCtx.Set("strokeStyle", "gray")
 		} else {
-			c.drawCtx.Set("strokeStyle", "black")
+			drawCtx.Set("strokeStyle", "black")
 		}
 
-		c.transformUnscaled(point.x*float64(c.Photo.ImageConf.Width), point.y*float64(c.Photo.ImageConf.Height))
-		c.drawCtx.Call("beginPath")
-		c.drawCtx.Call("moveTo", 0, 0)
-		c.drawCtx.Call("lineTo", 0, 0)
-		c.drawCtx.Call("lineTo", 0, -20)
-		c.drawCtx.Call("closePath")
-		c.drawCtx.Set("shadowBlur", 0)
-		c.drawCtx.Call("stroke")
+		c.transformUnscaled(drawCtx, point.x*float64(c.Photo.ImageConf.Width), point.y*float64(c.Photo.ImageConf.Height))
+		drawCtx.Call("beginPath")
+		drawCtx.Call("moveTo", 0, 0)
+		drawCtx.Call("lineTo", 0, 0)
+		drawCtx.Call("lineTo", 0, -20)
+		drawCtx.Call("closePath")
+		drawCtx.Set("shadowBlur", 0)
+		drawCtx.Call("stroke")
 
-		c.drawCtx.Call("rect", 0, -20, 15, 10)
-		c.drawCtx.Call("fill")
-		c.drawCtx.Call("stroke")
+		drawCtx.Call("rect", 0, -20, 15, 10)
+		drawCtx.Call("fill")
+		drawCtx.Call("stroke")
 
-		c.drawCtx.Call("beginPath")
-		c.drawCtx.Call("arc", 0, 0, 5, 0, 2*math.Pi, false)
-		c.drawCtx.Set("shadowBlur", 5)
-		c.drawCtx.Call("stroke")
+		drawCtx.Call("beginPath")
+		drawCtx.Call("arc", 0, 0, 5, 0, 2*math.Pi, false)
+		drawCtx.Set("shadowBlur", 5)
+		drawCtx.Call("stroke")
 
 	}
 
