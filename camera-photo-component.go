@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/rand"
 
+	"github.com/vugu/vugu"
 	js "github.com/vugu/vugu/js"
 )
 
@@ -55,271 +56,204 @@ func (c *CameraPhotoComponent) canvasCreated(canvas js.Value) {
 		c.ongoingTouches = make(map[int]CameraPhotoComponentEventCoordinate)
 	}
 
-	/*canvas.Call("addEventListener", "contextmenu", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		event := args[0]
-		//event.Call("preventDefault")
-		//event.Call("stopPropagation")
+	c.canvasRedraw(canvas)
+}
 
-		return js.Undefined()
-	}))*/
+func (c *CameraPhotoComponent) handleContextMenu(event vugu.DOMEvent) {
+	//jsEvent, jsCanvas := event.JSEvent(), event.JSEventTarget()
 
-	canvas.Call("addEventListener", "pointerdown", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		event := args[0]
-		//event.Call("preventDefault")
-		//event.Call("stopPropagation")
+	//jsEvent.Call("preventDefault")
+	//jsEvent.Call("stopPropagation")
+}
 
-		pointerID := event.Get("pointerId").Int()
-		inputType := event.Get("pointerType").String()
-		switch inputType {
-		case "mouse":
-			canvas.Call("setPointerCapture", pointerID)
-			xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
-			// Store current pointer.
+func (c *CameraPhotoComponent) handlePointerDown(event vugu.DOMEvent) {
+	jsEvent, jsCanvas := event.JSEvent(), event.JSEventTarget()
+
+	//jsEvent.Call("preventDefault")
+	//jsEvent.Call("stopPropagation")
+
+	pointerID := jsEvent.Get("pointerId").Int()
+	inputType := jsEvent.Get("pointerType").String()
+	jsCanvas.Call("setPointerCapture", pointerID)
+	xCan, yCan := c.transformDOMToCanvas(jsEvent.Get("offsetX").Float(), jsEvent.Get("offsetY").Float())
+	switch inputType {
+	case "mouse":
+		// Store current pointer.
+		c.ongoingMouseDrags[pointerID] = CameraPhotoComponentEventCoordinate{
+			xCan: xCan,
+			yCan: yCan,
+		}
+		// Check if current selection is still the one under the pointer.
+		point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
+		if c.selectedPoint != point {
+			c.selectedPoint = nil
+		}
+
+	case "touch":
+		// Store current pointer.
+		c.ongoingTouches[pointerID] = CameraPhotoComponentEventCoordinate{
+			xCan: xCan,
+			yCan: yCan,
+		}
+		// Check if current selection is still the one under the pointer.
+		point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
+		if c.selectedPoint != point {
+			c.selectedPoint = nil
+		}
+
+	default:
+		fmt.Printf("Input type %q not supported\n", inputType)
+	}
+}
+
+func (c *CameraPhotoComponent) handlePointerMove(event vugu.DOMEvent) {
+	jsEvent, _ := event.JSEvent(), event.JSEventTarget()
+
+	//jsEvent.Call("preventDefault")
+	//jsEvent.Call("stopPropagation")
+
+	pointerID := jsEvent.Get("pointerId").Int()
+	inputType := jsEvent.Get("pointerType").String()
+	xCan, yCan := c.transformDOMToCanvas(jsEvent.Get("offsetX").Float(), jsEvent.Get("offsetY").Float())
+	switch inputType {
+	case "mouse":
+		if ongoingMouseDrag, ok := c.ongoingMouseDrags[pointerID]; ok {
+			if c.selectedPoint != nil {
+				// Drag selected point.
+				c.selectedPoint.x += (xCan - ongoingMouseDrag.xCan) / c.scale / float64(c.Photo.ImageConf.Width)
+				c.selectedPoint.y += (yCan - ongoingMouseDrag.yCan) / c.scale / float64(c.Photo.ImageConf.Height)
+			} else {
+				// Drag viewport.
+				c.originX += xCan - ongoingMouseDrag.xCan
+				c.originY += yCan - ongoingMouseDrag.yCan
+			}
+
 			c.ongoingMouseDrags[pointerID] = CameraPhotoComponentEventCoordinate{
 				xCan: xCan,
 				yCan: yCan,
 			}
-			// Check if current selection is still the one under the pointer.
-			point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
-			if c.selectedPoint != point {
-				c.selectedPoint = nil
-				c.canvasRedraw(canvas)
-			}
-
-		case "touch":
-			canvas.Call("setPointerCapture", event.Get("pointerId"))
-			xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
-			// Store current pointer.
-			c.ongoingTouches[pointerID] = CameraPhotoComponentEventCoordinate{
-				xCan: xCan,
-				yCan: yCan,
-			}
-			// Check if current selection is still the one under the pointer.
-			point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
-			if c.selectedPoint != point {
-				c.selectedPoint = nil
-				c.canvasRedraw(canvas)
-			}
-
-		default:
-			fmt.Printf("Input type %q not supported\n", inputType)
 		}
 
-		return js.Undefined()
-	}))
+		// Get highlighted element.
+		point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
+		if c.highlightedPoint != point {
+			c.highlightedPoint = point
+		}
 
-	canvas.Call("addEventListener", "pointermove", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		event := args[0]
-		//event.Call("preventDefault")
-		//event.Call("stopPropagation")
-
-		pointerID := event.Get("pointerId").Int()
-		inputType := event.Get("pointerType").String()
-		xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
-		switch inputType {
-		case "mouse":
-			if ongoingMouseDrag, ok := c.ongoingMouseDrags[pointerID]; ok {
+	case "touch":
+		switch len(c.ongoingTouches) {
+		case 1:
+			if ongoingTouch, ok := c.ongoingTouches[pointerID]; ok {
 				if c.selectedPoint != nil {
 					// Drag selected point.
-					c.selectedPoint.x += (xCan - ongoingMouseDrag.xCan) / c.scale / float64(c.Photo.ImageConf.Width)
-					c.selectedPoint.y += (yCan - ongoingMouseDrag.yCan) / c.scale / float64(c.Photo.ImageConf.Height)
+					c.selectedPoint.x += (xCan - ongoingTouch.xCan) / c.scale / float64(c.Photo.ImageConf.Width)
+					c.selectedPoint.y += (yCan - ongoingTouch.yCan) / c.scale / float64(c.Photo.ImageConf.Height)
 				} else {
 					// Drag viewport.
-					c.originX += xCan - ongoingMouseDrag.xCan
-					c.originY += yCan - ongoingMouseDrag.yCan
+					c.originX += xCan - ongoingTouch.xCan
+					c.originY += yCan - ongoingTouch.yCan
 				}
 
-				c.ongoingMouseDrags[pointerID] = CameraPhotoComponentEventCoordinate{
+				c.ongoingTouches[pointerID] = CameraPhotoComponentEventCoordinate{
 					xCan: xCan,
 					yCan: yCan,
 				}
-				c.canvasRedraw(canvas)
 			}
+		case 2:
+			if ongoingTouch, ok := c.ongoingTouches[pointerID]; ok {
 
-			// Get highlighted element.
-			point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
-			if c.highlightedPoint != point {
-				c.highlightedPoint = point
-				c.canvasRedraw(canvas)
-			}
-
-		case "touch":
-			switch len(c.ongoingTouches) {
-			case 1:
-				if ongoingTouch, ok := c.ongoingTouches[pointerID]; ok {
-					if c.selectedPoint != nil {
-						// Drag selected point.
-						c.selectedPoint.x += (xCan - ongoingTouch.xCan) / c.scale / float64(c.Photo.ImageConf.Width)
-						c.selectedPoint.y += (yCan - ongoingTouch.yCan) / c.scale / float64(c.Photo.ImageConf.Height)
-					} else {
-						// Drag viewport.
-						c.originX += xCan - ongoingTouch.xCan
-						c.originY += yCan - ongoingTouch.yCan
-					}
-
-					c.ongoingTouches[pointerID] = CameraPhotoComponentEventCoordinate{
-						xCan: xCan,
-						yCan: yCan,
+				// Get the other touch event, scale the viewport accordingly to the change in finger distance.
+				for otherPointerID, ongoingOtherTouch := range c.ongoingTouches {
+					if pointerID != otherPointerID {
+						prevDistance := math.Sqrt(math.Pow(ongoingTouch.xCan-ongoingOtherTouch.xCan, 2) + math.Pow(ongoingTouch.yCan-ongoingOtherTouch.yCan, 2))
+						newDistance := math.Sqrt(math.Pow(xCan-ongoingOtherTouch.xCan, 2) + math.Pow(yCan-ongoingOtherTouch.yCan, 2))
+						pivotX, pivotY := c.transformCanvasToVirtual((ongoingTouch.xCan+ongoingOtherTouch.xCan)/2, (ongoingTouch.yCan+ongoingOtherTouch.yCan)/2)
+						c.setScale(c.scale*(newDistance/prevDistance), pivotX, pivotY)
+						break
 					}
 				}
-			case 2:
-				if ongoingTouch, ok := c.ongoingTouches[pointerID]; ok {
 
-					// Get the other touch event, scale the viewport accordingly to the change in finger distance.
-					for otherPointerID, ongoingOtherTouch := range c.ongoingTouches {
-						if pointerID != otherPointerID {
-							prevDistance := math.Sqrt(math.Pow(ongoingTouch.xCan-ongoingOtherTouch.xCan, 2) + math.Pow(ongoingTouch.yCan-ongoingOtherTouch.yCan, 2))
-							newDistance := math.Sqrt(math.Pow(xCan-ongoingOtherTouch.xCan, 2) + math.Pow(yCan-ongoingOtherTouch.yCan, 2))
-							pivotX, pivotY := c.transformCanvasToVirtual((ongoingTouch.xCan+ongoingOtherTouch.xCan)/2, (ongoingTouch.yCan+ongoingOtherTouch.yCan)/2)
-							c.setScale(c.scale*(newDistance/prevDistance), pivotX, pivotY)
-							break
-						}
-					}
+				// Translate view along the common middlepoint of the two touch events.
+				c.originX += (xCan - ongoingTouch.xCan) / 2
+				c.originY += (yCan - ongoingTouch.yCan) / 2
 
-					// Translate view along the common middlepoint of the two touch events.
-					c.originX += (xCan - ongoingTouch.xCan) / 2
-					c.originY += (yCan - ongoingTouch.yCan) / 2
-
-					c.ongoingTouches[pointerID] = CameraPhotoComponentEventCoordinate{
-						xCan: xCan,
-						yCan: yCan,
-					}
+				c.ongoingTouches[pointerID] = CameraPhotoComponentEventCoordinate{
+					xCan: xCan,
+					yCan: yCan,
 				}
 			}
-
-			c.canvasRedraw(canvas)
-
-		default:
-			fmt.Printf("Input type %q not supported\n", inputType)
 		}
 
-		return js.Undefined()
-	}))
+	default:
+		fmt.Printf("Input type %q not supported\n", inputType)
+	}
+}
 
-	handlePointerUp := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		event := args[0]
-		//event.Call("preventDefault")
-		//event.Call("stopPropagation")
+func (c *CameraPhotoComponent) handlePointerUp(event vugu.DOMEvent) {
+	jsEvent, jsCanvas := event.JSEvent(), event.JSEventTarget()
 
-		pointerID := event.Get("pointerId").Int()
-		inputType := event.Get("pointerType").String()
-		xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
-		switch inputType {
-		case "mouse":
-			canvas.Call("releasePointerCapture", pointerID)
-			// Reset highlighted point.
-			c.highlightedPoint = nil
-			// Get element selection.
-			point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
-			if c.selectedPoint != point {
-				c.selectedPoint = point
-				c.canvasRedraw(canvas)
-			}
-			delete(c.ongoingMouseDrags, pointerID)
+	//jsEvent.Call("preventDefault")
+	//jsEvent.Call("stopPropagation")
 
-		case "touch":
-			canvas.Call("releasePointerCapture", pointerID)
-
-			// Get element selection.
-			point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
-			if c.selectedPoint != point {
-				c.selectedPoint = point
-				c.canvasRedraw(canvas)
-			}
-
-			delete(c.ongoingTouches, pointerID)
-
-		default:
-			fmt.Printf("Input type %q not supported\n", inputType)
-		}
-
-		return js.Undefined()
-	})
-	canvas.Call("addEventListener", "pointerup", handlePointerUp)
-	canvas.Call("addEventListener", "pointercancel", handlePointerUp)
-	//canvas.Call("addEventListener", "pointerout", handlePointerUp)
-	//canvas.Call("addEventListener", "pointerLeave", handlePointerUp)
-
-	canvas.Call("addEventListener", "dblclick", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		event := args[0]
-
-		xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
-		xVir, yVir := c.transformCanvasToVirtual(xCan, yCan)
-
+	pointerID := jsEvent.Get("pointerId").Int()
+	inputType := jsEvent.Get("pointerType").String()
+	xCan, yCan := c.transformDOMToCanvas(jsEvent.Get("offsetX").Float(), jsEvent.Get("offsetY").Float())
+	switch inputType {
+	case "mouse":
+		jsCanvas.Call("releasePointerCapture", pointerID)
+		// Reset highlighted point.
+		c.highlightedPoint = nil
+		// Get element selection.
 		point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
-		if point == nil {
-			point := c.Photo.NewPoint()
-			point.x, point.y = xVir/float64(c.Photo.ImageConf.Width), yVir/float64(c.Photo.ImageConf.Height)
-			c.canvasRedraw(canvas)
+		if c.selectedPoint != point {
+			c.selectedPoint = point
+		}
+		delete(c.ongoingMouseDrags, pointerID)
+
+	case "touch":
+		jsCanvas.Call("releasePointerCapture", pointerID)
+
+		// Get element selection.
+		point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
+		if c.selectedPoint != point {
+			c.selectedPoint = point
 		}
 
-		return js.Undefined()
-	}))
+		delete(c.ongoingTouches, pointerID)
 
-	canvas.Call("addEventListener", "click", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		//event := args[0]
+	default:
+		fmt.Printf("Input type %q not supported\n", inputType)
+	}
+}
 
-		//xCan, yCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
+func (c *CameraPhotoComponent) handleDblClick(event vugu.DOMEvent) {
+	jsEvent, _ := event.JSEvent(), event.JSEventTarget()
 
-		return js.Undefined()
-	}))
+	xCan, yCan := c.transformDOMToCanvas(jsEvent.Get("offsetX").Float(), jsEvent.Get("offsetY").Float())
+	xVir, yVir := c.transformCanvasToVirtual(xCan, yCan)
 
-	/*canvas.Call("addEventListener", "mousedown", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		event := args[0]
-		//event.Call("preventDefault")
-		//event.Call("stopPropagation")
+	point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
+	if point == nil {
+		point := c.Photo.NewPoint()
+		point.x, point.y = xVir/float64(c.Photo.ImageConf.Width), yVir/float64(c.Photo.ImageConf.Height)
+	}
+}
 
-		if event.Get("button").Int() == 0 {
-			c.mouseDragging = true
-			canvas.Call("setPointerCapture", event.Get("pointerId"))
-		}
+func (c *CameraPhotoComponent) handleClick(event vugu.DOMEvent) {
 
-		return js.Undefined()
-	}))
+}
 
-	canvas.Call("addEventListener", "mousemove", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		event := args[0]
-		//event.Call("preventDefault")
-		//event.Call("stopPropagation")
+func (c *CameraPhotoComponent) handleWheel(event vugu.DOMEvent) {
+	jsEvent, _ := event.JSEvent(), event.JSEventTarget()
 
-		if c.mouseDragging {
-			c.originX += event.Get("movementX").Float()
-			c.originY += event.Get("movementY").Float()
-			c.canvasRedraw(canvas)
-		}
+	jsEvent.Call("preventDefault")
+	jsEvent.Call("stopPropagation")
 
-		return js.Undefined()
-	}))
+	delta := jsEvent.Get("deltaY").Float()
+	xPivotCan, yPivotCan := c.transformDOMToCanvas(jsEvent.Get("offsetX").Float(), jsEvent.Get("offsetY").Float())
+	xPivot, yPivot := c.transformCanvasToVirtual(xPivotCan, yPivotCan)
 
-	canvas.Call("addEventListener", "mouseup", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		event := args[0]
-		//event.Call("preventDefault")
-		//event.Call("stopPropagation")
-
-		if event.Get("button").Int() == 0 {
-			c.mouseDragging = false
-			canvas.Call("releasePointerCapture", event.Get("pointerId"))
-		}
-
-		return js.Undefined()
-	}))*/
-
-	canvas.Call("addEventListener", "wheel", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		event := args[0]
-		event.Call("preventDefault")
-		event.Call("stopPropagation")
-
-		delta := event.Get("deltaY").Float()
-		xPivotCan, yPivotCan := c.transformDOMToCanvas(event.Get("offsetX").Float(), event.Get("offsetY").Float())
-		xPivot, yPivot := c.transformCanvasToVirtual(xPivotCan, yPivotCan)
-
-		c.setScale(math.Pow(1/1.001, delta)*c.scale, xPivot, yPivot)
-		c.canvasRedraw(canvas)
-
-		return js.Undefined()
-	}))
-
-	c.canvasRedraw(canvas)
+	c.setScale(math.Pow(1/1.001, delta)*c.scale, xPivot, yPivot)
 }
 
 // transformDOMToCanvas takes the coordinates relative to the top left of the element in DOM pixels and transforms them into the canvas coordinates.
