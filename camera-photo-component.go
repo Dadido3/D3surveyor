@@ -57,6 +57,7 @@ func (c *CameraPhotoComponent) Init(ctx vugu.InitCtx) {
 func (c *CameraPhotoComponent) handleUnmap(event vugu.DOMEvent) {
 	for key, point := range c.Photo.points {
 		if point == c.selectedPoint {
+			c.selectedPoint = nil
 			delete(c.Photo.points, key)
 			return
 		}

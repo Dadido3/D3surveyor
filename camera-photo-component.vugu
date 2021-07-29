@@ -1,6 +1,6 @@
 <div>
 	<div>
-		<button @click="c.handleUnmap(event)">Unmap point</button>
+		<button vg-if="c.selectedPoint != nil" @click="c.handleUnmap(event)">Unmap point</button>
 
 		<label for="point">Point:</label>
 		<main:PointSelectionComponent vg-if="c.selectedPoint != nil" name="point" :Site="c.Photo.camera.site" :BindValue="&c.selectedPoint.point"></main:PointSelectionComponent>
