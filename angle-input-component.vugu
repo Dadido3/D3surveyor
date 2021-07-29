@@ -1,0 +1,4 @@
+<input type="number" required .value="c.BindValue" vg-attr='c.AttrMap' @change="c.handleChange(event)"></input>
+
+<script type="application/x-go">
+</script>

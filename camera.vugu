@@ -5,10 +5,10 @@
 	<vgform:Input type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
 
 	<label for="accuracy">Accuracy:</label>
-	<main:DistanceInputComponent name="accuracy" min="0" :BindValue="&c.AngAccuracy"></main:DistanceInputComponent>
+	<main:AngleInputComponent name="accuracy" min="0" :BindValue="&c.AngAccuracy"></main:AngleInputComponent>
 
 	<label for="fov">Field of view:</label>
-	<main:DistanceInputComponent name="fov" min="0" :BindValue="&c.LongSideFOV"></main:DistanceInputComponent>
+	<main:AngleInputComponent name="fov" min="0" :BindValue="&c.LongSideFOV"></main:AngleInputComponent>
 
 	<h2>Photos:</h2>
 

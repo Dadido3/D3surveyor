@@ -20,9 +20,9 @@ type Camera struct {
 	Name      string
 	CreatedAt time.Time
 
-	AngAccuracy float64 // Accuracy of the measurement in radians.
+	AngAccuracy Angle // Accuracy of the measurement in radians.
 
-	LongSideFOV float64 // The field of view of the longest side of every image in radians.
+	LongSideFOV Angle // The field of view of the longest side of every image in radians.
 
 	Photos map[string]*CameraPhoto
 }

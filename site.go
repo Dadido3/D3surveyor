@@ -54,3 +54,7 @@ func init() {
 	globalSite.NewPoint("1")
 	globalSite.NewPoint("2")
 }
+
+func (s *Site) GetOptimizerReferences() {
+
+}

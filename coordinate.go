@@ -1,5 +1,5 @@
 package main
 
 type Coordinate struct {
-	X, Y, Z float64 // In metres.
+	X, Y, Z Distance // In metres.
 }

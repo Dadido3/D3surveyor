@@ -7,13 +7,13 @@ import (
 	"github.com/vugu/vugu"
 )
 
-type DistanceInputComponent struct {
-	BindValue *Distance
+type AngleInputComponent struct {
+	BindValue *Angle
 
 	AttrMap vugu.AttrMap
 }
 
-func (c *DistanceInputComponent) handleChange(event vugu.DOMEvent) {
+func (c *AngleInputComponent) handleChange(event vugu.DOMEvent) {
 	strVal := event.PropString("target", "value")
 	strVal = strings.ReplaceAll(strVal, ",", ".")
 
@@ -22,6 +22,6 @@ func (c *DistanceInputComponent) handleChange(event vugu.DOMEvent) {
 		return
 	}
 
-	*c.BindValue = Distance(val)
+	*c.BindValue = Angle(val)
 
 }

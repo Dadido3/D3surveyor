@@ -13,8 +13,8 @@ type RangefinderMeasurement struct {
 
 	CreatedAt time.Time
 
-	P1, P2           string  // Two points the distance is measured between.
-	MeasuredDistance float64 // Measured distance in metres.
+	P1, P2           string   // Two points the distance is measured between.
+	MeasuredDistance Distance // Measured distance in metres.
 }
 
 func (r *Rangefinder) NewMeasurement() *RangefinderMeasurement {
