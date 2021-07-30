@@ -49,3 +49,13 @@ func (r *Rangefinder) Key() string {
 func (r *Rangefinder) Delete() {
 	delete(r.site.Rangefinders, r.Key())
 }
+
+// GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
+func (r *Rangefinder) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
+	tweakables, residuals := []Tweakable{}, []Residualer{}
+	for _, measurement := range r.Measurements {
+		newTweakables, newResiduals := measurement.GetTweakablesAndResiduals()
+		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
+	}
+	return tweakables, residuals
+}

@@ -10,3 +10,7 @@ type Root struct {
 
 	Body vugu.Builder
 }
+
+func (r *Root) handleRecalc(event vugu.DOMEvent) {
+	Optimize(globalSite)
+}

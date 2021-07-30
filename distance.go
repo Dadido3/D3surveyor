@@ -8,7 +8,7 @@ func (d *Distance) TweakableValue() float64 {
 	return float64(*d)
 }
 
-// TweakableValue converts and sets the given value from optimizer space.
+// SetTweakableValue converts and applies the given value from optimizer space.
 func (d *Distance) SetTweakableValue(v float64) {
 	*d = Distance(v)
 }

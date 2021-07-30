@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"time"
 
 	"github.com/vugu/vgrouter"
@@ -37,4 +38,25 @@ func (d *RangefinderMeasurement) Key() string {
 
 func (d *RangefinderMeasurement) Delete() {
 	delete(d.rangefinder.Measurements, d.Key())
+}
+
+// GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
+func (d *RangefinderMeasurement) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
+	return nil, []Residualer{d}
+}
+
+// ResidualSqr returns the sum of squared residuals. (Each residual is divided by the accuracy of the measurement device).
+func (d *RangefinderMeasurement) ResidualSqr() float64 {
+	site := d.rangefinder.site
+
+	p1, ok := site.Points[d.P1]
+	if !ok {
+		return 0
+	}
+	p2, ok := site.Points[d.P2]
+	if !ok {
+		return 0
+	}
+
+	return math.Pow(float64((p1.Position.Distance(p2.Position)-d.MeasuredDistance)/d.rangefinder.Accuracy), 2) // TODO: Check if this can be optimized
 }

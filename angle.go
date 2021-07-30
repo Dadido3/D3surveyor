@@ -8,7 +8,7 @@ func (d *Angle) TweakableValue() float64 {
 	return float64(*d)
 }
 
-// TweakableValue converts and sets the given value from optimizer space.
+// SetTweakableValue converts and applies the given value from optimizer space.
 func (d *Angle) SetTweakableValue(v float64) {
 	*d = Angle(v)
 }

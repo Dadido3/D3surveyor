@@ -37,3 +37,8 @@ func (p *Point) Key() string {
 func (p *Point) Delete() {
 	delete(p.Site.Points, p.Key())
 }
+
+// GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
+func (p *Point) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
+	return p.Position.GetTweakablesAndResiduals()
+}

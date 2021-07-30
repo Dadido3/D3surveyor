@@ -55,6 +55,24 @@ func init() {
 	globalSite.NewPoint("2")
 }
 
-func (s *Site) GetOptimizerReferences() {
+// GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
+func (s *Site) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
+	tweakables, residuals := []Tweakable{}, []Residualer{}
 
+	for _, point := range s.Points {
+		newTweakables, newResiduals := point.GetTweakablesAndResiduals()
+		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
+	}
+
+	for _, rangefinder := range s.Rangefinders {
+		newTweakables, newResiduals := rangefinder.GetTweakablesAndResiduals()
+		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
+	}
+
+	for _, camera := range s.Cameras {
+		newTweakables, newResiduals := camera.GetTweakablesAndResiduals()
+		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
+	}
+
+	return tweakables, residuals
 }

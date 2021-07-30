@@ -1,0 +1,12 @@
+<span>
+	<form vg-if="c.BindValue != nil && c.Editable">
+		<label for="yaw">Yaw:</label> <main:AngleInputComponent name="yaw" :BindValue="&c.BindValue.Yaw"></main:AngleInputComponent>
+		<label for="pitch">Pitch:</label> <main:AngleInputComponent name="pitch" :BindValue="&c.BindValue.Pitch"></main:AngleInputComponent>
+		<label for="roll">Roll:</label> <main:AngleInputComponent name="roll" :BindValue="&c.BindValue.Roll"></main:AngleInputComponent>
+	</form>
+	<span vg-if="c.BindValue != nil && !c.Editable">
+		<span>Yaw: </span><span vg-content="c.BindValue.Yaw"></span>
+		<span>Pitch: </span><span vg-content="c.BindValue.Pitch"></span>
+		<span>Roll: </span><span vg-content="c.BindValue.Roll"></span>
+	</span>
+</span>

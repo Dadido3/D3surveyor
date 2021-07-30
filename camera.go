@@ -80,3 +80,14 @@ func (c *Camera) Key() string {
 func (c *Camera) Delete() {
 	delete(c.site.Cameras, c.Key())
 }
+
+// GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
+func (c *Camera) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
+	tweakables, residuals := []Tweakable{&c.LongSideFOV}, []Residualer{}
+
+	for _, photo := range c.Photos {
+		newTweakables, newResiduals := photo.GetTweakablesAndResiduals()
+		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
+	}
+	return tweakables, residuals
+}
