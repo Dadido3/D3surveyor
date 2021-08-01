@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 
 type Camera struct {
 	vgrouter.NavigatorRef
+
 	site *Site
 	key  string
 
@@ -79,6 +81,21 @@ func (c *Camera) Key() string {
 
 func (c *Camera) Delete() {
 	delete(c.site.Cameras, c.Key())
+}
+
+func (c *Camera) UnmarshalJSON(data []byte) error {
+	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
+	type tempType *Camera
+	if err := json.Unmarshal(data, tempType(c)); err != nil {
+		return err
+	}
+
+	// Restore keys and references.
+	for k, v := range c.Photos {
+		v.key, v.camera = k, c
+	}
+
+	return nil
 }
 
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.

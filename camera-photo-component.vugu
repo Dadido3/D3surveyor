@@ -3,7 +3,7 @@
 		<button vg-if="c.selectedPoint != nil" @click="c.handleUnmap(event)">Unmap point</button>
 
 		<label for="point">Point:</label>
-		<main:PointSelectionComponent vg-if="c.selectedPoint != nil" name="point" :Site="c.Photo.camera.site" :BindValue="&c.selectedPoint.point"></main:PointSelectionComponent>
+		<main:PointSelectionComponent vg-if="c.selectedPoint != nil" name="point" :Site="c.Photo.camera.site" :BindValue="&c.selectedPoint.Point"></main:PointSelectionComponent>
 	</div>
 
 	<canvas width="1000" height="800" vg-js-create="c.canvasCreated(value)" @contextmenu="c.handleContextMenu(event)" @pointerdown="c.handlePointerDown(event)" @pointermove="c.handlePointerMove(event)" @pointerup="c.handlePointerUp(event)" @dblclick="c.handleDblClick(event)" @click="c.handleClick(event)" @wheel="c.handleWheel(event)" style="touch-action:none"></canvas>

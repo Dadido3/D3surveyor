@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+
 	"github.com/teris-io/shortid"
 	"github.com/vugu/vgrouter"
 )
@@ -45,6 +47,34 @@ func MustNewSite(name string) *Site {
 	}
 
 	return site
+}
+
+func (s *Site) UnmarshalJSON(data []byte) error {
+	newSite, err := NewSite("")
+	if err != nil {
+		return err
+	}
+
+	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
+	type tempType *Site
+	if err := json.Unmarshal(data, tempType(newSite)); err != nil {
+		return err
+	}
+
+	// Restore keys and references.
+	for k, v := range newSite.Points {
+		v.key, v.site = k, s
+	}
+	for k, v := range newSite.Cameras {
+		v.key, v.site = k, s
+	}
+	for k, v := range newSite.Rangefinders {
+		v.key, v.site = k, s
+	}
+
+	// Copy
+	*s = *newSite
+	return nil
 }
 
 // Global site data structure that contains all data about a specific site/place.

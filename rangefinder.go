@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/vugu/vgrouter"
@@ -8,6 +9,7 @@ import (
 
 type Rangefinder struct {
 	vgrouter.NavigatorRef
+
 	site *Site
 	key  string
 
@@ -48,6 +50,21 @@ func (r *Rangefinder) Key() string {
 
 func (r *Rangefinder) Delete() {
 	delete(r.site.Rangefinders, r.Key())
+}
+
+func (r *Rangefinder) UnmarshalJSON(data []byte) error {
+	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
+	type tempType *Rangefinder
+	if err := json.Unmarshal(data, tempType(r)); err != nil {
+		return err
+	}
+
+	// Restore keys and references.
+	for k, v := range r.Measurements {
+		v.key, v.rangefinder = k, r
+	}
+
+	return nil
 }
 
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.

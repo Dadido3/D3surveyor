@@ -9,9 +9,9 @@ type CameraPhotoPoint struct {
 
 	CreatedAt time.Time
 
-	point string // The unique ID of the point.
+	Point string // The unique ID of the point.
 
-	x, y float64 // Point's position on the photo in the range of [0,1]
+	X, Y float64 // Point's position on the photo in the range of [0,1]
 }
 
 func (cp *CameraPhoto) NewPoint() *CameraPhotoPoint {
@@ -23,7 +23,7 @@ func (cp *CameraPhoto) NewPoint() *CameraPhotoPoint {
 		CreatedAt: time.Now(),
 	}
 
-	cp.points[key] = point
+	cp.Points[key] = point
 
 	return point
 }
@@ -33,5 +33,5 @@ func (p *CameraPhotoPoint) Key() string {
 }
 
 func (p *CameraPhotoPoint) Delete() {
-	delete(p.photo.points, p.Key())
+	delete(p.photo.Points, p.Key())
 }

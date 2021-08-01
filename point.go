@@ -5,7 +5,7 @@ import (
 )
 
 type Point struct {
-	Site *Site
+	site *Site
 	key  string
 
 	Name      string
@@ -19,7 +19,7 @@ func (s *Site) NewPoint(name string) *Point {
 	key := s.shortIDGen.MustGenerate()
 
 	point := &Point{
-		Site:      s,
+		site:      s,
 		key:       key,
 		Name:      name,
 		CreatedAt: time.Now(),
@@ -35,8 +35,20 @@ func (p *Point) Key() string {
 }
 
 func (p *Point) Delete() {
-	delete(p.Site.Points, p.Key())
+	delete(p.site.Points, p.Key())
 }
+
+/*func (p *Point) UnmarshalJSON(data []byte) error {
+	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
+	type tempType *Point
+	if err := json.Unmarshal(data, tempType(p)); err != nil {
+		return err
+	}
+
+	// Restore keys and references.
+
+	return nil
+}*/
 
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
 func (p *Point) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {

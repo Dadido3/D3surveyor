@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"image"
 	"log"
 	"math"
@@ -14,6 +15,7 @@ import (
 
 type CameraPhoto struct {
 	vgrouter.NavigatorRef
+
 	camera *Camera
 	key    string
 
@@ -31,7 +33,7 @@ type CameraPhoto struct {
 	// Projection matrix computed from the position and orientation.
 	projMatrix mgl64.Mat4
 
-	points map[string]*CameraPhotoPoint // List of points mapped to this photo.
+	Points map[string]*CameraPhotoPoint // List of points mapped to this photo.
 }
 
 func (c *Camera) NewPhoto(imageData []byte) (*CameraPhoto, error) {
@@ -57,7 +59,7 @@ func (c *Camera) NewPhoto(imageData []byte) (*CameraPhoto, error) {
 		ImageConf:   imageConf,
 		jsImageBlob: blob,
 		jsImageURL:  url,
-		points:      map[string]*CameraPhotoPoint{},
+		Points:      map[string]*CameraPhotoPoint{},
 	}
 
 	c.Photos[key] = cp
@@ -73,6 +75,23 @@ func (cp *CameraPhoto) Delete() {
 	delete(cp.camera.Photos, cp.Key())
 
 	js.Global().Get("URL").Call("revokeObjectURL", cp.jsImageURL)
+}
+
+func (cp *CameraPhoto) UnmarshalJSON(data []byte) error {
+	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
+	type tempType *CameraPhoto
+	if err := json.Unmarshal(data, tempType(cp)); err != nil {
+		return err
+	}
+
+	// Restore keys and references.
+	for k, v := range cp.Points {
+		v.key, v.photo = k, cp
+	}
+
+	// TODO: Create js blob and url
+
+	return nil
 }
 
 func (cp *CameraPhoto) JsImageURL() string {
@@ -112,9 +131,9 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 	// Calculate the angle difference between rays going out the camera and points.
 	// Sum up the squared residues.
 	ssr := 0.0
-	for _, point := range cp.points {
-		if p, ok := site.Points[point.point]; ok {
-			v, err := mgl64.UnProject(mgl64.Vec3{point.x, point.y, 1}, viewMatrix, cp.projMatrix, 0, 0, 1, 1)
+	for _, point := range cp.Points {
+		if p, ok := site.Points[point.Point]; ok {
+			v, err := mgl64.UnProject(mgl64.Vec3{point.X, point.Y, 1}, viewMatrix, cp.projMatrix, 0, 0, 1, 1)
 			if err != nil {
 				log.Printf("UnProject failed: %v", err)
 				continue

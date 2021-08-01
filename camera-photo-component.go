@@ -55,10 +55,10 @@ func (c *CameraPhotoComponent) Init(ctx vugu.InitCtx) {
 }
 
 func (c *CameraPhotoComponent) handleUnmap(event vugu.DOMEvent) {
-	for key, point := range c.Photo.points {
+	for key, point := range c.Photo.Points {
 		if point == c.selectedPoint {
 			c.selectedPoint = nil
-			delete(c.Photo.points, key)
+			delete(c.Photo.Points, key)
 			return
 		}
 	}
@@ -125,8 +125,8 @@ func (c *CameraPhotoComponent) handlePointerMove(event vugu.DOMEvent) {
 		if ongoingMouseDrag, ok := c.ongoingMouseDrags[pointerID]; ok {
 			if c.selectedPoint != nil {
 				// Drag selected point.
-				c.selectedPoint.x += (xCan - ongoingMouseDrag.xCan) / c.scale / float64(c.Photo.ImageConf.Width)
-				c.selectedPoint.y += (yCan - ongoingMouseDrag.yCan) / c.scale / float64(c.Photo.ImageConf.Height)
+				c.selectedPoint.X += (xCan - ongoingMouseDrag.xCan) / c.scale / float64(c.Photo.ImageConf.Width)
+				c.selectedPoint.Y += (yCan - ongoingMouseDrag.yCan) / c.scale / float64(c.Photo.ImageConf.Height)
 			} else {
 				// Drag viewport.
 				c.originX += xCan - ongoingMouseDrag.xCan
@@ -151,8 +151,8 @@ func (c *CameraPhotoComponent) handlePointerMove(event vugu.DOMEvent) {
 			if ongoingTouch, ok := c.ongoingTouches[pointerID]; ok {
 				if c.selectedPoint != nil {
 					// Drag selected point.
-					c.selectedPoint.x += (xCan - ongoingTouch.xCan) / c.scale / float64(c.Photo.ImageConf.Width)
-					c.selectedPoint.y += (yCan - ongoingTouch.yCan) / c.scale / float64(c.Photo.ImageConf.Height)
+					c.selectedPoint.X += (xCan - ongoingTouch.xCan) / c.scale / float64(c.Photo.ImageConf.Width)
+					c.selectedPoint.Y += (yCan - ongoingTouch.yCan) / c.scale / float64(c.Photo.ImageConf.Height)
 				} else {
 					// Drag viewport.
 					c.originX += xCan - ongoingTouch.xCan
@@ -240,7 +240,7 @@ func (c *CameraPhotoComponent) handleDblClick(event vugu.DOMEvent) {
 	point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
 	if point == nil {
 		point := c.Photo.NewPoint()
-		point.x, point.y = xVir/float64(c.Photo.ImageConf.Width), yVir/float64(c.Photo.ImageConf.Height)
+		point.X, point.Y = xVir/float64(c.Photo.ImageConf.Width), yVir/float64(c.Photo.ImageConf.Height)
 	}
 }
 
@@ -307,8 +307,8 @@ func (c *CameraPhotoComponent) transformScaled(drawCtx js.Value) {
 func (c *CameraPhotoComponent) getClosestPoint(xCan, yCan, maxDistSqr float64) (minPoint *CameraPhotoPoint, minKey string, minDistSqr float64) {
 	minDistSqr = maxDistSqr
 
-	for key, point := range c.Photo.points {
-		pXCan, pYCan := c.transformVirtualToCanvas(point.x*float64(c.Photo.ImageConf.Width), point.y*float64(c.Photo.ImageConf.Height))
+	for key, point := range c.Photo.Points {
+		pXCan, pYCan := c.transformVirtualToCanvas(point.X*float64(c.Photo.ImageConf.Width), point.Y*float64(c.Photo.ImageConf.Height))
 		distSqr := math.Pow(pXCan-xCan, 2) + math.Pow(pYCan-yCan, 2)
 		if minDistSqr > distSqr {
 			minDistSqr, minKey, minPoint = distSqr, key, point
@@ -345,7 +345,7 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 	drawCtx.Set("shadowOffsetX", 0)
 	drawCtx.Set("shadowOffsetY", 0)
 	drawCtx.Set("shadowColor", "white")
-	for _, point := range c.Photo.points {
+	for _, point := range c.Photo.Points {
 		if point == c.selectedPoint {
 			drawCtx.Set("strokeStyle", "white")
 		} else if point == c.highlightedPoint {
@@ -354,7 +354,7 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 			drawCtx.Set("strokeStyle", "black")
 		}
 
-		c.transformUnscaled(drawCtx, point.x*float64(c.Photo.ImageConf.Width), point.y*float64(c.Photo.ImageConf.Height))
+		c.transformUnscaled(drawCtx, point.X*float64(c.Photo.ImageConf.Width), point.Y*float64(c.Photo.ImageConf.Height))
 		drawCtx.Call("beginPath")
 		drawCtx.Call("moveTo", 0, 0)
 		drawCtx.Call("lineTo", 0, 0)

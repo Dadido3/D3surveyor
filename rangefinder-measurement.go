@@ -9,6 +9,7 @@ import (
 
 type RangefinderMeasurement struct {
 	vgrouter.NavigatorRef
+
 	rangefinder *Rangefinder
 	key         string
 
