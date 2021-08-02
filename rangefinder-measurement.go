@@ -8,7 +8,7 @@ import (
 )
 
 type RangefinderMeasurement struct {
-	vgrouter.NavigatorRef
+	vgrouter.NavigatorRef `json:"-"`
 
 	rangefinder *Rangefinder
 	key         string
