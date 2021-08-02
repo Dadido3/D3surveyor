@@ -8,7 +8,7 @@
 	<main:AngleInputComponent name="accuracy" min="0" :BindValue="&c.AngAccuracy"></main:AngleInputComponent>
 
 	<label for="fov">Field of view:</label>
-	<main:AngleInputComponent name="fov" min="0" :BindValue="&c.LongSideFOV"></main:AngleInputComponent>
+	<main:AngleInputComponent name="fov" min="0" :BindValue="&c.LongSideFOV" :BindLock="&c.LongSideFOVLock"></main:AngleInputComponent>
 
 	<h2>Photos:</h2>
 

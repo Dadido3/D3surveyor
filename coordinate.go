@@ -3,12 +3,24 @@ package main
 import "math"
 
 type Coordinate struct {
-	X, Y, Z Distance // In metres.
+	X, Y, Z             Distance // In metres.
+	LockX, LockY, LockZ bool     // Lock (Don't optimize) the value.
 }
 
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
 func (c *Coordinate) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
-	return []Tweakable{&c.X, &c.Y, &c.Z}, nil
+	tweakables := make([]Tweakable, 0, 3)
+	if !c.LockX {
+		tweakables = append(tweakables, &c.X)
+	}
+	if !c.LockY {
+		tweakables = append(tweakables, &c.Y)
+	}
+	if !c.LockZ {
+		tweakables = append(tweakables, &c.Z)
+	}
+
+	return tweakables, nil
 }
 
 // Distance returns the distance between itself and the second coordinate.

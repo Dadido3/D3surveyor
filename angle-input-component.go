@@ -9,11 +9,12 @@ import (
 
 type AngleInputComponent struct {
 	BindValue *Angle
+	BindLock  *bool
 
 	AttrMap vugu.AttrMap
 }
 
-func (c *AngleInputComponent) handleChange(event vugu.DOMEvent) {
+func (c *AngleInputComponent) handleValueChange(event vugu.DOMEvent) {
 	strVal := event.PropString("target", "value")
 	strVal = strings.ReplaceAll(strVal, ",", ".")
 
@@ -24,4 +25,8 @@ func (c *AngleInputComponent) handleChange(event vugu.DOMEvent) {
 
 	*c.BindValue = Angle(val)
 
+}
+
+func (c *AngleInputComponent) handleLockChange(event vugu.DOMEvent) {
+	*c.BindLock = event.PropBool("target", "checked")
 }

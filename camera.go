@@ -24,7 +24,8 @@ type Camera struct {
 
 	AngAccuracy Angle // Accuracy of the measurement in radians.
 
-	LongSideFOV Angle // The field of view of the longest side of every image in radians.
+	LongSideFOV     Angle // The field of view of the longest side of every image in radians.
+	LongSideFOVLock bool  // Prevent the value from being optimized.
 
 	Photos map[string]*CameraPhoto
 }
@@ -100,7 +101,11 @@ func (c *Camera) UnmarshalJSON(data []byte) error {
 
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
 func (c *Camera) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
-	tweakables, residuals := []Tweakable{&c.LongSideFOV}, []Residualer{}
+	tweakables, residuals := []Tweakable{}, []Residualer{}
+
+	if !c.LongSideFOVLock {
+		tweakables = append(tweakables, &c.LongSideFOV)
+	}
 
 	for _, photo := range c.Photos {
 		newTweakables, newResiduals := photo.GetTweakablesAndResiduals()
