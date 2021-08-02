@@ -14,15 +14,15 @@ import (
 )
 
 type CameraPhoto struct {
-	vgrouter.NavigatorRef
+	vgrouter.NavigatorRef `json:"-"`
 
 	camera *Camera
 	key    string
 
 	CreatedAt time.Time
 
-	ImageData []byte // TODO: Don't store the image as byte slice. Only store it as a js blob.
-	ImageConf image.Config
+	ImageData               []byte // TODO: Don't store the image as byte slice. Only store it as a js blob.
+	ImageWidth, ImageHeight int
 
 	jsImageBlob js.Value // Blob representing the image on the js side.
 	jsImageURL  js.Value // URL referencing the blob.
@@ -44,23 +44,16 @@ func (c *Camera) NewPhoto(imageData []byte) (*CameraPhoto, error) {
 
 	key := c.site.shortIDGen.MustGenerate()
 
-	// Create js blob and URL.
-	dst := js.Global().Get("Uint8Array").New(len(imageData))
-	js.CopyBytesToJS(dst, imageData)
-	dstArray := js.Global().Get("Array").New(dst)
-	blob := js.Global().Get("Blob").New(dstArray, js.ValueOf(map[string]interface{}{"type": "image/*"}))
-	url := js.Global().Get("URL").Call("createObjectURL", blob) // This has to be freed when the photo is deleted.
-
 	cp := &CameraPhoto{
 		camera:      c,
 		key:         key,
 		CreatedAt:   time.Now(),
 		ImageData:   imageData,
-		ImageConf:   imageConf,
-		jsImageBlob: blob,
-		jsImageURL:  url,
+		ImageWidth:  imageConf.Width,
+		ImageHeight: imageConf.Height,
 		Points:      map[string]*CameraPhotoPoint{},
 	}
+	cp.createPhotoBlob(imageData)
 
 	c.Photos[key] = cp
 
@@ -74,7 +67,22 @@ func (cp *CameraPhoto) Key() string {
 func (cp *CameraPhoto) Delete() {
 	delete(cp.camera.Photos, cp.Key())
 
-	js.Global().Get("URL").Call("revokeObjectURL", cp.jsImageURL)
+	if cp.jsImageURL.Truthy() {
+		js.Global().Get("URL").Call("revokeObjectURL", cp.jsImageURL)
+	}
+}
+
+func (cp *CameraPhoto) createPhotoBlob(imageData []byte) {
+	if cp.jsImageURL.Truthy() {
+		js.Global().Get("URL").Call("revokeObjectURL", cp.jsImageURL)
+	}
+
+	dst := js.Global().Get("Uint8Array").New(len(imageData))
+	js.CopyBytesToJS(dst, imageData)
+	dstArray := js.Global().Get("Array").New(dst)
+
+	cp.jsImageBlob = js.Global().Get("Blob").New(dstArray, js.ValueOf(map[string]interface{}{"type": "image/*"}))
+	cp.jsImageURL = js.Global().Get("URL").Call("createObjectURL", cp.jsImageBlob) // This has to be freed when the photo is deleted.
 }
 
 func (cp *CameraPhoto) UnmarshalJSON(data []byte) error {
@@ -84,12 +92,13 @@ func (cp *CameraPhoto) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
+	// Load image on the js side.
+	cp.createPhotoBlob(cp.ImageData)
+
 	// Restore keys and references.
 	for k, v := range cp.Points {
 		v.key, v.photo = k, cp
 	}
-
-	// TODO: Create js blob and url
 
 	return nil
 }
@@ -110,7 +119,7 @@ func (cp *CameraPhoto) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 func (cp *CameraPhoto) ResidualSqr() float64 {
 	camera, site := cp.camera, cp.camera.site
 
-	width, height := cp.ImageConf.Width, cp.ImageConf.Height
+	width, height := cp.ImageWidth, cp.ImageHeight
 	aspect := float64(width) / float64(height)
 
 	var fovy float64

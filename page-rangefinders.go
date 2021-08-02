@@ -3,7 +3,7 @@ package main
 import "github.com/vugu/vgrouter"
 
 type PageRangefinders struct {
-	vgrouter.NavigatorRef
+	vgrouter.NavigatorRef `json:"-"`
 
 	Site *Site
 }

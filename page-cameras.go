@@ -3,7 +3,7 @@ package main
 import "github.com/vugu/vgrouter"
 
 type PageCameras struct {
-	vgrouter.NavigatorRef
+	vgrouter.NavigatorRef `json:"-"`
 
 	Site *Site
 }

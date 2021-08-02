@@ -8,7 +8,7 @@ import (
 )
 
 type Rangefinder struct {
-	vgrouter.NavigatorRef
+	vgrouter.NavigatorRef `json:"-"`
 
 	site *Site
 	key  string

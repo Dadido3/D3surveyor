@@ -9,7 +9,7 @@ import (
 
 // Site is the root container for all measurements, points and constraints of a place/site.
 type Site struct {
-	vgrouter.NavigatorRef
+	vgrouter.NavigatorRef `json:"-"`
 
 	shortIDGen *shortid.Shortid
 
@@ -47,6 +47,15 @@ func MustNewSite(name string) *Site {
 	}
 
 	return site
+}
+
+func NewSiteFromJSON(data []byte) (*Site, error) {
+	site := &Site{}
+	if err := json.Unmarshal(data, site); err != nil {
+		return nil, err
+	}
+
+	return site, nil
 }
 
 func (s *Site) UnmarshalJSON(data []byte) error {

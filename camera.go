@@ -14,7 +14,7 @@ import (
 )
 
 type Camera struct {
-	vgrouter.NavigatorRef
+	vgrouter.NavigatorRef `json:"-"`
 
 	site *Site
 	key  string
