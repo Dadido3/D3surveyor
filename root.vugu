@@ -2,7 +2,7 @@
 	<ul>
 		<li><button>Close</button></li>
 		<li><button @click="c.handleDownload(event)">Download</button></li>
-		<li><input type="file" id="site-upload" @change="c.handleUpload(event)"></li>
+		<li><input type="file" id="site-upload" @change="c.handleUpload(event)" accept=".D3mula"></li>
 		<li><button @click="c.handleRecalc(event)">Recalculate</button></li>
 		<li><button @click='c.Navigate("/", nil)'>Overview</button></li>
 		<li><button @click='c.Navigate("/points", nil)'>Points</button></li>

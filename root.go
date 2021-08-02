@@ -21,11 +21,12 @@ func (r *Root) handleRecalc(event vugu.DOMEvent) {
 }
 
 func (r *Root) handleDownload(event vugu.DOMEvent) {
-	data, err := json.Marshal(globalSite)
+	data, err := json.MarshalIndent(globalSite, "", "\t")
 	if err != nil {
 		log.Printf("json.Marshal failed: %v", err)
 	}
-	browserDownload(fmt.Sprintf("%v.D3mula", globalSite.Name), data, "text/json")
+
+	browserDownload(fmt.Sprintf("%v.D3mula", globalSite.Name), data, "application/octet-stream")
 }
 
 func (r *Root) handleUpload(event vugu.DOMEvent) {
