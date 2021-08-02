@@ -1,4 +1,4 @@
-<span>
+<vg-template>
 	<form vg-if="c.BindValue != nil && c.Editable">
 		<label for="x">X:</label> <main:DistanceInputComponent name="x" :BindValue="&c.BindValue.X" :BindLock="&c.BindValue.LockX"></main:DistanceInputComponent>
 		<label for="y">Y:</label> <main:DistanceInputComponent name="y" :BindValue="&c.BindValue.Y" :BindLock="&c.BindValue.LockY"></main:DistanceInputComponent>
@@ -9,4 +9,4 @@
 		<span>Y: </span><span vg-content="c.BindValue.Y"></span>
 		<span>Z: </span><span vg-content="c.BindValue.Z"></span>
 	</span>
-</span>
+</vg-template>

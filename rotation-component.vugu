@@ -1,4 +1,4 @@
-<span>
+<vg-template>
 	<form vg-if="c.BindValue != nil && c.Editable">
 		<label for="yaw">Yaw:</label> <main:AngleInputComponent name="yaw" :BindValue="&c.BindValue.Yaw" :BindLock="&c.BindValue.LockYaw"></main:AngleInputComponent>
 		<label for="pitch">Pitch:</label> <main:AngleInputComponent name="pitch" :BindValue="&c.BindValue.Pitch" :BindLock="&c.BindValue.LockPitch"></main:AngleInputComponent>
@@ -9,4 +9,4 @@
 		<span>Pitch: </span><span vg-content="c.BindValue.Pitch"></span>
 		<span>Roll: </span><span vg-content="c.BindValue.Roll"></span>
 	</span>
-</span>
+</vg-template>

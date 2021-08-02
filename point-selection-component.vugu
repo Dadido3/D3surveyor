@@ -1,7 +1,7 @@
-<span>
+<vg-template>
 	<vgform:Select vg-attr='c.AttrMap' :Value='vgform.StringPtrDefault(c.BindValue, "")' :Options='c.options.Title()'></vgform:Select>
-</span>
+</vg-template>
 
 <script type="application/x-go">
-import "github.com/vugu/vugu/vgform"
+	import "github.com/vugu/vugu/vgform"
 </script>
