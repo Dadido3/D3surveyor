@@ -372,6 +372,16 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 		drawCtx.Set("shadowBlur", 5)
 		drawCtx.Call("stroke")
 
+		drawCtx.Set("fillStyle", "black")
+		drawCtx.Set("font", "10px Arial")
+		drawCtx.Call("fillText", fmt.Sprintf("%v %v", point.Point, point.sr), 8, 0)
+		drawCtx.Set("fillStyle", "green")
+
+		drawCtx.Call("beginPath")
+		drawCtx.Call("moveTo", 0, 0)
+		c.transformUnscaled(drawCtx, point.realX*float64(c.Photo.ImageWidth), point.realY*float64(c.Photo.ImageHeight))
+		drawCtx.Call("lineTo", 0, 0)
+		drawCtx.Call("stroke")
 	}
 
 }

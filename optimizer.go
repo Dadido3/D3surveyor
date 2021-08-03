@@ -2,7 +2,9 @@ package main
 
 import (
 	"log"
+	"time"
 
+	"github.com/vugu/vugu"
 	"gonum.org/v1/gonum/optimize"
 )
 
@@ -17,10 +19,27 @@ type Residualer interface {
 	ResidualSqr() float64 // Returns the sum of squared residuals. (Each residual is divided by the accuracy of the measurement device).
 }
 
-func Optimize(site *Site) {
+func Optimize(eventEnv vugu.EventEnv, site *Site) {
 	tweakables, residuals := site.GetTweakablesAndResiduals()
 
+	ticker := time.NewTicker(250 * time.Millisecond)
+	defer ticker.Stop()
+
 	f := func(x []float64) float64 {
+		// Do some silly UI drawing syncing.
+		eventEnv.Lock()
+		select {
+		case <-ticker.C:
+			defer func() {
+				eventEnv.UnlockRender()
+				time.Sleep(10 * time.Millisecond)
+			}()
+		default:
+			defer eventEnv.UnlockOnly()
+		}
+
+		// TODO: Optimize a copy of the site, to prevent locking the UI.
+
 		// Set tweakable values.
 		for i, tweakable := range tweakables {
 			tweakable.SetTweakableValue(x[i])
@@ -45,7 +64,7 @@ func Optimize(site *Site) {
 		init = append(init, tweakable.TweakableValue())
 	}
 
-	res, err := optimize.Minimize(p, init, nil, &optimize.CmaEsChol{})
+	res, err := optimize.Minimize(p, init, nil, &optimize.NelderMead{})
 	if err != nil {
 		log.Printf("Optimization failed: %v", err)
 	}
@@ -54,6 +73,9 @@ func Optimize(site *Site) {
 	}
 
 	log.Println(res.F, res.X, res.FuncEvaluations, res.MajorIterations)
+
+	eventEnv.Lock()
+	defer eventEnv.UnlockRender()
 
 	// Set tweakable values to the solution.
 	for i, tweakable := range tweakables {

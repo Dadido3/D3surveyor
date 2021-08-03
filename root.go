@@ -16,8 +16,8 @@ type Root struct {
 	Body vugu.Builder
 }
 
-func (r *Root) handleRecalc(event vugu.DOMEvent) {
-	Optimize(globalSite)
+func (r *Root) handleRecalculate(event vugu.DOMEvent) {
+	go Optimize(event.EventEnv(), globalSite)
 }
 
 func (r *Root) handleDownload(event vugu.DOMEvent) {

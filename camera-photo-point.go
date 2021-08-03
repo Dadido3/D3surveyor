@@ -11,7 +11,9 @@ type CameraPhotoPoint struct {
 
 	Point string // The unique ID of the point.
 
-	X, Y float64 // Point's position on the photo in the range of [0,1]
+	X, Y         float64 // Point's position on the photo in the range of [0,1]. Origin is at the top left.
+	realX, realY float64 // Correct position of the point on the photo in the range of [0,1]. Origin is at the top left.
+	sr           float64 // Current squared residue value.
 }
 
 func (cp *CameraPhoto) NewPoint() *CameraPhotoPoint {

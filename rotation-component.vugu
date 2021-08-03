@@ -1,12 +1,12 @@
 <vg-template>
 	<form vg-if="c.BindValue != nil && c.Editable">
-		<label for="yaw">Yaw:</label> <main:AngleInputComponent name="yaw" :BindValue="&c.BindValue.Yaw" :BindLock="&c.BindValue.LockYaw"></main:AngleInputComponent>
-		<label for="pitch">Pitch:</label> <main:AngleInputComponent name="pitch" :BindValue="&c.BindValue.Pitch" :BindLock="&c.BindValue.LockPitch"></main:AngleInputComponent>
-		<label for="roll">Roll:</label> <main:AngleInputComponent name="roll" :BindValue="&c.BindValue.Roll" :BindLock="&c.BindValue.LockRoll"></main:AngleInputComponent>
+		<label for="x">X:</label> <main:AngleInputComponent name="x" :BindValue="&c.BindValue.X" :BindLock="&c.BindValue.LockX"></main:AngleInputComponent>
+		<label for="y">Y:</label> <main:AngleInputComponent name="y" :BindValue="&c.BindValue.Y" :BindLock="&c.BindValue.LockY"></main:AngleInputComponent>
+		<label for="z">Z:</label> <main:AngleInputComponent name="z" :BindValue="&c.BindValue.Z" :BindLock="&c.BindValue.LockZ"></main:AngleInputComponent>
 	</form>
 	<span vg-if="c.BindValue != nil && !c.Editable">
-		<span>Yaw: </span><span vg-content="c.BindValue.Yaw"></span>
-		<span>Pitch: </span><span vg-content="c.BindValue.Pitch"></span>
-		<span>Roll: </span><span vg-content="c.BindValue.Roll"></span>
+		<span>X: </span><span vg-content="c.BindValue.X"></span>
+		<span>Z: </span><span vg-content="c.BindValue.Y"></span>
+		<span>Y: </span><span vg-content="c.BindValue.Z"></span>
 	</span>
 </vg-template>
