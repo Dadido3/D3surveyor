@@ -8,6 +8,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 
+	"github.com/go-gl/mathgl/mgl64"
 	"github.com/vugu/vgrouter"
 	"github.com/vugu/vugu"
 	"github.com/vugu/vugu/js"
@@ -112,4 +113,17 @@ func (c *Camera) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}
 	return tweakables, residuals
+}
+
+func (c *Camera) GetProjectionMatrix(width, height float64) mgl64.Mat4 {
+	aspect := width / height
+
+	var fovy float64
+	if width > height {
+		fovy = float64(c.LongSideFOV) / aspect // BUG: FOVY calculation is wrong, it has to use the atan somehow
+	} else {
+		fovy = float64(c.LongSideFOV)
+	}
+
+	return mgl64.Perspective(fovy, aspect, 0.001, 1)
 }

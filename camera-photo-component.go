@@ -326,6 +326,9 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 		c.cachedImg.Set("src", c.Photo.jsImageURL)
 	}
 
+	// Trigger recalculation of the projected points.
+	c.Photo.ResidualSqr()
+
 	drawCtx.Set("shadowBlur", 0)
 
 	drawCtx.Call("setTransform", 1, 0, 0, 1, 0, 0)
@@ -379,7 +382,7 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 
 		drawCtx.Call("beginPath")
 		drawCtx.Call("moveTo", 0, 0)
-		c.transformUnscaled(drawCtx, point.realX*float64(c.Photo.ImageWidth), point.realY*float64(c.Photo.ImageHeight))
+		c.transformUnscaled(drawCtx, point.projectedX*float64(c.Photo.ImageWidth), point.projectedY*float64(c.Photo.ImageHeight))
 		drawCtx.Call("lineTo", 0, 0)
 		drawCtx.Call("stroke")
 	}

@@ -62,9 +62,18 @@ func Optimize(eventEnv vugu.EventEnv, site *Site) {
 	init := make([]float64, 0, len(tweakables))
 	for _, tweakable := range tweakables {
 		init = append(init, tweakable.TweakableValue())
+		//init = append(init, rand.Float64())
 	}
 
-	res, err := optimize.Minimize(p, init, nil, &optimize.NelderMead{})
+	/*res, err := optimize.Minimize(p, init, nil, &optimize.CmaEsChol{InitStepSize: 0.01})
+	if err != nil {
+		log.Printf("Optimization failed: %v", err)
+	}
+	if err = res.Status.Err(); err != nil {
+		log.Printf("Optimization status error: %v", err)
+	}*/
+
+	res, err := optimize.Minimize(p, init, &optimize.Settings{Converger: &optimize.FunctionConverge{Absolute: 1e-10, Iterations: 1000}}, &optimize.NelderMead{})
 	if err != nil {
 		log.Printf("Optimization failed: %v", err)
 	}

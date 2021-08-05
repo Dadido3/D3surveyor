@@ -3,9 +3,12 @@
         "Residualer",
         "Tweaker",
         "Unmap",
+        "Unprojected",
         "fovy",
         "mathgl",
+        "objs",
         "shortid",
+        "unproject",
         "vgrouter",
         "vugu"
     ],
