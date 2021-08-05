@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"math"
 	"time"
 
 	_ "image/jpeg"
@@ -120,7 +121,7 @@ func (c *Camera) GetProjectionMatrix(width, height float64) mgl64.Mat4 {
 
 	var fovy float64
 	if width > height {
-		fovy = float64(c.LongSideFOV) / aspect // BUG: FOVY calculation is wrong, it has to use the atan somehow
+		fovy = 2 * math.Atan(math.Tan(float64(c.LongSideFOV)*0.5)/aspect)
 	} else {
 		fovy = float64(c.LongSideFOV)
 	}
