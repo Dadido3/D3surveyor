@@ -2,9 +2,13 @@ package main
 
 import (
 	"time"
+
+	"github.com/vugu/vgrouter"
 )
 
 type Point struct {
+	vgrouter.NavigatorRef `json:"-"`
+
 	site *Site
 	key  string
 

@@ -1,5 +1,6 @@
 <div>
 	<main:TitleBar>
+		<button class="w3-bar-item w3-button w3-large w3-ripple w3-teal" @click='c.Navigate("/points", nil)'><i class="fas fa-arrow-left"></i></button>
 		<span class="w3-bar-item w3-large" vg-content='fmt.Sprintf("Point %s", c.Key())'></span>
 	</main:TitleBar>
 
