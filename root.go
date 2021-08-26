@@ -58,7 +58,7 @@ func (r *Root) handleUpload(event vugu.DOMEvent) {
 		newSite, err := NewSiteFromJSON(jsonData)
 		if err != nil {
 			log.Printf("NewSiteFromJSON failed: %v", err)
-			// TODO: Somehow tell the user the image couldn't be loaded
+			// TODO: Somehow tell the user the file couldn't be loaded
 			return js.Undefined()
 		}
 
@@ -69,6 +69,11 @@ func (r *Root) handleUpload(event vugu.DOMEvent) {
 		return js.Undefined()
 	}))
 
-	imgFile := js.Global().Get("document").Call("getElementById", "site-upload").Get("files").Index(0)
-	fileReader.Call("readAsArrayBuffer", imgFile)
+	imgFiles := js.Global().Get("document").Call("getElementById", "site-upload").Get("files")
+	if imgFiles.Length() != 1 {
+		log.Printf("Wrong amount of files: Expected %v, got %v", 1, imgFiles.Length())
+		// TODO: Somehow forward the error to the user
+		return
+	}
+	fileReader.Call("readAsArrayBuffer", imgFiles.Index(0))
 }
