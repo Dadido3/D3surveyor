@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"sort"
 
 	"github.com/teris-io/shortid"
 	"github.com/vugu/vgrouter"
@@ -114,4 +115,52 @@ func (s *Site) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 	}
 
 	return tweakables, residuals
+}
+
+// GetSortedPoints returns the points of the site as a list sorted by date.
+// TODO: Replace with generics once they are available. It's one of the few cases where they are really needed
+func (s *Site) GetSortedPoints() []*Point {
+	points := make([]*Point, 0, len(s.Points))
+
+	for _, point := range s.Points {
+		points = append(points, point)
+	}
+
+	sort.Slice(points, func(i, j int) bool {
+		return points[i].CreatedAt.After(points[j].CreatedAt)
+	})
+
+	return points
+}
+
+// GetSortedRangefinders returns the rangefinders of the site as a list sorted by date.
+// TODO: Replace with generics once they are available. It's one of the few cases where they are really needed
+func (s *Site) GetSortedRangefinders() []*Rangefinder {
+	rangefinders := make([]*Rangefinder, 0, len(s.Rangefinders))
+
+	for _, rangefinder := range s.Rangefinders {
+		rangefinders = append(rangefinders, rangefinder)
+	}
+
+	sort.Slice(rangefinders, func(i, j int) bool {
+		return rangefinders[i].CreatedAt.After(rangefinders[j].CreatedAt)
+	})
+
+	return rangefinders
+}
+
+// GetSortedCameras returns the cameras of the site as a list sorted by date.
+// TODO: Replace with generics once they are available. It's one of the few cases where they are really needed
+func (s *Site) GetSortedCameras() []*Camera {
+	cameras := make([]*Camera, 0, len(s.Cameras))
+
+	for _, camera := range s.Cameras {
+		cameras = append(cameras, camera)
+	}
+
+	sort.Slice(cameras, func(i, j int) bool {
+		return cameras[i].CreatedAt.After(cameras[j].CreatedAt)
+	})
+
+	return cameras
 }

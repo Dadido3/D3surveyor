@@ -1,6 +1,8 @@
 package main
 
-import "github.com/vugu/vgrouter"
+import (
+	"github.com/vugu/vgrouter"
+)
 
 type PageCameras struct {
 	vgrouter.NavigatorRef `json:"-"`

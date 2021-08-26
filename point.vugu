@@ -1,10 +1,15 @@
 <div>
-	<h1>Point (<span vg-content="c.Key()"></span>)</h1>
+	<main:TitleBar>
+		<span class="w3-bar-item w3-large" vg-content='fmt.Sprintf("Point %s", c.Key())'></span>
+	</main:TitleBar>
 
-	<label for="name">Name:</label>
-	<vgform:Input type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+	<div class="w3-container">
+		<label for="name">Name</label>
+		<vgform:Input class="w3-input" type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
 
-	<main:CoordinateComponent :Editable="true" :BindValue="&c.Position"></main:CoordinateComponent>
+		<label>Position</label>
+		<main:CoordinateComponent :Editable="true" :BindValue="&c.Position"></main:CoordinateComponent>
+	</div>
 
 </div>
 

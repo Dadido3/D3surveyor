@@ -13,7 +13,17 @@ import (
 type Root struct {
 	vgrouter.NavigatorRef `json:"-"`
 
+	sidebarDisplay string
+
 	Body vugu.Builder
+}
+
+func (r *Root) handleSidebarOpen(event vugu.DOMEvent) {
+	r.sidebarDisplay = "block"
+}
+
+func (r *Root) handleSidebarClose(event vugu.DOMEvent) {
+	r.sidebarDisplay = "none"
 }
 
 func (r *Root) handleRecalculate(event vugu.DOMEvent) {
@@ -27,6 +37,10 @@ func (r *Root) handleDownload(event vugu.DOMEvent) {
 	}
 
 	browserDownload(fmt.Sprintf("%v.D3mula", globalSite.Name), data, "application/octet-stream")
+}
+
+func (r *Root) handleUploadClick(event vugu.DOMEvent) {
+	js.Global().Get("document").Call("getElementById", "site-upload").Call("click")
 }
 
 func (r *Root) handleUpload(event vugu.DOMEvent) {

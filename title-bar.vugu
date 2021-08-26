@@ -1,0 +1,5 @@
+<div class="w3-teal w3-bar" style="flex-shrink:0">
+	<button class="w3-bar-item w3-button w3-teal w3-large w3-hide-large" @click="c.root.handleSidebarOpen(event)"><i class="fas fa-bars"></i></button>
+	
+	<vg-comp expr='c.DefaultSlot'></vg-comp>
+</div>

@@ -1,3 +1,40 @@
 <div>
-	<h1 vg-content="c.Name"></h1>
+	<main:TitleBar>
+		<span class="w3-bar-item w3-large" vg-content='fmt.Sprintf("Site %q", c.Name)'></span>
+	</main:TitleBar>
+
+	<form class="w3-container w3-row-padding">
+		<div class="w3-third">
+			<label for="name">Name</label>
+			<vgform:Input class="w3-input" type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+		</div>
+	</form>
+
+	<div class="w3-container w3-row-padding">
+		<div class="w3-third">
+			<div class="w3-card-4">
+				<div class="w3-container w3-green w3-large">Points</div>
+				<div class="w3-container" vg-content='fmt.Sprintf("Count: %d", len(c.Points))'></div>
+			</div>
+		</div>
+
+		<div class="w3-third">
+			<div class="w3-card-4">
+				<div class="w3-container w3-green w3-large">Rangefinders</div>
+				<div class="w3-container" vg-content='fmt.Sprintf("Count: %d", len(c.Rangefinders))'></div>
+			</div>
+		</div>
+
+		<div class="w3-third">
+			<div class="w3-card-4">
+				<div class="w3-container w3-green w3-large">Cameras</div>
+				<div class="w3-container" vg-content='fmt.Sprintf("Count: %d", len(c.Cameras))'></div>
+			</div>
+		</div>
+	</div>
+
 </div>
+
+<script type="application/x-go">
+	import "github.com/vugu/vugu/vgform"
+</script>

@@ -10,6 +10,7 @@ import (
 type AngleInputComponent struct {
 	BindValue *Angle
 	BindLock  *bool
+	LabelText string
 
 	AttrMap vugu.AttrMap
 }

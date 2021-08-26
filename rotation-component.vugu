@@ -1,12 +1,15 @@
-<vg-template>
-	<form vg-if="c.BindValue != nil && c.Editable">
-		<label for="x">X:</label> <main:AngleInputComponent name="x" :BindValue="&c.BindValue.X" :BindLock="&c.BindValue.LockX"></main:AngleInputComponent>
-		<label for="y">Y:</label> <main:AngleInputComponent name="y" :BindValue="&c.BindValue.Y" :BindLock="&c.BindValue.LockY"></main:AngleInputComponent>
-		<label for="z">Z:</label> <main:AngleInputComponent name="z" :BindValue="&c.BindValue.Z" :BindLock="&c.BindValue.LockZ"></main:AngleInputComponent>
-	</form>
-	<span vg-if="c.BindValue != nil && !c.Editable">
-		<span>X: </span><span vg-content="c.BindValue.X"></span>
-		<span>Z: </span><span vg-content="c.BindValue.Y"></span>
-		<span>Y: </span><span vg-content="c.BindValue.Z"></span>
-	</span>
-</vg-template>
+<div vg-attr="c.AttrMap">
+	<vg-template vg-if="c.BindValue != nil && c.Editable">
+		<main:AngleInputComponent name="x" :BindValue="&c.BindValue.X" :BindLock="&c.BindValue.LockX" LabelText="X"></main:AngleInputComponent>
+		<main:AngleInputComponent name="y" :BindValue="&c.BindValue.Y" :BindLock="&c.BindValue.LockY" LabelText="Y"></main:AngleInputComponent>
+		<main:AngleInputComponent name="z" :BindValue="&c.BindValue.Z" :BindLock="&c.BindValue.LockZ" LabelText="Z"></main:AngleInputComponent>
+	</vg-template>
+	<vg-template vg-if="c.BindValue != nil && !c.Editable">
+		<div>X: </span><span vg-content="c.BindValue.X"></div>
+		<div>Z: </span><span vg-content="c.BindValue.Y"></div>
+		<div>Y: </span><span vg-content="c.BindValue.Z"></div>
+	</vg-template>
+</div>
+
+<style>
+</style>

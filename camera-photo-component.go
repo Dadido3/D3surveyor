@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math"
-	"math/rand"
 
 	"github.com/vugu/vugu"
 	js "github.com/vugu/vugu/js"
@@ -34,9 +33,14 @@ type CameraPhotoComponent struct {
 
 func (c *CameraPhotoComponent) canvasCreated(canvas js.Value) {
 	// TODO: Put this into a resize event or something similar
-	c.canWidth, c.canHeight = canvas.Get("width").Float(), canvas.Get("height").Float()
+	//c.canWidth, c.canHeight = canvas.Get("width").Float(), canvas.Get("height").Float()
+
 	rect := canvas.Call("getBoundingClientRect")
 	c.canWidthDOM, c.canHeightDOM = rect.Get("width").Float(), rect.Get("height").Float()
+
+	c.canWidth, c.canHeight = c.canWidthDOM, c.canHeightDOM
+	canvas.Set("width", c.canWidth)
+	canvas.Set("height", c.canHeight)
 
 	c.canvasRedraw(canvas)
 }
@@ -338,9 +342,9 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 	drawCtx.Call("drawImage", c.cachedImg, 0, 0)
 
 	c.transformUnscaled(drawCtx, 10, 50)
-	drawCtx.Set("fillStyle", "white")
-	drawCtx.Set("font", "30px Arial")
-	drawCtx.Call("fillText", fmt.Sprintf("image %d, %d, %f", c.Photo.ImageWidth, c.Photo.ImageHeight, rand.Float64()), 0, 0)
+	//drawCtx.Set("fillStyle", "white")
+	//drawCtx.Set("font", "30px Arial")
+	//drawCtx.Call("fillText", fmt.Sprintf("image %d, %d, %f", c.Photo.ImageWidth, c.Photo.ImageHeight, rand.Float64()), 0, 0)
 
 	drawCtx.Set("lineWidth", 1)
 	drawCtx.Set("lineCap", "butt")
@@ -377,7 +381,7 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 
 		drawCtx.Set("fillStyle", "black")
 		drawCtx.Set("font", "10px Arial")
-		drawCtx.Call("fillText", fmt.Sprintf("%v %v", point.Point, point.sr), 8, 0)
+		drawCtx.Call("fillText", fmt.Sprintf("%v", point.Point), 8, 0)
 		drawCtx.Set("fillStyle", "green")
 
 		drawCtx.Call("beginPath")

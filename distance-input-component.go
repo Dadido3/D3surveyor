@@ -11,6 +11,7 @@ import (
 type DistanceInputComponent struct {
 	BindValue *Distance
 	BindLock  *bool
+	LabelText string
 
 	AttrMap vugu.AttrMap
 }

@@ -1,14 +1,23 @@
 <div>
-	<button @click='c.Navigate("/rangefinder/" + c.rangefinder.Key(), nil)'>Back</button>
-	<h1>Rangefinder measurement <span vg-content="c.Key()"></span></h1>
+	<main:TitleBar>
+		<button class="w3-bar-item w3-button w3-large w3-ripple w3-teal" @click='c.Navigate("/rangefinder/" + c.rangefinder.Key(), nil)'><i class="fas fa-arrow-left"></i></button>
+		<span class="w3-bar-item w3-large" vg-content='fmt.Sprintf("Rangefinder measurement %s", c.Key())'></span>
+	</main:TitleBar>
 
-	<label for="p1">Point 1:</label>
-	<main:PointSelectionComponent name="p1" :Site="c.rangefinder.site" :BindValue="&c.P1"></main:PointSelectionComponent>
+	<form class="w3-container w3-row-padding">
+		<div class="w3-third">
+			<label for="p1">Point 1</label>
+			<main:PointSelectionComponent name="p1" :Site="c.rangefinder.site" :BindValue="&c.P1"></main:PointSelectionComponent>
+		</div>
 
-	<label for="p2">Point 2:</label>
-	<main:PointSelectionComponent name="p2" :Site="c.rangefinder.site" :BindValue="&c.P2"></main:PointSelectionComponent>
+		<div class="w3-third">
+			<label for="p2">Point 2</label>
+			<main:PointSelectionComponent name="p2" :Site="c.rangefinder.site" :BindValue="&c.P2"></main:PointSelectionComponent>
+		</div>
 
-	<label for="distance">Measured distance:</label>
-	<main:DistanceInputComponent name="distance" min="0" :BindValue="&c.MeasuredDistance"></main:DistanceInputComponent>
-
+		<div class="w3-third">
+			<label for="distance">Measured distance</label>
+			<main:DistanceInputComponent name="distance" min="0" :BindValue="&c.MeasuredDistance"></main:DistanceInputComponent>
+		</div>
+	</form>
 </div>

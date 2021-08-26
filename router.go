@@ -8,29 +8,36 @@ import (
 // OVERALL APPLICATION WIRING IN vuguSetup
 func vuguSetup(buildEnv *vugu.BuildEnv, eventEnv vugu.EventEnv) vugu.Builder {
 
-	// CREATE A NEW ROUTER INSTANCE
+	// Create new router instance.
 	router := vgrouter.New(eventEnv)
 
-	// MAKE OUR WIRE FUNCTION POPULATE ANYTHING THAT WANTS A "NAVIGATOR".
+	// Create root object.
+	root := &Root{}
+
 	buildEnv.SetWireFunc(func(b vugu.Builder) {
+		// MAKE OUR WIRE FUNCTION POPULATE ANYTHING THAT WANTS A "NAVIGATOR".
 		if c, ok := b.(vgrouter.NavigatorSetter); ok {
 			c.NavigatorSet(router)
 		}
+		if c, ok := b.(*TitleBar); ok {
+			c.root = root
+		}
 	})
 
-	// CREATE THE ROOT COMPONENT
-	root := &Root{}
-	buildEnv.WireComponent(root) // WIRE IT
+	// Wire the root component. (Not sure if that is really needed)
+	buildEnv.WireComponent(root)
 
 	// Add routes.
 	router.MustAddRouteExact("/",
 		vgrouter.RouteHandlerFunc(func(rm *vgrouter.RouteMatch) {
 			root.Body = globalSite
+			root.sidebarDisplay = "none"
 		}))
 
 	router.MustAddRouteExact("/points",
 		vgrouter.RouteHandlerFunc(func(rm *vgrouter.RouteMatch) {
 			root.Body = &PagePoints{Site: globalSite}
+			root.sidebarDisplay = "none"
 		}))
 
 	router.MustAddRoute("/point/:key",
@@ -46,11 +53,13 @@ func vuguSetup(buildEnv *vugu.BuildEnv, eventEnv vugu.EventEnv) vugu.Builder {
 			} else {
 				root.Body = &PageNonExistant{}
 			}
+			root.sidebarDisplay = "none"
 		}))
 
 	router.MustAddRouteExact("/rangefinders",
 		vgrouter.RouteHandlerFunc(func(rm *vgrouter.RouteMatch) {
 			root.Body = &PageRangefinders{Site: globalSite}
+			root.sidebarDisplay = "none"
 		}))
 
 	router.MustAddRoute("/rangefinder/:key",
@@ -66,6 +75,7 @@ func vuguSetup(buildEnv *vugu.BuildEnv, eventEnv vugu.EventEnv) vugu.Builder {
 			} else {
 				root.Body = &PageNonExistant{}
 			}
+			root.sidebarDisplay = "none"
 		}))
 
 	router.MustAddRoute("/rangefinder/:key1/measurement/:key2",
@@ -86,11 +96,13 @@ func vuguSetup(buildEnv *vugu.BuildEnv, eventEnv vugu.EventEnv) vugu.Builder {
 			} else {
 				root.Body = &PageNonExistant{}
 			}
+			root.sidebarDisplay = "none"
 		}))
 
 	router.MustAddRouteExact("/cameras",
 		vgrouter.RouteHandlerFunc(func(rm *vgrouter.RouteMatch) {
 			root.Body = &PageCameras{Site: globalSite}
+			root.sidebarDisplay = "none"
 		}))
 
 	router.MustAddRoute("/camera/:key",
@@ -106,6 +118,7 @@ func vuguSetup(buildEnv *vugu.BuildEnv, eventEnv vugu.EventEnv) vugu.Builder {
 			} else {
 				root.Body = &PageNonExistant{}
 			}
+			root.sidebarDisplay = "none"
 		}))
 
 	router.MustAddRoute("/camera/:key1/photo/:key2",
@@ -126,20 +139,22 @@ func vuguSetup(buildEnv *vugu.BuildEnv, eventEnv vugu.EventEnv) vugu.Builder {
 			} else {
 				root.Body = &PageNonExistant{}
 			}
+			root.sidebarDisplay = "none"
 		}))
 
 	router.SetNotFound(vgrouter.RouteHandlerFunc(
 		func(rm *vgrouter.RouteMatch) {
 			root.Body = &PageNotFound{}
+			root.sidebarDisplay = "none"
 		}))
 
-	// TELL THE ROUTER TO LISTEN FOR THE BROWSER CHANGING URLS
+	// Tell the router to listen to the browser changing URLs.
 	err := router.ListenForPopState()
 	if err != nil {
 		panic(err)
 	}
 
-	// GRAB THE CURRENT BROWSER URL AND PROCESS IT AS A ROUTE
+	// Grab the current browser URL and process it as a route.
 	err = router.Pull()
 	if err != nil {
 		panic(err)

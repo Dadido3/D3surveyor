@@ -1,22 +1,42 @@
 <div>
-	<h1>Camera (<span vg-content="c.Key()"></span>)</h1>
+	<main:TitleBar>
+		<span class="w3-bar-item w3-large" vg-content='fmt.Sprintf("Camera %q (%s)", c.Name, c.Key())'></span>
+	</main:TitleBar>
 
-	<label for="name">Name:</label>
-	<vgform:Input type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+	<form class="w3-container w3-row-padding">
+		<div class="w3-third">
+			<label for="name">Name</label>
+			<vgform:Input class="w3-input" type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+		</div>
 
-	<label for="accuracy">Accuracy:</label>
-	<main:AngleInputComponent name="accuracy" min="0" :BindValue="&c.AngAccuracy"></main:AngleInputComponent>
+		<div class="w3-third">
+			<label for="accuracy">Accuracy</label>
+			<main:AngleInputComponent name="accuracy" min="0" :BindValue="&c.AngAccuracy"></main:AngleInputComponent>
+		</div>
 
-	<label for="fov">Field of view:</label>
-	<main:AngleInputComponent name="fov" min="0" :BindValue="&c.LongSideFOV" :BindLock="&c.LongSideFOVLock"></main:AngleInputComponent>
+		<div class="w3-third">
+			<label for="fov">Field of view</label>
+			<main:AngleInputComponent name="fov" min="0" :BindValue="&c.LongSideFOV" :BindLock="&c.LongSideFOVLock"></main:AngleInputComponent>
+		</div>
+	</form>
 
-	<h2>Photos:</h2>
+	<div class="w3-container">
+		<span class="w3-large" vg-content='fmt.Sprintf("%d photos", len(c.Photos))'></span>
+		<button class="w3-large w3-button w3-teal" onclick="document.getElementById('photo-upload').click();"><i class="fas fa-plus"></i></button>
 
-	<input type="file" id="photo-upload" @change="c.handleFileChange(event)">
+		<input style="display:none;" type="file" id="photo-upload" @change="c.handleFileChange(event)">
 
-	<div vg-for="photoKey, photo := range c.Photos">
-		<button @click='c.Navigate("/camera/" + c.Key() + "/photo/" + photoKey, nil)'>Edit</button>
-		<button @click="photo.Delete()">Del</button>
+		<ul class="w3-ul w3-card-4">
+			<li vg-for="photoKey, photo := range c.Photos" class="w3-bar">
+				<span @click="photo.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
+				<span @click='c.Navigate("/camera/" + c.Key() + "/photo/" + photoKey, nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>
+				<img :src="photo.jsImageURL" class="w3-bar-item" style="height:100px">
+				<div class="w3-bar-item">
+					<span class="w3-large" vg-content="photo.Key()"></span><br>
+					<span vg-content='fmt.Sprintf("%d points", len(photo.Points))'></span>
+				</div>
+			</li>
+		</ul>
 	</div>
 </div>
 

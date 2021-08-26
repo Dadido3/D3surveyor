@@ -1,5 +1,11 @@
 <div>
-	This page doesn't exist.
+	<main:TitleBar>
+		<span class="w3-bar-item w3-large">Page not found.</span>
+	</main:TitleBar>
+
+	<div class="w3-container">
+		<p>The page you are referring to doesn't exist.<p>
+	</div>
 </div>
 
 <script type="application/x-go">

@@ -1,5 +1,11 @@
 <div>
-	This entity doesn't exist.
+	<main:TitleBar>
+		<span class="w3-bar-item w3-large">This entity doesn't exist.</span>
+	</main:TitleBar>
+
+	<div class="w3-container">
+		<p>The item you are referring to doesn't exist (anymore).<p>
+	</div>
 </div>
 
 <script type="application/x-go">
