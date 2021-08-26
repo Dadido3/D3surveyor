@@ -77,3 +77,9 @@ func (r *Root) handleUpload(event vugu.DOMEvent) {
 	}
 	fileReader.Call("readAsArrayBuffer", imgFiles.Index(0))
 }
+
+func (r *Root) handleExport(event vugu.DOMEvent) {
+	data := generateObj(globalSite)
+
+	browserDownload(fmt.Sprintf("%v.obj", globalSite.Name), data, "application/octet-stream")
+}

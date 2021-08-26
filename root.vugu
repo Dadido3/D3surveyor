@@ -10,10 +10,11 @@
 			<div class="w3-sidebar w3-collapse w3-card" .style='"width:200px;display:"+c.sidebarDisplay' id="root-sidebar">
 				<div class="w3-bar">
 					<button class="w3-bar-item w3-button" class="w3-bar-item w3-button w3-hide-large" @click="c.handleSidebarClose(event)"><i class="fas fa-bars"></i></button>
-					<button class="w3-bar-item w3-button" @click="c.handleDownload(event)"><i class="fas fa-file-download"></i></button>
+					<button class="w3-bar-item w3-button" @click="c.handleDownload(event)"><i class="far fa-save"></i></button>
 					<button class="w3-bar-item w3-button" @click="c.handleUploadClick(event)"><i class="far fa-folder-open"></i></button>
 					<input class="w3-hide" type="file" id="site-upload" @change="c.handleUpload(event)" accept=".D3mula">
 					<button class="w3-bar-item w3-button" @click="c.handleRecalculate(event)"><i class="fas fa-sync"></i></button>
+					<button class="w3-bar-item w3-button" @click="c.handleExport(event)"><i class="fas fa-file-export"></i></button>
 				</div>
 				
 				<div class="w3-bar-block">
