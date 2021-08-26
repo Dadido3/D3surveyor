@@ -161,8 +161,8 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 
 		pixelResidue := mgl64.Vec2{pointProjected.X() * float64(width), pointProjected.Y() * float64(height)}.Sub(mgl64.Vec2{pointImg.X() * float64(width), pointImg.Y() * float64(height)}).Len()
 
-		// The residue that gets squared is a mix of the angluar residue divided by the angular accuracy, and the pixel residue divided by a hard coded accuracy of 5 pixels.
-		sr := math.Pow(angle/float64(camera.AngAccuracy), 2) + math.Pow(pixelResidue/5, 2)
+		// The residue that gets squared is a mix of the angluar residue divided by the angular accuracy, and the pixel residue divided by a hard coded accuracy of 50 pixels.
+		sr := math.Pow(angle/float64(camera.AngAccuracy), 2) + math.Pow(pixelResidue/50, 2)
 		sr = math.Min(sr, 1000000)
 		point.sr = sr
 		ssr += sr
