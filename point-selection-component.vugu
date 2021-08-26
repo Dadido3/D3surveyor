@@ -1,5 +1,5 @@
 <div>
-	<vgform:Select vg-attr='c.AttrMap' :Value='vgform.StringPtrDefault(c.BindValue, "")' :Options='c.options.Title()'></vgform:Select>
+	<vgform:Select vg-attr='c.AttrMap' :Value='vgform.StringPtrDefault(c.BindValue, "")' :Options='c.options'></vgform:Select>
 </div>
 
 <script type="application/x-go">

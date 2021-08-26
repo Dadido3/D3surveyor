@@ -353,6 +353,8 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 	drawCtx.Set("shadowOffsetY", 0)
 	drawCtx.Set("shadowColor", "white")
 	for _, point := range c.Photo.Points {
+		realPoint, realPointOk := c.Photo.camera.site.Points[point.Point]
+
 		if point == c.selectedPoint {
 			drawCtx.Set("strokeStyle", "white")
 		} else if point == c.highlightedPoint {
@@ -381,7 +383,11 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 
 		drawCtx.Set("fillStyle", "black")
 		drawCtx.Set("font", "10px Arial")
-		drawCtx.Call("fillText", fmt.Sprintf("%v", point.Point), 8, 0)
+		if realPointOk {
+			drawCtx.Call("fillText", fmt.Sprintf("%q (%s)", realPoint.Name, point.Point), 8, 0)
+		} else {
+			drawCtx.Call("fillText", "Not mapped!", 8, 0)
+		}
 		drawCtx.Set("fillStyle", "green")
 
 		drawCtx.Call("beginPath")

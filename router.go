@@ -5,7 +5,7 @@ import (
 	"github.com/vugu/vugu"
 )
 
-// OVERALL APPLICATION WIRING IN vuguSetup
+// vuguSetup sets up overall wiring and routing.
 func vuguSetup(buildEnv *vugu.BuildEnv, eventEnv vugu.EventEnv) vugu.Builder {
 
 	// Create new router instance.
