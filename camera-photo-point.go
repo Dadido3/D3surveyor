@@ -14,6 +14,8 @@ type CameraPhotoPoint struct {
 	X, Y                   float64 // Point's position on the photo in the range of [0,1]. Origin is at the top left.
 	projectedX, projectedY float64 // Correct position of the point on the photo in the range of [0,1]. Origin is at the top left.
 	sr                     float64 // Current squared residue value.
+
+	Suggested bool // This point is just a suggested point, not one placed or confirmed by the user (yet).
 }
 
 func (cp *CameraPhoto) NewPoint() *CameraPhotoPoint {

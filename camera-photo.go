@@ -225,6 +225,69 @@ func (cp *CameraPhoto) UnProject(wins []mgl64.Vec3) (obj []mgl64.Vec3, err error
 	return objs, nil
 }
 
+// UpdateSuggestions recreates/updates all "suggested" point mappings.
+func (cp *CameraPhoto) UpdateSuggestions() {
+	site := cp.camera.site
+
+	// Remove all previously suggested points.
+	/*for key, point := range cp.Points {
+		if point.Suggested {
+			delete(cp.Points, key)
+		}
+	}*/
+
+	// Get a list of all points and their world coordinates.
+	points := make([]*Point, 0, len(site.Points))
+	pointsObj := make([]mgl64.Vec3, 0, len(site.Points)) // Object/World coordinates of every point.
+	for _, point := range site.Points {
+		points = append(points, point)
+		pointsObj = append(pointsObj, mgl64.Vec3{float64(point.Position.X), float64(point.Position.Y), float64(point.Position.Z)})
+	}
+
+	// Project the points onto the photo.
+	pointsProjected := cp.Project(pointsObj) // The object/world coordinates of every point projected into image coordinates.
+
+	// Update suggested mapped points.
+	for i, pointProjected := range pointsProjected {
+		point := points[i]
+		if pointProjected.Z() > 0 && pointProjected.X() >= 0 && pointProjected.X() <= 1 && pointProjected.Y() >= 0 && pointProjected.Y() <= 1 {
+			// The projection is valid, create or update point mapping.
+			var foundMappedPoint *CameraPhotoPoint
+			for _, mappedPoint := range cp.Points { // TODO: Remove stupid linear search
+				if mappedPoint.Point == point.Key() {
+					foundMappedPoint = mappedPoint
+					break
+				}
+			}
+			if foundMappedPoint == nil {
+				foundMappedPoint = cp.NewPoint()
+				foundMappedPoint.Suggested = true
+			}
+			// Only update suggested point mappings, not user placed ones.
+			if foundMappedPoint.Suggested {
+				foundMappedPoint.X, foundMappedPoint.Y, foundMappedPoint.Point = pointProjected.X(), pointProjected.Y(), point.Key()
+			}
+		} else {
+			// The projection is outside of the image, remove the suggested point mapping if there is any.
+			for _, mappedPoint := range cp.Points { // TODO: Remove stupid linear search
+				if mappedPoint.Suggested && mappedPoint.Point == point.Key() {
+					mappedPoint.Delete()
+					break
+				}
+			}
+		}
+	}
+
+	// Remove any suggested mappings to non existing points.
+	for _, mappedPoint := range cp.Points {
+		if mappedPoint.Suggested {
+			if _, found := site.Points[mappedPoint.Point]; !found {
+				mappedPoint.Delete()
+			}
+		}
+	}
+}
+
 func (cp *CameraPhoto) GetViewMatrix() mgl64.Mat4 {
 	quat := mgl64.AnglesToQuat(float64(-cp.Orientation.X), float64(-cp.Orientation.Y), float64(-cp.Orientation.Z), mgl64.XYZ)
 	rotationMatrix := quat.Mat4()

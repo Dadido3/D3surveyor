@@ -59,10 +59,10 @@ func (c *CameraPhotoComponent) Init(ctx vugu.InitCtx) {
 }
 
 func (c *CameraPhotoComponent) handleUnmap(event vugu.DOMEvent) {
-	for key, point := range c.Photo.Points {
+	for _, point := range c.Photo.Points {
 		if point == c.selectedPoint {
 			c.selectedPoint = nil
-			delete(c.Photo.Points, key)
+			point.Delete()
 			return
 		}
 	}
@@ -242,7 +242,12 @@ func (c *CameraPhotoComponent) handleDblClick(event vugu.DOMEvent) {
 	xVir, yVir := c.transformCanvasToVirtual(xCan, yCan)
 
 	point, _, _ := c.getClosestPoint(xCan, yCan, 20*20)
-	if point == nil {
+
+	if point != nil {
+		// Convert suggested point mapping in user created one.
+		point.Suggested = false
+	} else {
+		// Create new point mapping at event position.
 		point := c.Photo.NewPoint()
 		point.X, point.Y = xVir/float64(c.Photo.ImageWidth), yVir/float64(c.Photo.ImageHeight)
 	}
@@ -323,6 +328,8 @@ func (c *CameraPhotoComponent) getClosestPoint(xCan, yCan, maxDistSqr float64) (
 }
 
 func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
+	c.Photo.UpdateSuggestions() // TODO: Recalculate suggested point mappings more intelligent
+
 	site := c.Photo.camera.site
 
 	drawCtx := canvas.Call("getContext", "2d")
@@ -384,7 +391,6 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 	drawCtx.Set("lineWidth", 1)
 	drawCtx.Set("lineCap", "butt")
 	drawCtx.Call("setLineDash", []interface{}{})
-	drawCtx.Set("fillStyle", "green")
 	drawCtx.Set("shadowOffsetX", 0)
 	drawCtx.Set("shadowOffsetY", 0)
 	drawCtx.Set("shadowColor", "white")
@@ -400,6 +406,11 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 		}
 
 		c.transformUnscaled(drawCtx, point.X*float64(c.Photo.ImageWidth), point.Y*float64(c.Photo.ImageHeight))
+		if point.Suggested {
+			drawCtx.Set("fillStyle", "rgba(255, 255, 255, 0.25)")
+		} else {
+			drawCtx.Set("fillStyle", "green")
+		}
 		drawCtx.Call("beginPath")
 		drawCtx.Call("moveTo", 0, 0)
 		drawCtx.Call("lineTo", 0, 0)
@@ -420,11 +431,10 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 		drawCtx.Set("fillStyle", "black")
 		drawCtx.Set("font", "10px Arial")
 		if realPointOk {
-			drawCtx.Call("fillText", fmt.Sprintf("%q (%s)", realPoint.Name, point.Point), 8, 0)
+			drawCtx.Call("fillText", realPoint.Name, 8, 0)
 		} else {
 			drawCtx.Call("fillText", "Not mapped!", 8, 0)
 		}
-		drawCtx.Set("fillStyle", "green")
 
 		drawCtx.Call("beginPath")
 		drawCtx.Call("moveTo", 0, 0)
