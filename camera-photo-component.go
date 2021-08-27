@@ -323,6 +323,8 @@ func (c *CameraPhotoComponent) getClosestPoint(xCan, yCan, maxDistSqr float64) (
 }
 
 func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
+	site := c.Photo.camera.site
+
 	drawCtx := canvas.Call("getContext", "2d")
 
 	if c.cachedImg.IsUndefined() {
@@ -341,19 +343,53 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 
 	drawCtx.Call("drawImage", c.cachedImg, 0, 0)
 
-	c.transformUnscaled(drawCtx, 10, 50)
-	//drawCtx.Set("fillStyle", "white")
-	//drawCtx.Set("font", "30px Arial")
-	//drawCtx.Call("fillText", fmt.Sprintf("image %d, %d, %f", c.Photo.ImageWidth, c.Photo.ImageHeight, rand.Float64()), 0, 0)
+	drawCtx.Set("lineWidth", 2)
+	drawCtx.Set("lineCap", "butt")
+	drawCtx.Set("strokeStyle", "yellow")
+	drawCtx.Call("setLineDash", []interface{}{5, 10})
+	drawCtx.Set("shadowBlur", 0)
+	for _, rangefinder := range site.Rangefinders {
+		for _, measurement := range rangefinder.Measurements {
+			p1, p2 := measurement.P1, measurement.P2
+
+			var foundP1, foundP2 *CameraPhotoPoint
+			for _, point := range c.Photo.Points {
+				if point.Point == "" {
+					continue
+				}
+				if point.Point == p1 {
+					foundP1 = point
+				}
+				if point.Point == p2 {
+					foundP2 = point
+				}
+
+				if foundP1 != nil && foundP2 != nil {
+					break
+				}
+			}
+
+			if foundP1 != nil && foundP2 != nil {
+				c.transformUnscaled(drawCtx, foundP1.X*float64(c.Photo.ImageWidth), foundP1.Y*float64(c.Photo.ImageHeight))
+				drawCtx.Call("beginPath")
+				drawCtx.Call("moveTo", 0, 0)
+				c.transformUnscaled(drawCtx, foundP2.X*float64(c.Photo.ImageWidth), foundP2.Y*float64(c.Photo.ImageHeight))
+				drawCtx.Call("lineTo", 0, 0)
+				drawCtx.Call("stroke")
+			}
+
+		}
+	}
 
 	drawCtx.Set("lineWidth", 1)
 	drawCtx.Set("lineCap", "butt")
+	drawCtx.Call("setLineDash", []interface{}{})
 	drawCtx.Set("fillStyle", "green")
 	drawCtx.Set("shadowOffsetX", 0)
 	drawCtx.Set("shadowOffsetY", 0)
 	drawCtx.Set("shadowColor", "white")
 	for _, point := range c.Photo.Points {
-		realPoint, realPointOk := c.Photo.camera.site.Points[point.Point]
+		realPoint, realPointOk := site.Points[point.Point]
 
 		if point == c.selectedPoint {
 			drawCtx.Set("strokeStyle", "white")
