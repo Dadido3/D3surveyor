@@ -17,7 +17,7 @@
 				<div class="w3-container">
 					<span class="w3-large">Measurements</span>
 					<ul class="w3-ul w3-card-4">
-						<li vg-for="_, measurement := range rangefinder.Measurements" class="w3-bar">
+						<li vg-for="_, measurement := range rangefinder.GetSortedMeasurements()" class="w3-bar">
 							<span @click="measurement.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
 							<span @click='c.Navigate("/rangefinder/" + rangefinder.Key() + "/measurement/" + measurement.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>
 							<div class="w3-bar-item">

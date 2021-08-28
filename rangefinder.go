@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"sort"
 	"time"
 
 	"github.com/vugu/vgrouter"
@@ -75,4 +76,20 @@ func (r *Rangefinder) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}
 	return tweakables, residuals
+}
+
+// GetSortedMeasurements returns the measurements of the rangefinder as a list sorted by date.
+// TODO: Replace with generics once they are available. It's one of the few cases where they are really needed
+func (s *Rangefinder) GetSortedMeasurements() []*RangefinderMeasurement {
+	measurements := make([]*RangefinderMeasurement, 0, len(s.Measurements))
+
+	for _, measurement := range s.Measurements {
+		measurements = append(measurements, measurement)
+	}
+
+	sort.Slice(measurements, func(i, j int) bool {
+		return measurements[i].CreatedAt.After(measurements[j].CreatedAt)
+	})
+
+	return measurements
 }
