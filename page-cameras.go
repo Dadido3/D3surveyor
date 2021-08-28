@@ -11,7 +11,7 @@ type PageCameras struct {
 }
 
 func (c *PageCameras) handleAdd() {
-	camera := c.Site.NewCamera("adsf")
+	camera := c.Site.NewCamera("")
 
 	c.Navigate("/camera/"+camera.Key(), nil)
 }

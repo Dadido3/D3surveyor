@@ -9,7 +9,7 @@ type PagePoints struct {
 }
 
 func (c *PagePoints) handleAdd() {
-	p := c.Site.NewPoint("adsf")
+	p := c.Site.NewPoint("")
 
 	c.Navigate("/point/"+p.Key(), nil)
 }

@@ -82,18 +82,13 @@ func (s *Site) UnmarshalJSON(data []byte) error {
 		v.key, v.site = k, s
 	}
 
-	// Copy
+	// Overwrite data of existing site.
 	*s = *newSite
 	return nil
 }
 
 // Global site data structure that contains all data about a specific site/place.
-var globalSite *Site = MustNewSite("test")
-
-func init() {
-	globalSite.NewPoint("1")
-	globalSite.NewPoint("2")
-}
+var globalSite *Site = MustNewSite("New")
 
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
 func (s *Site) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {

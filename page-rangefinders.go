@@ -9,7 +9,7 @@ type PageRangefinders struct {
 }
 
 func (c *PageRangefinders) handleAdd() {
-	rangefinder := c.Site.NewRangefinder("adsf")
+	rangefinder := c.Site.NewRangefinder("")
 
 	c.Navigate("/rangefinder/"+rangefinder.Key(), nil)
 }
