@@ -27,8 +27,8 @@ type Camera struct {
 
 	AngAccuracy Angle // Accuracy of the measurement in radians.
 
-	LongSideFOV     Angle // The field of view of the longest side of every image in radians.
-	LongSideFOVLock bool  // Prevent the value from being optimized.
+	LongSideAOV     Angle // The angle of view of the longest side of every image.
+	LongSideAOVLock bool  // Prevent the value from being optimized.
 
 	Photos map[string]*CameraPhoto
 }
@@ -42,7 +42,7 @@ func (s *Site) NewCamera(name string) *Camera {
 		Name:        name,
 		CreatedAt:   time.Now(),
 		AngAccuracy: 0.2, // Assume ~10 deg of accuracy.
-		LongSideFOV: 1.2, // Start with ~70 deg of FOV.
+		LongSideAOV: 1.2, // Start with ~70 deg of AOV.
 		Photos:      map[string]*CameraPhoto{},
 	}
 
@@ -106,8 +106,8 @@ func (c *Camera) UnmarshalJSON(data []byte) error {
 func (c *Camera) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 	tweakables, residuals := []Tweakable{}, []Residualer{}
 
-	if !c.LongSideFOVLock {
-		tweakables = append(tweakables, &c.LongSideFOV)
+	if !c.LongSideAOVLock {
+		tweakables = append(tweakables, &c.LongSideAOV)
 	}
 
 	for _, photo := range c.Photos {
@@ -120,14 +120,14 @@ func (c *Camera) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 func (c *Camera) GetProjectionMatrix(width, height float64) mgl64.Mat4 {
 	aspect := width / height
 
-	var fovy float64
+	var aovY float64
 	if width > height {
-		fovy = 2 * math.Atan(math.Tan(float64(c.LongSideFOV)*0.5)/aspect)
+		aovY = 2 * math.Atan(math.Tan(float64(c.LongSideAOV)*0.5)/aspect)
 	} else {
-		fovy = float64(c.LongSideFOV)
+		aovY = float64(c.LongSideAOV)
 	}
 
-	return mgl64.Perspective(fovy, aspect, 0.001, 1)
+	return mgl64.Perspective(aovY, aspect, 0.001, 1)
 }
 
 // PhotosSorted returns the photos of the camera as a list sorted by date.

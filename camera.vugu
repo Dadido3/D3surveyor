@@ -16,8 +16,8 @@
 		</div>
 
 		<div class="w3-third">
-			<label for="fov">Field of view</label>
-			<main:AngleInputComponent name="fov" min="0" :BindValue="&c.LongSideFOV" :BindLock="&c.LongSideFOVLock"></main:AngleInputComponent>
+			<label for="aov">Angle of view</label>
+			<main:AngleInputComponent name="aov" min="0" :BindValue="&c.LongSideAOV" :BindLock="&c.LongSideAOVLock"></main:AngleInputComponent>
 		</div>
 	</form>
 

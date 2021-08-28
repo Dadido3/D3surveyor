@@ -111,8 +111,8 @@
 			"Name": "Blender 50mm",
 			"CreatedAt": "2021-08-02T19:01:11.839+02:00",
 			"AngAccuracy": 0.2,
-			"LongSideFOV": 0.691111,
-			"LongSideFOVLock": true,
+			"LongSideAOV": 0.691111,
+			"LongSideAOVLock": true,
 			"Photos": {
 				"13Ab76x9l": {
 					"CreatedAt": "2021-08-02T19:01:32.084+02:00",
