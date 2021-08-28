@@ -20,7 +20,7 @@ type PointViewComponent struct {
 func (pv *PointViewComponent) Compute(ctx vugu.ComputeCtx) {
 
 	// Find camera that contains photo that contains the point we are looking for. Don't use suggested point mappings.
-	for _, camera := range pv.Site.GetSortedCameras() {
+	for _, camera := range pv.Site.CamerasSorted() {
 		for _, photo := range camera.Photos {
 			for _, point := range photo.Points {
 				if !point.Suggested && point.Point == pv.PointKey {

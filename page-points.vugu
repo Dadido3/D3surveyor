@@ -6,7 +6,7 @@
 
 	<div class="w3-container">
 		<ul class="w3-ul w3-card-4">
-			<li vg-for="_, point := range c.Site.GetSortedPoints()" class="w3-bar">
+			<li vg-for="_, point := range c.Site.PointsSorted()" class="w3-bar">
 				<span @click="point.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
 				<span @click='c.Navigate("/point/" + point.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>
 				<div class="w3-bar-item">

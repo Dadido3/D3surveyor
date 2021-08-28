@@ -78,9 +78,9 @@ func (r *Rangefinder) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 	return tweakables, residuals
 }
 
-// GetSortedMeasurements returns the measurements of the rangefinder as a list sorted by date.
+// MeasurementsSorted returns the measurements of the rangefinder as a list sorted by date.
 // TODO: Replace with generics once they are available. It's one of the few cases where they are really needed
-func (s *Rangefinder) GetSortedMeasurements() []*RangefinderMeasurement {
+func (s *Rangefinder) MeasurementsSorted() []*RangefinderMeasurement {
 	measurements := make([]*RangefinderMeasurement, 0, len(s.Measurements))
 
 	for _, measurement := range s.Measurements {

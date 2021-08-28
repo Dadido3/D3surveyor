@@ -28,7 +28,7 @@
 		<input style="display:none;" type="file" id="photo-upload" @change="c.handleFileChange(event)">
 
 		<ul class="w3-ul w3-card-4">
-			<li vg-for="_, photo := range c.GetSortedPhotos()" class="w3-bar">
+			<li vg-for="_, photo := range c.PhotosSorted()" class="w3-bar">
 				<span @click="photo.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
 				<span @click='c.Navigate("/camera/" + c.Key() + "/photo/" + photo.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>
 				<img :src="photo.jsImageURL" class="w3-bar-item" style="height:100px">

@@ -130,9 +130,9 @@ func (c *Camera) GetProjectionMatrix(width, height float64) mgl64.Mat4 {
 	return mgl64.Perspective(fovy, aspect, 0.001, 1)
 }
 
-// GetSortedPhotos returns the photos of the camera as a list sorted by date.
+// PhotosSorted returns the photos of the camera as a list sorted by date.
 // TODO: Replace with generics once they are available. It's one of the few cases where they are really needed
-func (s *Camera) GetSortedPhotos() []*CameraPhoto {
+func (s *Camera) PhotosSorted() []*CameraPhoto {
 	photos := make([]*CameraPhoto, 0, len(s.Photos))
 
 	for _, photo := range s.Photos {

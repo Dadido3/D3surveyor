@@ -117,9 +117,9 @@ func (s *Site) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 	return tweakables, residuals
 }
 
-// GetSortedPoints returns the points of the site as a list sorted by date.
+// PointsSorted returns the points of the site as a list sorted by date.
 // TODO: Replace with generics once they are available. It's one of the few cases where they are really needed
-func (s *Site) GetSortedPoints() []*Point {
+func (s *Site) PointsSorted() []*Point {
 	points := make([]*Point, 0, len(s.Points))
 
 	for _, point := range s.Points {
@@ -133,9 +133,9 @@ func (s *Site) GetSortedPoints() []*Point {
 	return points
 }
 
-// GetSortedRangefinders returns the rangefinders of the site as a list sorted by date.
+// RangefindersSorted returns the rangefinders of the site as a list sorted by date.
 // TODO: Replace with generics once they are available. It's one of the few cases where they are really needed
-func (s *Site) GetSortedRangefinders() []*Rangefinder {
+func (s *Site) RangefindersSorted() []*Rangefinder {
 	rangefinders := make([]*Rangefinder, 0, len(s.Rangefinders))
 
 	for _, rangefinder := range s.Rangefinders {
@@ -149,9 +149,9 @@ func (s *Site) GetSortedRangefinders() []*Rangefinder {
 	return rangefinders
 }
 
-// GetSortedCameras returns the cameras of the site as a list sorted by date.
+// CamerasSorted returns the cameras of the site as a list sorted by date.
 // TODO: Replace with generics once they are available. It's one of the few cases where they are really needed
-func (s *Site) GetSortedCameras() []*Camera {
+func (s *Site) CamerasSorted() []*Camera {
 	cameras := make([]*Camera, 0, len(s.Cameras))
 
 	for _, camera := range s.Cameras {
