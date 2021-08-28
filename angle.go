@@ -24,3 +24,11 @@ func (a Angle) Normalized() Angle {
 
 	return Angle(rad)
 }
+
+func (a Angle) Degrees() float64 {
+	return float64(a) * (180 / math.Pi)
+}
+
+func (a *Angle) SetDegrees(deg float64) {
+	*a = Angle(deg * (math.Pi / 180))
+}
