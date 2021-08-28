@@ -1,4 +1,4 @@
-module github.com/Dadido3/MuLa
+module github.com/Dadido3/D3surveyor
 
 go 1.17
 

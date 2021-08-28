@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>MuLa</title>
+		<title>D3surveyor</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" href="/static/css/w3.css">
 		<link rel="stylesheet" href="/static/font-awesome/css/all.min.css">
@@ -12,7 +12,7 @@
 					<button class="w3-bar-item w3-button" class="w3-bar-item w3-button w3-hide-large" @click="c.handleSidebarClose(event)"><i class="fas fa-bars"></i></button>
 					<button class="w3-bar-item w3-button" @click="c.handleDownload(event)"><i class="far fa-save"></i></button>
 					<button class="w3-bar-item w3-button" @click="c.handleUploadClick(event)"><i class="far fa-folder-open"></i></button>
-					<input class="w3-hide" type="file" id="site-upload" @change="c.handleUpload(event)" accept=".D3mula">
+					<input class="w3-hide" type="file" id="site-upload" @change="c.handleUpload(event)" accept=".D3survey">
 					<button class="w3-bar-item w3-button" @click="c.handleRecalculate(event)"><i class="fas fa-sync"></i></button>
 					<button class="w3-bar-item w3-button" @click="c.handleExport(event)"><i class="fas fa-file-export"></i></button>
 				</div>

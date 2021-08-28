@@ -36,7 +36,7 @@ func (r *Root) handleDownload(event vugu.DOMEvent) {
 		log.Printf("json.Marshal failed: %v", err)
 	}
 
-	browserDownload(fmt.Sprintf("%v.D3mula", globalSite.Name), data, "application/octet-stream")
+	browserDownload(fmt.Sprintf("%v.D3survey", globalSite.Name), data, "application/octet-stream")
 }
 
 func (r *Root) handleUploadClick(event vugu.DOMEvent) {
