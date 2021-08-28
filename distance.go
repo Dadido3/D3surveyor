@@ -1,3 +1,8 @@
+// Copyright (c) 2021 David Vogel
+//
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 package main
 
 // Distance describes a distance in meters, or an absolute position measured by its distance from the origin.

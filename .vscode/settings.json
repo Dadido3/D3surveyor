@@ -4,6 +4,7 @@
         "Tweaker",
         "Unmap",
         "Unprojected",
+        "Vogel",
         "aovY",
         "mathgl",
         "objs",
@@ -16,4 +17,7 @@
         "GOOS": "js",
         "GOARCH": "wasm"
     },
+    "licenser.author": "David Vogel",
+    "licenser.license": "MIT",
+    "licenser.projectName": "D3surveyor",
 }
