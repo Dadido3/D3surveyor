@@ -328,7 +328,6 @@ func (c *CameraPhotoComponent) getClosestPoint(xCan, yCan, maxDistSqr float64) (
 }
 
 func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
-	c.Photo.UpdateSuggestions() // TODO: Recalculate suggested point mappings more intelligent
 
 	site := c.Photo.camera.site
 
@@ -339,8 +338,8 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 		c.cachedImg.Set("src", c.Photo.jsImageURL)
 	}
 
-	// Trigger recalculation of the projected points.
-	c.Photo.ResidualSqr()
+	// Recalculate suggested points and projected coordinates.
+	c.Photo.UpdateSuggestions() // TODO: Recalculate suggested point mappings more intelligent
 
 	drawCtx.Set("shadowBlur", 0)
 
@@ -436,11 +435,13 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 			drawCtx.Call("fillText", "Not mapped!", 8, 0)
 		}
 
-		drawCtx.Call("beginPath")
-		drawCtx.Call("moveTo", 0, 0)
-		c.transformUnscaled(drawCtx, point.projectedX*float64(c.Photo.ImageWidth), point.projectedY*float64(c.Photo.ImageHeight))
-		drawCtx.Call("lineTo", 0, 0)
-		drawCtx.Call("stroke")
+		if !point.Suggested {
+			drawCtx.Call("beginPath")
+			drawCtx.Call("moveTo", 0, 0)
+			c.transformUnscaled(drawCtx, point.projectedX*float64(c.Photo.ImageWidth), point.projectedY*float64(c.Photo.ImageHeight))
+			drawCtx.Call("lineTo", 0, 0)
+			drawCtx.Call("stroke")
+		}
 	}
 
 }

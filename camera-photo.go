@@ -117,14 +117,14 @@ func (cp *CameraPhoto) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 func (cp *CameraPhoto) ResidualSqr() float64 {
 	camera, site := cp.camera, cp.camera.site
 
-	width, height := cp.ImageWidth, cp.ImageHeight
+	//width, height := cp.ImageWidth, cp.ImageHeight
 
-	// Generate list of mapped points and their coordinates.
+	// Generate list of mapped points and their coordinates. Ignore suggested points.
 	points := make([]*CameraPhotoPoint, 0, len(cp.Points))
 	pointsObj := make([]mgl64.Vec3, 0, len(cp.Points)) // Object/World coordinates of every point.
 	pointsImg := make([]mgl64.Vec3, 0, len(cp.Points)) // Image coordinates where every point is mapped to.
 	for _, point := range cp.Points {
-		if p, ok := site.Points[point.Point]; ok {
+		if p, ok := site.Points[point.Point]; ok && !point.Suggested {
 			points = append(points, point)
 			pointsObj = append(pointsObj, mgl64.Vec3{float64(p.Position.X), float64(p.Position.Y), float64(p.Position.Z)})
 			pointsImg = append(pointsImg, mgl64.Vec3{point.X, point.Y, 1})
@@ -132,7 +132,7 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 	}
 
 	// Project and unproject the points.
-	pointsProjected := cp.Project(pointsObj)          // The object/world coordinates of every point projected into image coordinates.
+	//pointsProjected := cp.Project(pointsObj)          // The object/world coordinates of every point projected into image coordinates.
 	pointsUnprojected, err := cp.UnProject(pointsImg) // The mapped image coordinates of every point projected into object/world coordinates.
 	if err != nil {
 		log.Printf("cp.UnProject() failed: %v", err)
@@ -143,10 +143,7 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 	// Sum up the squared angle residues.
 	ssr := 0.0
 	for i, point := range points {
-		pointObj, pointImg, pointUnprojected, pointProjected := pointsObj[i], pointsImg[i], pointsUnprojected[i], pointsProjected[i]
-
-		// TODO: Put calculation of the real coordinate somewhere else
-		point.projectedX, point.projectedY = pointProjected.X(), pointProjected.Y()
+		pointObj, pointUnprojected := pointsObj[i], pointsUnprojected[i]
 
 		cpCoordinate := mgl64.Vec3{float64(cp.Position.X), float64(cp.Position.Y), float64(cp.Position.Z)}
 		v1 := pointUnprojected.Sub(cpCoordinate)
@@ -159,10 +156,10 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 			continue
 		}
 
-		pixelResidue := mgl64.Vec2{pointProjected.X() * float64(width), pointProjected.Y() * float64(height)}.Sub(mgl64.Vec2{pointImg.X() * float64(width), pointImg.Y() * float64(height)}).Len()
+		//pixelResidue := mgl64.Vec2{pointProjected.X() * float64(width), pointProjected.Y() * float64(height)}.Sub(mgl64.Vec2{pointImg.X() * float64(width), pointImg.Y() * float64(height)}).Len()
 
-		// The residue that gets squared is a mix of the angluar residue divided by the angular accuracy, and the pixel residue divided by a hard coded accuracy of 50 pixels.
-		sr := math.Pow(angle/float64(camera.AngAccuracy), 2) + math.Pow(pixelResidue/50, 2)
+		// Square the weighted pixel residue.
+		sr := math.Pow(angle/float64(camera.AngAccuracy), 2)
 		sr = math.Min(sr, 1000000)
 		point.sr = sr
 		ssr += sr
@@ -263,6 +260,8 @@ func (cp *CameraPhoto) UpdateSuggestions() {
 				foundMappedPoint = cp.NewPoint()
 				foundMappedPoint.Suggested = true
 			}
+			// Update the projected coordinate for every found point.
+			foundMappedPoint.projectedX, foundMappedPoint.projectedY = pointProjected.X(), pointProjected.Y()
 			// Only update suggested point mappings, not user placed ones.
 			if foundMappedPoint.Suggested {
 				foundMappedPoint.X, foundMappedPoint.Y, foundMappedPoint.Point = pointProjected.X(), pointProjected.Y(), point.Key()
