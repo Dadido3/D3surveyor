@@ -21,8 +21,15 @@
 							<span @click="measurement.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
 							<span @click='c.Navigate("/rangefinder/" + rangefinder.Key() + "/measurement/" + measurement.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>
 							<div class="w3-bar-item">
-								<span class="w3-large" vg-content="measurement.Key()"></span><br>
-								<span vg-content='fmt.Sprintf("SSR: %.3f", measurement.ResidualSqr())'></span>
+								<main:PointViewComponent :Width="150" :Height="100" :Site="c.Site" :PointKey="measurement.P1"></main:PointViewComponent>
+							</div>
+							<div class="w3-bar-item">
+								<main:PointViewComponent :Width="150" :Height="100" :Site="c.Site" :PointKey="measurement.P2"></main:PointViewComponent>
+							</div>
+							<div class="w3-bar-item">
+								<div class="w3-large" vg-content="measurement.Key()"></div><br>
+								<div vg-content='fmt.Sprintf("SSR: %.4f", measurement.ResidualSqr())'></div>
+								<div vg-content='fmt.Sprintf("Dist: %.4f", measurement.MeasuredDistance)'></div>
 							</div>
 						</li>
 					</ul>

@@ -1,0 +1,14 @@
+<div vg-attr="c.AttrMap" class="d3-q43t0iuhqa" :style='fmt.Sprintf("width:%.0fpx;height:%.0fpx;", c.Width, c.Height)'>
+	<img vg-if='c.imageURL != ""' :src="c.imageURL" class="d3-0q248htg0qp" :style='fmt.Sprintf("width:%.0fpx;height:%.0fpx;top:%.0fpx;left:%.0fpx;", c.imgWidth, c.imgHeight, c.top, c.left)'></img>
+</div>
+
+<style>
+	.d3-q43t0iuhqa {
+		overflow: hidden;
+		background-color: black;
+	}
+
+	.d3-0q248htg0qp {
+		position: relative;
+	}
+</style>
