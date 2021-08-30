@@ -48,6 +48,43 @@ Here are the basic steps of how to achieve good (or any) results:
 - If you already have a good network of points and want to add an additional photo, you only need to add 3 point mappings (flags) to let the optimizer find the photo's origin and orientation.
   Once the photo is correctly aligned in the 3D space, the software will show suggested point mappings that can be confirmed by double clicking on them.
 
+## Compiling
+
+To compile the software yourself, all you need is an installation of [Go](https://golang.org).
+There are at least two ways to compile and run the application:
+
+### Development server
+
+If you want to quickly test changes, you just have to run the development server.
+If you use Visual Studio Code, you only have to start the debugger (F5).
+Otherwise use
+
+``` bash
+go run ./devserver.go
+```
+
+Once the server is running, you can connect via [http://ocalhost:8875](http://ocalhost:8875).
+The server will compile the project every time you reload the browser.
+
+### Generate distribution
+
+If you want to host it with any available webserver, just run
+
+``` bash
+go run ./dist.go
+```
+
+This will create a `dist` directory that contains all files needed to serve the application from a webserver.
+
+> :information_source: Opening `index.html` directly in a browser doesn't work. You need to serve it via a webserver.
+
+If the application is not served from the root directory of your domain, you need to pass the path prefix to `dist.go`.
+Assuming you want to access the application via `example.com/some/sub/folder`, you have to use:
+
+``` bash
+go run ./dist.go -urlpathprefix /some/sub/folder
+```
+
 ## Issues
 
 - Amount of possible images is limited by how much RAM the browser allows.
