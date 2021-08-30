@@ -59,10 +59,11 @@ func main() {
 	distutil.Must(err)
 	defer indexFile.Close()
 	template.Must(template.New("_page_").Parse(pageTemplateSource)).Execute(indexFile, map[string]interface{}{
-		"Request":  req,
-		"Title":    "D3surveyor",
-		"CSSFiles": []string{*urlPathPrefix + "/static/css/w3.css", *urlPathPrefix + "/static/font-awesome/css/all.min.css"},
-		"MetaTags": map[string]string{"viewport": "width=device-width, initial-scale=1"},
+		"Request":    req,
+		"Title":      "D3surveyor",
+		"CSSFiles":   []string{*urlPathPrefix + "/static/css/w3.css", *urlPathPrefix + "/static/font-awesome/css/all.min.css"},
+		"MetaTags":   map[string]string{"viewport": "width=device-width, initial-scale=1"},
+		"PathPrefix": *urlPathPrefix,
 	})
 
 	log.Printf("dist.go complete in %v", time.Since(start))
