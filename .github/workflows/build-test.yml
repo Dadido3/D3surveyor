@@ -22,7 +22,7 @@ jobs:
       run: go build -v ./devserver.go
 
     - name: Compile application and create distribution
-      run: go run -v ./dist.go -tagname ${{ GITHUB_SHA }}
+      run: go run -v ./dist.go -tagname 0.0.0-${{ github.sha }}
 
     - name: Deploy to github pages
       uses: peaceiris/actions-gh-pages@v3
