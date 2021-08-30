@@ -7,10 +7,11 @@ With enough measurements and constraints, the software finds the point positions
 Ideally, the points then correspond to the real geometry of the object to be measured.
 Additional measurements can be added to increase accuracy.
 
-> :warning: This is a proof of concept, while it somewhat works it has a lot of rough edges, corners and limitations.
+[Here is a link to the current version running in the browser!](https://dadido3.github.io/D3surveyor/)
 
-![Image showing camera settings and a list of taken photos](/images/example-camera.png)
-![Image showing the points mapping editor](/images/example-camera-photo.png)
+> :warning: This is a proof-of-concept that works to some extent, but still has many rough edges and limitations.
+
+![Image showing camera settings and a list of taken photos](/images/example-camera.png) ![Image showing the points mapping editor](/images/example-camera-photo.png)
 
 ## Usage
 
