@@ -14,13 +14,13 @@ import (
 	"time"
 
 	"github.com/vugu/vugu/distutil"
-	"github.com/vugu/vugu/simplehttp"
 )
 
 func main() {
 	clean := flag.Bool("clean", true, "Remove dist dir before starting")
 	dist := flag.String("dist", "dist", "Directory to put distribution files in")
 	tagName := flag.String("tagname", "0.0.0-undefined", "Tag name that contains the semantic version")
+	urlPathPrefix := flag.String("urlpathprefix", "", "Path prefix for the router. If you serve the app from an URL like example.com/foo, use \"/foo\" as prefix")
 	flag.Parse()
 
 	start := time.Now()
@@ -47,7 +47,7 @@ func main() {
 	fmt.Print(distutil.MustExec("go", "generate", "."))
 
 	// Prepare ldflags with version information.
-	ldFlags := fmt.Sprintf("-ldflags=\"-X 'main.versionString=%s'\"", *tagName)
+	ldFlags := fmt.Sprintf("-ldflags= -X 'main.versionString=%s' -X 'main.urlPathPrefix=%s'", *tagName, *urlPathPrefix)
 
 	// Run go build for wasm binary and store result in dist directory.
 	fmt.Print(distutil.MustEnvExec([]string{"GOOS=js", "GOARCH=wasm"}, "go", "build", ldFlags, "-o", filepath.Join(*dist, "main.wasm"), "."))
@@ -58,11 +58,57 @@ func main() {
 	indexFile, err := os.OpenFile(filepath.Join(*dist, "index.html"), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	distutil.Must(err)
 	defer indexFile.Close()
-	template.Must(template.New("_page_").Parse(simplehttp.DefaultPageTemplateSource)).Execute(indexFile, map[string]interface{}{
+	template.Must(template.New("_page_").Parse(pageTemplateSource)).Execute(indexFile, map[string]interface{}{
 		"Request":  req,
 		"Title":    "D3surveyor",
+		"CSSFiles": []string{*urlPathPrefix + "/static/css/w3.css", *urlPathPrefix + "/static/font-awesome/css/all.min.css"},
 		"MetaTags": map[string]string{"viewport": "width=device-width, initial-scale=1"},
 	})
 
 	log.Printf("dist.go complete in %v", time.Since(start))
 }
+
+var pageTemplateSource = `<!doctype html>
+<html>
+<head>
+{{if .Title}}
+<title>{{.Title}}</title>
+{{else}}
+<title>Vugu Dev - {{.Request.URL.Path}}</title>
+{{end}}
+<meta charset="utf-8"/>
+{{if .MetaTags}}{{range $k, $v := .MetaTags}}
+<meta name="{{$k}}" content="{{$v}}"/>
+{{end}}{{end}}
+{{if .CSSFiles}}{{range $f := .CSSFiles}}
+<link rel="stylesheet" href="{{$f}}" />
+{{end}}{{end}}
+<script src="https://cdn.jsdelivr.net/npm/text-encoding@0.7.0/lib/encoding.min.js"></script> <!-- MS Edge polyfill -->
+<script src="{{.PathPrefix}}/wasm_exec.js"></script>
+</head>
+<body>
+<div id="vugu_mount_point">
+{{if .ServerRenderedOutput}}{{.ServerRenderedOutput}}{{else}}
+<img style="position: absolute; top: 50%; left: 50%;" src="https://cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif">
+{{end}}
+</div>
+<script>
+var wasmSupported = (typeof WebAssembly === "object");
+if (wasmSupported) {
+	if (!WebAssembly.instantiateStreaming) { // polyfill
+		WebAssembly.instantiateStreaming = async (resp, importObject) => {
+			const source = await (await resp).arrayBuffer();
+			return await WebAssembly.instantiate(source, importObject);
+		};
+	}
+	const go = new Go();
+	WebAssembly.instantiateStreaming(fetch("{{.PathPrefix}}/main.wasm"), go.importObject).then((result) => {
+		go.run(result.instance);
+	});
+} else {
+	document.getElementById("vugu_mount_point").innerHTML = 'This application requires WebAssembly support.  Please upgrade your browser.';
+}
+</script>
+</body>
+</html>
+`

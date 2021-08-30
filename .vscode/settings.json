@@ -15,6 +15,7 @@
         "shortid",
         "tagname",
         "unproject",
+        "urlpathprefix",
         "vgrouter",
         "vugu",
         "vugugen"

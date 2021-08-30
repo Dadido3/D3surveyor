@@ -12,11 +12,20 @@ import (
 	"github.com/vugu/vugu"
 )
 
+// urlPathPrefix contains the path prefix for the router.
+//
+// If the application's URL is `example.com/D3surveyor/`, use `go build -ldflags="-X 'main.urlPathPrefix=/D3surveyor'"`.
+// This is already done by `dist.go`, and it's not needed when this app is run via the dev server.
+var urlPathPrefix = ""
+
 // vuguSetup sets up overall wiring and routing.
 func vuguSetup(buildEnv *vugu.BuildEnv, eventEnv vugu.EventEnv) vugu.Builder {
 
 	// Create new router instance.
 	router := vgrouter.New(eventEnv)
+
+	// Set prefix if available.
+	router.SetPathPrefix(urlPathPrefix)
 
 	// Create root object.
 	root := &Root{}

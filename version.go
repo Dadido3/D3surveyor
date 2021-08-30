@@ -1,3 +1,8 @@
+// Copyright (c) 2021 David Vogel
+//
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 // File for handling versioning.
 // This relies on naming git tags by the semantic version scheme, and on the correct forwarding of those tag names into the build process.
 // If an invalid version string is supplied, the software will create a runtime error on startup.
