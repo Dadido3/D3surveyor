@@ -3,7 +3,7 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-//go:build !wasm
+//go:build ignore
 
 package main
 
@@ -20,6 +20,8 @@ func main() {
 
 	// A hackish way to insert metadata into the head tag.
 	simplehttp.DefaultStaticData["MetaTags"] = map[string]string{"viewport": "width=device-width, initial-scale=1"}
+
+	simplehttp.DefaultStaticData["Title"] = "D3surveyor dev"
 
 	wd, _ := os.Getwd()
 	uiDir := filepath.Join(wd)

@@ -6,12 +6,18 @@
         "Unprojected",
         "Vogel",
         "aovY",
+        "devserver",
+        "ldflags",
         "mathgl",
         "objs",
+        "peaceiris",
+        "semver",
         "shortid",
+        "tagname",
         "unproject",
         "vgrouter",
-        "vugu"
+        "vugu",
+        "vugugen"
     ],
     "go.toolsEnvVars": {
         "GOOS": "js",

@@ -3,6 +3,7 @@ module github.com/Dadido3/D3surveyor
 go 1.17
 
 require (
+	github.com/coreos/go-semver v0.3.0
 	github.com/go-gl/mathgl v1.0.0
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/teris-io/shortid v0.0.0-20201117134242-e59966efd125
