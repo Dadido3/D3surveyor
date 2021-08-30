@@ -22,4 +22,4 @@ require (
 	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d // indirect
 )
 
-replace github.com/vugu/vugu => ../Libraries/vugu
+replace github.com/vugu/vugu => github.com/Dadido3/vugu v0.3.5-0.20210813162808-b37266913721
