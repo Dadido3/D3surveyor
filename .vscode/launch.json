@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/devserver.go",
+            "program": "${workspaceFolder}/scripts/devserver.go",
             "env": {
                 "GOOS": "windows",
                 "GOARCH": "amd64"

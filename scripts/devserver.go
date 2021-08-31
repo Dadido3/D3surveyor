@@ -24,7 +24,7 @@ func main() {
 	simplehttp.DefaultStaticData["CSSFiles"] = []string{"/static/css/w3.css", "/static/font-awesome/css/all.min.css"}
 
 	wd, _ := os.Getwd()
-	uiDir := filepath.Join(wd)
+	uiDir := filepath.Join(wd, "..")
 	l := ":8875"
 	log.Printf("Starting HTTP Server at %q", l)
 	h := simplehttp.New(uiDir, true)
