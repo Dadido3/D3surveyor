@@ -1,5 +1,8 @@
 {
     "cSpell.words": [
+        "Affero",
+        "Chol",
+        "Nelder",
         "Residualer",
         "Tweaker",
         "Unmap",
@@ -7,6 +10,7 @@
         "Vogel",
         "aovY",
         "devserver",
+        "gonum",
         "ldflags",
         "mathgl",
         "objs",
@@ -14,8 +18,10 @@
         "semver",
         "shortid",
         "tagname",
+        "teris",
         "unproject",
         "urlpathprefix",
+        "vgform",
         "vgrouter",
         "vugu",
         "vugugen"
