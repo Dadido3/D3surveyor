@@ -25,6 +25,6 @@
         "GOARCH": "wasm"
     },
     "licenser.author": "David Vogel",
-    "licenser.license": "MIT",
+    "licenser.license": "AGPLv3",
     "licenser.projectName": "D3surveyor",
 }

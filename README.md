@@ -1,4 +1,4 @@
-# D3surveyor
+# D3surveyor ![building and testing state](https://github.com/Dadido3/D3surveyor/actions/workflows/build-test.yml/badge.svg?branch=master)
 
 This software can be used to create 3-dimensional meshes/points from a series of measurements.
 All that is needed is a list of points (e.g. corners of a room), distance measurements between these points and optionally some photos describing the angle between several points.
@@ -7,7 +7,7 @@ With enough measurements and constraints, the software finds the point positions
 Ideally, the points then correspond to the real geometry of the object to be measured.
 Additional measurements can be added to increase accuracy.
 
-[Here is a link to the current version running in the browser!](https://dadido3.github.io/D3surveyor/)
+[Click here to run the current release in the browser!](https://dadido3.github.io/D3surveyor/)
 
 > :warning: This is a proof-of-concept that works to some extent, but still has many rough edges and limitations.
 
@@ -64,7 +64,7 @@ cd ./scripts
 go run ./devserver.go
 ```
 
-Once the server is running, you can connect via [http://ocalhost:8875](http://ocalhost:8875).
+Once the server is running, you can connect via [http://localhost:8875](http://localhost:8875).
 The server will compile the project every time you reload the browser.
 
 ### Generate distribution
@@ -102,6 +102,7 @@ There are many possible features that could be added in the future:
 - Other coordinate systems (e.g. WGS 84).
 - Use of the GPS metadata from images.
 - (More) constraints like parallelism, alignment to primary axes.
-- New measuring method "Rangefinder on a tripod".
 - Tags to filter objects.
 - Optimizer improvements.
+- Suggest points or other parameters when creating new measurements.
+- Documentation
