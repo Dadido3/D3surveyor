@@ -66,50 +66,72 @@ func main() {
 		"PathPrefix": *urlPathPrefix,
 	})
 
+	// Generate 404 redirect page.
+	redirectFile, err := os.OpenFile(filepath.Join(*dist, "404.html"), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	distutil.Must(err)
+	defer redirectFile.Close()
+	template.Must(template.New("_page_").Parse(page404TemplateSource)).Execute(redirectFile, map[string]interface{}{
+		"PathPrefix": *urlPathPrefix,
+	})
+
 	log.Printf("dist.go complete in %v", time.Since(start))
 }
 
-var pageTemplateSource = `<!doctype html>
+var pageTemplateSource = `
+<!doctype html>
 <html>
-<head>
-{{if .Title}}
-<title>{{.Title}}</title>
-{{else}}
-<title>Vugu Dev - {{.Request.URL.Path}}</title>
-{{end}}
-<meta charset="utf-8"/>
-{{if .MetaTags}}{{range $k, $v := .MetaTags}}
-<meta name="{{$k}}" content="{{$v}}"/>
-{{end}}{{end}}
-{{if .CSSFiles}}{{range $f := .CSSFiles}}
-<link rel="stylesheet" href="{{$f}}" />
-{{end}}{{end}}
-<script src="https://cdn.jsdelivr.net/npm/text-encoding@0.7.0/lib/encoding.min.js"></script> <!-- MS Edge polyfill -->
-<script src="{{.PathPrefix}}/wasm_exec.js"></script>
-</head>
-<body>
-<div id="vugu_mount_point">
-{{if .ServerRenderedOutput}}{{.ServerRenderedOutput}}{{else}}
-<img style="position: absolute; top: 50%; left: 50%;" src="https://cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif">
-{{end}}
-</div>
-<script>
-var wasmSupported = (typeof WebAssembly === "object");
-if (wasmSupported) {
-	if (!WebAssembly.instantiateStreaming) { // polyfill
-		WebAssembly.instantiateStreaming = async (resp, importObject) => {
-			const source = await (await resp).arrayBuffer();
-			return await WebAssembly.instantiate(source, importObject);
-		};
-	}
-	const go = new Go();
-	WebAssembly.instantiateStreaming(fetch("{{.PathPrefix}}/main.wasm"), go.importObject).then((result) => {
-		go.run(result.instance);
-	});
-} else {
-	document.getElementById("vugu_mount_point").innerHTML = 'This application requires WebAssembly support.  Please upgrade your browser.';
-}
-</script>
-</body>
+	<head>
+		<title>{{.Title}}</title>
+		<meta charset="utf-8"/>
+		{{if .MetaTags}}{{range $k, $v := .MetaTags}}
+			<meta name="{{$k}}" content="{{$v}}"/>
+		{{end}}{{end}}
+		{{if .CSSFiles}}{{range $f := .CSSFiles}}
+			<link rel="stylesheet" href="{{$f}}" />
+		{{end}}{{end}}
+		<script src="https://cdn.jsdelivr.net/npm/text-encoding@0.7.0/lib/encoding.min.js"></script> <!-- MS Edge polyfill -->
+		<script src="{{.PathPrefix}}/wasm_exec.js"></script>
+	</head>
+	<body>
+		<div id="vugu_mount_point">
+			{{if .ServerRenderedOutput}}{{.ServerRenderedOutput}}{{else}}
+				<img style="position: absolute; top: 50%; left: 50%;" src="https://cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif">
+			{{end}}
+		</div>
+		<script>
+			var wasmSupported = (typeof WebAssembly === "object");
+			if (wasmSupported) {
+				if (!WebAssembly.instantiateStreaming) { // polyfill
+					WebAssembly.instantiateStreaming = async (resp, importObject) => {
+						const source = await (await resp).arrayBuffer();
+						return await WebAssembly.instantiate(source, importObject);
+					};
+				}
+				const go = new Go();
+				WebAssembly.instantiateStreaming(fetch("{{.PathPrefix}}/main.wasm"), go.importObject).then((result) => {
+					go.run(result.instance);
+				});
+			} else {
+				document.getElementById("vugu_mount_point").innerHTML = 'This application requires WebAssembly support.  Please upgrade your browser.';
+			}
+		</script>
+	</body>
+</html>
+`
+
+var page404TemplateSource = `
+<!doctype HTML>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<meta http-equiv="refresh" content="0; url={{.PathPrefix}}/">
+		<script type="text/javascript">
+			window.location.href = "{{.PathPrefix}}/"
+		</script>
+		<title>Page Redirection</title>
+	</head>
+	<body>
+		If you are not redirected automatically, follow this <a href='{{.PathPrefix}}/'>link back to the index page</a>.
+	</body>
 </html>
 `
