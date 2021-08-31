@@ -179,8 +179,8 @@ func (c *CameraPhotoComponent) handlePointerMove(event vugu.DOMEvent) {
 				// Get the other touch event, scale the viewport accordingly to the change in finger distance.
 				for otherPointerID, ongoingOtherTouch := range c.ongoingTouches {
 					if pointerID != otherPointerID {
-						prevDistance := math.Sqrt(math.Pow(ongoingTouch.xCan-ongoingOtherTouch.xCan, 2) + math.Pow(ongoingTouch.yCan-ongoingOtherTouch.yCan, 2))
-						newDistance := math.Sqrt(math.Pow(xCan-ongoingOtherTouch.xCan, 2) + math.Pow(yCan-ongoingOtherTouch.yCan, 2))
+						prevDistance := math.Sqrt(sqr(ongoingTouch.xCan-ongoingOtherTouch.xCan) + sqr(ongoingTouch.yCan-ongoingOtherTouch.yCan))
+						newDistance := math.Sqrt(sqr(xCan-ongoingOtherTouch.xCan) + sqr(yCan-ongoingOtherTouch.yCan))
 						pivotX, pivotY := c.transformCanvasToVirtual((ongoingTouch.xCan+ongoingOtherTouch.xCan)/2, (ongoingTouch.yCan+ongoingOtherTouch.yCan)/2)
 						c.setScale(c.scale*(newDistance/prevDistance), pivotX, pivotY)
 						break
@@ -323,7 +323,7 @@ func (c *CameraPhotoComponent) getClosestPoint(xCan, yCan, maxDistSqr float64) (
 
 	for key, point := range c.Photo.Points {
 		pXCan, pYCan := c.transformVirtualToCanvas(point.X*float64(c.Photo.ImageWidth), point.Y*float64(c.Photo.ImageHeight))
-		distSqr := math.Pow(pXCan-xCan, 2) + math.Pow(pYCan-yCan, 2)
+		distSqr := sqr(pXCan-xCan) + sqr(pYCan-yCan)
 		if minDistSqr > distSqr {
 			minDistSqr, minKey, minPoint = distSqr, key, point
 		}

@@ -6,7 +6,6 @@
 package main
 
 import (
-	"math"
 	"time"
 
 	"github.com/vugu/vgrouter"
@@ -64,5 +63,5 @@ func (d *RangefinderMeasurement) ResidualSqr() float64 {
 		return 0
 	}
 
-	return math.Pow(float64((p1.Position.Distance(p2.Position)-d.MeasuredDistance)/d.rangefinder.Accuracy), 2) // TODO: Check if this can be optimized
+	return sqr(float64((p1.Position.Distance(p2.Position) - d.MeasuredDistance) / d.rangefinder.Accuracy)) // TODO: Check if this can be optimized
 }
