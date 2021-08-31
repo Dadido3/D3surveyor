@@ -31,7 +31,6 @@ type Point struct {
 	CreatedAt time.Time
 
 	Position Coordinate
-	Optimize bool
 }
 
 func (s *Site) NewPoint(name string) *Point {
