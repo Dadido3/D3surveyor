@@ -365,13 +365,13 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 
 			var foundP1, foundP2 *CameraPhotoPoint
 			for _, point := range c.Photo.Points {
-				if point.Point == "" {
+				if point.PointKey == "" {
 					continue
 				}
-				if point.Point == p1 {
+				if point.PointKey == p1 {
 					foundP1 = point
 				}
-				if point.Point == p2 {
+				if point.PointKey == p2 {
 					foundP2 = point
 				}
 
@@ -399,7 +399,7 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 	drawCtx.Set("shadowOffsetY", 0)
 	drawCtx.Set("shadowColor", "white")
 	for _, point := range c.Photo.Points {
-		realPoint, realPointOk := site.Points[point.Point]
+		realPoint, realPointOk := site.Points[point.PointKey]
 
 		if point == c.selectedPoint {
 			drawCtx.Set("strokeStyle", "white")

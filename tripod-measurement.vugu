@@ -1,0 +1,18 @@
+<div>
+	<main:TitleBar>
+		<button class="w3-bar-item w3-button w3-large w3-ripple w3-teal" @click='c.Navigate("/tripod/" + c.tripod.Key(), nil)'><i class="fas fa-arrow-left"></i></button>
+		<span class="w3-bar-item w3-large" vg-content='fmt.Sprintf("Tripod measurement %s", c.Key())'></span>
+	</main:TitleBar>
+
+	<form class="w3-container w3-row-padding">
+		<div class="w3-third">
+			<label for="point">Point</label>
+			<main:PointSelectionComponent name="point" :Site="c.tripod.site" :BindValue="&c.PointKey"></main:PointSelectionComponent>
+		</div>
+
+		<div class="w3-third">
+			<label for="distance">Measured distance</label>
+			<main:DistanceInputComponent name="distance" min="0" :BindValue="&c.MeasuredDistance"></main:DistanceInputComponent>
+		</div>
+	</form>
+</div>

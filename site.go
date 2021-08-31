@@ -21,12 +21,11 @@ type Site struct {
 
 	Name string
 
-	Points map[string]*Point
-
-	// Capture and measurement devices.
+	// Geometry data and measurements.
+	Points       map[string]*Point
 	Cameras      map[string]*Camera
 	Rangefinders map[string]*Rangefinder
-	//TripodMeasurements map[string]*TripodMeasurement
+	Tripods      map[string]*Tripod
 }
 
 func NewSite(name string) (*Site, error) {
@@ -41,6 +40,7 @@ func NewSite(name string) (*Site, error) {
 		Points:       map[string]*Point{},
 		Cameras:      map[string]*Camera{},
 		Rangefinders: map[string]*Rangefinder{},
+		Tripods:      map[string]*Tripod{},
 	}
 
 	return site, nil
@@ -86,6 +86,9 @@ func (s *Site) UnmarshalJSON(data []byte) error {
 	for k, v := range newSite.Rangefinders {
 		v.key, v.site = k, s
 	}
+	for k, v := range newSite.Tripods {
+		v.key, v.site = k, s
+	}
 
 	// Overwrite data of existing site.
 	*s = *newSite
@@ -104,13 +107,18 @@ func (s *Site) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}
 
+	for _, camera := range s.Cameras {
+		newTweakables, newResiduals := camera.GetTweakablesAndResiduals()
+		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
+	}
+
 	for _, rangefinder := range s.Rangefinders {
 		newTweakables, newResiduals := rangefinder.GetTweakablesAndResiduals()
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}
 
-	for _, camera := range s.Cameras {
-		newTweakables, newResiduals := camera.GetTweakablesAndResiduals()
+	for _, tripod := range s.Tripods {
+		newTweakables, newResiduals := tripod.GetTweakablesAndResiduals()
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}
 
@@ -163,4 +171,20 @@ func (s *Site) CamerasSorted() []*Camera {
 	})
 
 	return cameras
+}
+
+// TripodsSorted returns the tripods of the site as a list sorted by date.
+// TODO: Replace with generics once they are available. It's one of the few cases where they are really needed
+func (s *Site) TripodsSorted() []*Tripod {
+	tripods := make([]*Tripod, 0, len(s.Tripods))
+
+	for _, tripod := range s.Tripods {
+		tripods = append(tripods, tripod)
+	}
+
+	sort.Slice(tripods, func(i, j int) bool {
+		return tripods[i].CreatedAt.After(tripods[j].CreatedAt)
+	})
+
+	return tripods
 }

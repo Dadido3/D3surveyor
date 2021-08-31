@@ -30,7 +30,7 @@ type Camera struct {
 	Name      string
 	CreatedAt time.Time
 
-	AngAccuracy Angle // Accuracy of the measurement in radians.
+	AngAccuracy Angle // Accuracy of the measurement.
 
 	LongSideAOV     Angle // The angle of view of the longest side of every image.
 	LongSideAOVLock bool  // Prevent the value from being optimized.

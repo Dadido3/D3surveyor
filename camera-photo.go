@@ -129,7 +129,7 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 	pointsObj := make([]mgl64.Vec3, 0, len(cp.Points)) // Object/World coordinates of every point.
 	pointsImg := make([]mgl64.Vec3, 0, len(cp.Points)) // Image coordinates where every point is mapped to.
 	for _, point := range cp.Points {
-		if p, ok := site.Points[point.Point]; ok && !point.Suggested {
+		if p, ok := site.Points[point.PointKey]; ok && !point.Suggested {
 			points = append(points, point)
 			pointsObj = append(pointsObj, mgl64.Vec3{float64(p.Position.X), float64(p.Position.Y), float64(p.Position.Z)})
 			pointsImg = append(pointsImg, mgl64.Vec3{point.X, point.Y, 1})
@@ -256,7 +256,7 @@ func (cp *CameraPhoto) UpdateSuggestions() {
 			// The projection is valid, create or update point mapping.
 			var foundMappedPoint *CameraPhotoPoint
 			for _, mappedPoint := range cp.Points { // TODO: Remove stupid linear search
-				if mappedPoint.Point == point.Key() {
+				if mappedPoint.PointKey == point.Key() {
 					foundMappedPoint = mappedPoint
 					break
 				}
@@ -269,12 +269,12 @@ func (cp *CameraPhoto) UpdateSuggestions() {
 			foundMappedPoint.projectedX, foundMappedPoint.projectedY = pointProjected.X(), pointProjected.Y()
 			// Only update suggested point mappings, not user placed ones.
 			if foundMappedPoint.Suggested {
-				foundMappedPoint.X, foundMappedPoint.Y, foundMappedPoint.Point = pointProjected.X(), pointProjected.Y(), point.Key()
+				foundMappedPoint.X, foundMappedPoint.Y, foundMappedPoint.PointKey = pointProjected.X(), pointProjected.Y(), point.Key()
 			}
 		} else {
 			// The projection is outside of the image, remove the suggested point mapping if there is any.
 			for _, mappedPoint := range cp.Points { // TODO: Remove stupid linear search
-				if mappedPoint.Suggested && mappedPoint.Point == point.Key() {
+				if mappedPoint.Suggested && mappedPoint.PointKey == point.Key() {
 					mappedPoint.Delete()
 					break
 				}
@@ -285,7 +285,7 @@ func (cp *CameraPhoto) UpdateSuggestions() {
 	// Remove any suggested mappings to non existing points.
 	for _, mappedPoint := range cp.Points {
 		if mappedPoint.Suggested {
-			if _, found := site.Points[mappedPoint.Point]; !found {
+			if _, found := site.Points[mappedPoint.PointKey]; !found {
 				mappedPoint.Delete()
 			}
 		}

@@ -8,8 +8,8 @@ package main
 import "math"
 
 type Coordinate struct {
-	X, Y, Z             Distance // In metres.
-	LockX, LockY, LockZ bool     // Lock (Don't optimize) the value.
+	X, Y, Z             Distance
+	LockX, LockY, LockZ bool // Lock (Don't optimize) the value.
 }
 
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.

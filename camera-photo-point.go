@@ -14,7 +14,7 @@ type CameraPhotoPoint struct {
 
 	CreatedAt time.Time
 
-	Point string // The unique ID of the point.
+	PointKey string // The unique ID of the point.
 
 	X, Y                   float64 // Point's position on the photo in the range of [0,1]. Origin is at the top left.
 	projectedX, projectedY float64 // Correct position of the point on the photo in the range of [0,1]. Origin is at the top left.

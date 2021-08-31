@@ -22,7 +22,7 @@ type Rangefinder struct {
 	Name      string
 	CreatedAt time.Time
 
-	Accuracy Distance // Accuracy of the measurement in metres.
+	Accuracy Distance // Accuracy of the measurement.
 
 	Measurements map[string]*RangefinderMeasurement // List of measurements.
 }

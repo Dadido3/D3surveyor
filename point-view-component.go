@@ -28,7 +28,7 @@ func (pv *PointViewComponent) Compute(ctx vugu.ComputeCtx) {
 	for _, camera := range pv.Site.CamerasSorted() {
 		for _, photo := range camera.Photos {
 			for _, point := range photo.Points {
-				if !point.Suggested && point.Point == pv.PointKey {
+				if !point.Suggested && point.PointKey == pv.PointKey {
 					// Found point. Set everything up.
 
 					pv.imgWidth, pv.imgHeight = float64(photo.ImageWidth)/2, float64(photo.ImageHeight)/2

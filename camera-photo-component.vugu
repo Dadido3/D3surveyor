@@ -3,7 +3,7 @@
 		<button class="w3-button w3-large w3-red" @click="c.handleUnmap(event)">Unmap point</button>
 
 		<label for="point">Point:</label>
-		<main:PointSelectionComponent vg-if="c.selectedPoint != nil" name="point" :Site="c.Photo.camera.site" :BindValue="&c.selectedPoint.Point"></main:PointSelectionComponent>
+		<main:PointSelectionComponent vg-if="c.selectedPoint != nil" name="point" :Site="c.Photo.camera.site" :BindValue="&c.selectedPoint.PointKey"></main:PointSelectionComponent>
 	</div>
 
 	<div style="background-color:black;flex:1;overflow:hidden;">
