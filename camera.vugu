@@ -34,7 +34,8 @@
 				<img :src="photo.jsImageURL" class="w3-bar-item" style="height:100px">
 				<div class="w3-bar-item">
 					<span class="w3-large" vg-content="photo.Key()"></span><br>
-					<span vg-content='fmt.Sprintf("%d points", len(photo.Points))'></span>
+					<span vg-content='fmt.Sprintf("%d points", len(photo.Points))'></span><br>
+					<span vg-content='fmt.Sprintf("SSR: %.3f", photo.ResidualSqr())'></span>
 				</div>
 			</li>
 		</ul>
