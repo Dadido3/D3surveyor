@@ -6,13 +6,13 @@
 
 	<form class="w3-container w3-row-padding">
 		<div class="w3-third">
-			<label for="point">Point</label>
-			<main:PointSelectionComponent name="point" :Site="c.tripod.site" :BindValue="&c.PointKey"></main:PointSelectionComponent>
+			<label>Point</label>
+			<main:PointSelectionComponent :Site="c.tripod.site" :BindValue="&c.PointKey"></main:PointSelectionComponent>
 		</div>
 
 		<div class="w3-third">
-			<label for="distance">Measured distance</label>
-			<main:DistanceInputComponent name="distance" min="0" :BindValue="&c.MeasuredDistance"></main:DistanceInputComponent>
+			<label>Measured distance</label>
+			<main:DistanceInputComponent min="0" :BindValue="&c.MeasuredDistance"></main:DistanceInputComponent>
 		</div>
 	</form>
 </div>

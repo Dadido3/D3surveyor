@@ -2,8 +2,16 @@
 	<div style="display:flex;">
 		<button class="w3-button w3-large w3-red" @click="c.handleUnmap(event)">Unmap point</button>
 
-		<label for="point">Point:</label>
-		<main:PointSelectionComponent vg-if="c.selectedPoint != nil" name="point" :Site="c.Photo.camera.site" :BindValue="&c.selectedPoint.PointKey"></main:PointSelectionComponent>
+		<main:ToggleInputComponent LabelText="Show lines" :BindValue="&c.showLines"></main:ToggleInputComponent>
+
+		<main:ToggleInputComponent LabelText="Show rangefinders" :BindValue="&c.showRangefinders"></main:ToggleInputComponent>
+
+		<main:ToggleInputComponent LabelText="Show tripods" :BindValue="&c.showTripods"></main:ToggleInputComponent>
+
+		<vg-template vg-if="c.selectedPoint != nil">
+			<label>Point:</label>
+			<main:PointSelectionComponent :Site="c.Photo.camera.site" :BindValue="&c.selectedPoint.PointKey"></main:PointSelectionComponent>
+		</vg-template>
 	</div>
 
 	<div style="background-color:black;flex:1;overflow:hidden;">

@@ -5,8 +5,8 @@
 
 	<form class="w3-container w3-row-padding">
 		<div class="w3-third">
-			<label for="name">Name</label>
-			<vgform:Input class="w3-input" type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+			<label>Name</label>
+			<vgform:Input class="w3-input" type="text" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
 		</div>
 	</form>
 
@@ -37,6 +37,13 @@
 			<div class="w3-card-4">
 				<div class="w3-container w3-green w3-large">Tripods</div>
 				<div class="w3-container" vg-content='fmt.Sprintf("Count: %d", len(c.Tripods))'></div>
+			</div>
+		</div>
+
+		<div class="w3-third">
+			<div class="w3-card-4">
+				<div class="w3-container w3-green w3-large">Lines</div>
+				<div class="w3-container" vg-content='fmt.Sprintf("Count: %d", len(c.Lines))'></div>
 			</div>
 		</div>
 	</div>

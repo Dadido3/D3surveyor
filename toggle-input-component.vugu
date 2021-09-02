@@ -1,0 +1,10 @@
+<span vg-attr="c.AttrMap">
+	<label vg-if="c.BindValue != nil">
+		<input class="w3-check" type="checkbox" .checked="*c.BindValue" @change="c.handleChange(event)"></input>
+		<span vg-content="c.LabelText"></span>
+	</label>
+</span>
+
+<script type="application/x-go">
+
+</script>

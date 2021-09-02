@@ -6,18 +6,18 @@
 
 	<form class="w3-container w3-row-padding">
 		<div class="w3-third">
-			<label for="name">Name</label>
-			<vgform:Input class="w3-input" type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+			<label>Name</label>
+			<vgform:Input class="w3-input" type="text" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
 		</div>
 
 		<div class="w3-third">
-			<label for="accuracy">Accuracy</label>
-			<main:AngleInputComponent name="accuracy" min="0" :BindValue="&c.AngAccuracy"></main:AngleInputComponent>
+			<label>Accuracy</label>
+			<main:AngleInputComponent min="0" :BindValue="&c.AngAccuracy"></main:AngleInputComponent>
 		</div>
 
 		<div class="w3-third">
-			<label for="aov">Angle of view</label>
-			<main:AngleInputComponent name="aov" min="0" :BindValue="&c.LongSideAOV" :BindLock="&c.LongSideAOVLock"></main:AngleInputComponent>
+			<label>Angle of view</label>
+			<main:AngleInputComponent min="0" :BindValue="&c.LongSideAOV" :BindLock="&c.LongSideAOVLock"></main:AngleInputComponent>
 		</div>
 	</form>
 

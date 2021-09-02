@@ -16,6 +16,7 @@
 				<div class="w3-bar-block">
 					<button class="w3-bar-item w3-button" @click='c.Navigate("/", nil)'>Overview</button>
 					<button class="w3-bar-item w3-button" @click='c.Navigate("/points", nil)'>Points</button>
+					<button class="w3-bar-item w3-button" @click='c.Navigate("/lines", nil)'>Lines</button>
 					<button class="w3-bar-item w3-button" @click='c.Navigate("/rangefinders", nil)'>Rangefinders</button>
 					<button class="w3-bar-item w3-button" @click='c.Navigate("/cameras", nil)'>Cameras</button>
 					<button class="w3-bar-item w3-button" @click='c.Navigate("/tripods", nil)'>Tripods</button>

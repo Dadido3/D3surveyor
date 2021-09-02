@@ -20,6 +20,7 @@ import "fmt"
 // generateObj returns the features of the given site as a Wavefront OBJ file.
 func generateObj(site *Site) []byte {
 	result := "#List of points\n"
+	result += "o Points\n"
 	pointKeyIndices := map[string]int{}
 	counter := 1
 	for key, point := range site.Points {
@@ -28,8 +29,20 @@ func generateObj(site *Site) []byte {
 		result += fmt.Sprintf("v %f %f %f\n", point.Position.X, point.Position.Y, point.Position.Z)
 	}
 
-	result += "\n#List of rangefinder measurements\n"
+	result += "\n#List of lines\n"
+	result += "o Lines\n"
+	for _, line := range site.Lines {
+		indexP1, ok1 := pointKeyIndices[line.P1]
+		indexP2, ok2 := pointKeyIndices[line.P2]
+		if !ok1 || !ok2 {
+			continue
+		}
+		result += fmt.Sprintf("l %d %d\n", indexP1, indexP2)
+	}
+
+	result += "\n#Rangefinders\n"
 	for _, rangefinder := range site.Rangefinders {
+		result += fmt.Sprintf("o Rangefinder_%s_%s\n", rangefinder.Key(), rangefinder.Name)
 		for _, measurement := range rangefinder.Measurements {
 			indexP1, ok1 := pointKeyIndices[measurement.P1]
 			indexP2, ok2 := pointKeyIndices[measurement.P2]
@@ -37,7 +50,22 @@ func generateObj(site *Site) []byte {
 				continue
 			}
 			result += fmt.Sprintf("l %d %d\n", indexP1, indexP2)
+		}
+	}
 
+	result += "\n#Tripods\n"
+	for _, tripod := range site.Tripods {
+		result += fmt.Sprintf("o Tripod_%s_%s\n", tripod.Key(), tripod.Name)
+		pointKeyIndices[tripod.Key()] = counter
+		counter++
+		result += fmt.Sprintf("v %f %f %f\n", tripod.Position.X, tripod.Position.Y, tripod.Position.Z)
+		for _, measurement := range tripod.Measurements {
+			indexP1, ok1 := pointKeyIndices[tripod.Key()]
+			indexP2, ok2 := pointKeyIndices[measurement.PointKey]
+			if !ok1 || !ok2 {
+				continue
+			}
+			result += fmt.Sprintf("l %d %d\n", indexP1, indexP2)
 		}
 	}
 

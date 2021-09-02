@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/go-gl/mathgl/mgl64"
 	"github.com/vugu/vugu"
 	js "github.com/vugu/vugu/js"
 )
@@ -37,6 +38,8 @@ type CameraPhotoComponent struct {
 	canWidthDOM, canHeightDOM float64 // Width and height of the canvas in dom pixels.
 
 	cachedImg js.Value // Cached js image object.
+
+	showLines, showRangefinders, showTripods bool
 
 	ongoingMouseDrags map[int]CameraPhotoComponentEventCoordinate
 	ongoingTouches    map[int]CameraPhotoComponentEventCoordinate
@@ -67,6 +70,8 @@ func (c *CameraPhotoComponent) Init(ctx vugu.InitCtx) {
 	if c.ongoingTouches == nil {
 		c.ongoingTouches = make(map[int]CameraPhotoComponentEventCoordinate)
 	}
+
+	c.showLines, c.showRangefinders = true, false
 
 	if c.scale == 0 {
 		c.setScale(1, 0, 0)
@@ -364,14 +369,14 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 
 	drawCtx.Call("drawImage", c.cachedImg, 0, 0)
 
-	drawCtx.Set("lineWidth", 2)
-	drawCtx.Set("lineCap", "butt")
-	drawCtx.Set("strokeStyle", "yellow")
-	drawCtx.Call("setLineDash", []interface{}{5, 10})
-	drawCtx.Set("shadowBlur", 0)
-	for _, rangefinder := range site.Rangefinders {
-		for _, measurement := range rangefinder.Measurements {
-			p1, p2 := measurement.P1, measurement.P2
+	if c.showLines {
+		drawCtx.Set("lineWidth", 1)
+		drawCtx.Set("lineCap", "butt")
+		drawCtx.Set("strokeStyle", "blue")
+		drawCtx.Call("setLineDash", []interface{}{})
+		drawCtx.Set("shadowBlur", 0)
+		for _, line := range site.Lines {
+			p1, p2 := line.P1, line.P2
 
 			var foundP1, foundP2 *CameraPhotoPoint
 			for _, point := range c.Photo.Points {
@@ -398,7 +403,82 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 				drawCtx.Call("lineTo", 0, 0)
 				drawCtx.Call("stroke")
 			}
+		}
+	}
 
+	if c.showRangefinders {
+		drawCtx.Set("lineWidth", 2)
+		drawCtx.Set("lineCap", "butt")
+		drawCtx.Set("strokeStyle", "yellow")
+		drawCtx.Call("setLineDash", []interface{}{5, 10})
+		drawCtx.Set("shadowBlur", 0)
+		for _, rangefinder := range site.Rangefinders {
+			for _, measurement := range rangefinder.Measurements {
+				p1, p2 := measurement.P1, measurement.P2
+
+				var foundP1, foundP2 *CameraPhotoPoint
+				for _, point := range c.Photo.Points {
+					if point.PointKey == "" {
+						continue
+					}
+					if point.PointKey == p1 {
+						foundP1 = point
+					}
+					if point.PointKey == p2 {
+						foundP2 = point
+					}
+
+					if foundP1 != nil && foundP2 != nil {
+						break
+					}
+				}
+
+				if foundP1 != nil && foundP2 != nil {
+					c.transformUnscaled(drawCtx, foundP1.X*float64(c.Photo.ImageWidth), foundP1.Y*float64(c.Photo.ImageHeight))
+					drawCtx.Call("beginPath")
+					drawCtx.Call("moveTo", 0, 0)
+					c.transformUnscaled(drawCtx, foundP2.X*float64(c.Photo.ImageWidth), foundP2.Y*float64(c.Photo.ImageHeight))
+					drawCtx.Call("lineTo", 0, 0)
+					drawCtx.Call("stroke")
+				}
+
+			}
+		}
+	}
+
+	if c.showTripods {
+		drawCtx.Set("lineWidth", 1)
+		drawCtx.Set("lineCap", "butt")
+		drawCtx.Set("strokeStyle", "green")
+		drawCtx.Call("setLineDash", []interface{}{5, 2})
+		drawCtx.Set("shadowBlur", 0)
+		for _, tripod := range site.Tripods {
+			tripodProjected := c.Photo.Project([]mgl64.Vec3{tripod.Position.Vec3()})[0]
+
+			for _, measurement := range tripod.Measurements {
+				pointKey := measurement.PointKey
+
+				var foundPoint *CameraPhotoPoint
+				for _, point := range c.Photo.Points {
+					if point.PointKey == "" {
+						continue
+					}
+					if point.PointKey == pointKey {
+						foundPoint = point
+						break
+					}
+				}
+
+				if foundPoint != nil {
+					c.transformUnscaled(drawCtx, foundPoint.X*float64(c.Photo.ImageWidth), foundPoint.Y*float64(c.Photo.ImageHeight))
+					drawCtx.Call("beginPath")
+					drawCtx.Call("moveTo", 0, 0)
+					c.transformUnscaled(drawCtx, tripodProjected.X()*float64(c.Photo.ImageWidth), tripodProjected.Y()*float64(c.Photo.ImageHeight))
+					drawCtx.Call("lineTo", 0, 0)
+					drawCtx.Call("stroke")
+				}
+
+			}
 		}
 	}
 

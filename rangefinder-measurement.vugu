@@ -6,18 +6,18 @@
 
 	<form class="w3-container w3-row-padding">
 		<div class="w3-third">
-			<label for="p1">Point 1</label>
-			<main:PointSelectionComponent name="p1" :Site="c.rangefinder.site" :BindValue="&c.P1"></main:PointSelectionComponent>
+			<label>Point 1</label>
+			<main:PointSelectionComponent :Site="c.rangefinder.site" :BindValue="&c.P1"></main:PointSelectionComponent>
 		</div>
 
 		<div class="w3-third">
-			<label for="p2">Point 2</label>
-			<main:PointSelectionComponent name="p2" :Site="c.rangefinder.site" :BindValue="&c.P2"></main:PointSelectionComponent>
+			<label>Point 2</label>
+			<main:PointSelectionComponent :Site="c.rangefinder.site" :BindValue="&c.P2"></main:PointSelectionComponent>
 		</div>
 
 		<div class="w3-third">
-			<label for="distance">Measured distance</label>
-			<main:DistanceInputComponent name="distance" min="0" :BindValue="&c.MeasuredDistance"></main:DistanceInputComponent>
+			<label>Measured distance</label>
+			<main:DistanceInputComponent min="0" :BindValue="&c.MeasuredDistance"></main:DistanceInputComponent>
 		</div>
 	</form>
 </div>

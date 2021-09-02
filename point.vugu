@@ -5,11 +5,11 @@
 	</main:TitleBar>
 
 	<div class="w3-container">
-		<label for="name">Name</label>
-		<vgform:Input class="w3-input" type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+		<label>Name</label>
+		<vgform:Input class="w3-input" type="text" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
 
 		<label>Position</label>
-		<main:CoordinateComponent :Editable="true" :BindValue="&c.Position"></main:CoordinateComponent>
+		<main:CoordinateComponent :Editable="true" :Lockable="true" :BindValue="&c.Position"></main:CoordinateComponent>
 	</div>
 
 </div>

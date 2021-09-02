@@ -6,19 +6,19 @@
 
 	<form class="w3-container w3-row-padding">
 		<div class="w3-third">
-			<label for="name">Name:</label>
-			<vgform:Input class="w3-input" type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+			<label>Name:</label>
+			<vgform:Input class="w3-input" type="text" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
 		</div>
 
 		<div class="w3-third">
-			<label for="accuracy">Accuracy:</label>
-			<main:DistanceInputComponent name="accuracy" min="0" :BindValue="&c.Accuracy"></main:DistanceInputComponent>
+			<label>Accuracy:</label>
+			<main:DistanceInputComponent min="0" :BindValue="&c.Accuracy"></main:DistanceInputComponent>
 		</div>
 
 		<div class="w3-third">
 			<div class="w3-card-4">
 				<div class="w3-container w3-green w3-large">Position</div>
-				<main:CoordinateComponent :Editable="true" :BindValue="&c.Position"></main:CoordinateComponent>
+				<main:CoordinateComponent :Editable="true" :Lockable="true" :BindValue="&c.Position"></main:CoordinateComponent>
 			</div>
 		</div>
 
@@ -26,13 +26,13 @@
 
 	<form class="w3-container w3-row-padding">
 		<div class="w3-third">
-			<label for="offset">Offset:</label>
-			<main:DistanceInputComponent name="offset" :BindValue="&c.Offset" :BindLock="&c.OffsetLock"></main:DistanceInputComponent>
+			<label>Offset:</label>
+			<main:DistanceInputComponent :BindValue="&c.Offset" :BindLock="&c.OffsetLock"></main:DistanceInputComponent>
 		</div>
 
 		<div class="w3-third">
-			<label for="offset-side">Side offset:</label>
-			<main:DistanceInputComponent name="offset-side" :BindValue="&c.OffsetSide" :BindLock="&c.OffsetSideLock"></main:DistanceInputComponent>
+			<label>Side offset:</label>
+			<main:DistanceInputComponent :BindValue="&c.OffsetSide" :BindLock="&c.OffsetSideLock"></main:DistanceInputComponent>
 		</div>
 	</form>
 

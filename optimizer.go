@@ -37,7 +37,7 @@ type Residualer interface {
 func Optimize(eventEnv vugu.EventEnv, site *Site) {
 	tweakables, residuals := site.GetTweakablesAndResiduals()
 
-	ticker := time.NewTicker(250 * time.Millisecond)
+	ticker := time.NewTicker(1000 * time.Millisecond)
 	defer ticker.Stop()
 
 	f := func(x []float64) float64 {
@@ -47,7 +47,7 @@ func Optimize(eventEnv vugu.EventEnv, site *Site) {
 		case <-ticker.C:
 			defer func() {
 				eventEnv.UnlockRender()
-				time.Sleep(10 * time.Millisecond)
+				time.Sleep(40 * time.Millisecond)
 			}()
 		default:
 			defer eventEnv.UnlockOnly()

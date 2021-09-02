@@ -33,6 +33,7 @@ type Site struct {
 
 	// Geometry data and measurements.
 	Points       map[string]*Point
+	Lines        map[string]*Line
 	Cameras      map[string]*Camera
 	Rangefinders map[string]*Rangefinder
 	Tripods      map[string]*Tripod
@@ -48,6 +49,7 @@ func NewSite(name string) (*Site, error) {
 		shortIDGen:   shortIDGen,
 		Name:         name,
 		Points:       map[string]*Point{},
+		Lines:        map[string]*Line{},
 		Cameras:      map[string]*Camera{},
 		Rangefinders: map[string]*Rangefinder{},
 		Tripods:      map[string]*Tripod{},
@@ -90,6 +92,9 @@ func (s *Site) UnmarshalJSON(data []byte) error {
 	for k, v := range newSite.Points {
 		v.key, v.site = k, s
 	}
+	for k, v := range newSite.Lines {
+		v.key, v.site = k, s
+	}
 	for k, v := range newSite.Cameras {
 		v.key, v.site = k, s
 	}
@@ -114,6 +119,11 @@ func (s *Site) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 
 	for _, point := range s.Points {
 		newTweakables, newResiduals := point.GetTweakablesAndResiduals()
+		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
+	}
+
+	for _, line := range s.Lines {
+		newTweakables, newResiduals := line.GetTweakablesAndResiduals()
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}
 
@@ -149,6 +159,22 @@ func (s *Site) PointsSorted() []*Point {
 	})
 
 	return points
+}
+
+// LinesSorted returns the lines of the site as a list sorted by date.
+// TODO: Replace with generics once they are available. It's one of the few cases where they are really needed
+func (s *Site) LinesSorted() []*Line {
+	lines := make([]*Line, 0, len(s.Lines))
+
+	for _, line := range s.Lines {
+		lines = append(lines, line)
+	}
+
+	sort.Slice(lines, func(i, j int) bool {
+		return lines[i].CreatedAt.After(lines[j].CreatedAt)
+	})
+
+	return lines
 }
 
 // RangefindersSorted returns the rangefinders of the site as a list sorted by date.

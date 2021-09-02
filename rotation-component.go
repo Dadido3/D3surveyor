@@ -22,5 +22,5 @@ type RotationComponent struct {
 
 	BindValue *Rotation
 
-	Editable bool
+	Editable, Lockable bool
 }

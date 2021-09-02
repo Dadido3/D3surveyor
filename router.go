@@ -82,6 +82,28 @@ func vuguSetup(buildEnv *vugu.BuildEnv, eventEnv vugu.EventEnv) vugu.Builder {
 			root.sidebarDisplay = "none"
 		}))
 
+	router.MustAddRouteExact("/lines",
+		vgrouter.RouteHandlerFunc(func(rm *vgrouter.RouteMatch) {
+			root.Body = &PageLines{Site: globalSite}
+			root.sidebarDisplay = "none"
+		}))
+
+	router.MustAddRoute("/line/:key",
+		vgrouter.RouteHandlerFunc(func(rm *vgrouter.RouteMatch) {
+			keyParams := rm.Params["key"]
+			if len(keyParams) < 1 {
+				root.Body = &PageNotFound{}
+				return
+			}
+			key := keyParams[0]
+			if line, ok := globalSite.Lines[key]; ok {
+				root.Body = line
+			} else {
+				root.Body = &PageNonExistant{}
+			}
+			root.sidebarDisplay = "none"
+		}))
+
 	router.MustAddRouteExact("/cameras",
 		vgrouter.RouteHandlerFunc(func(rm *vgrouter.RouteMatch) {
 			root.Body = &PageCameras{Site: globalSite}

@@ -15,7 +15,11 @@
 
 package main
 
-import "math"
+import (
+	"math"
+
+	"github.com/go-gl/mathgl/mgl64"
+)
 
 type Coordinate struct {
 	X, Y, Z             Distance
@@ -42,4 +46,10 @@ func (c *Coordinate) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 func (c *Coordinate) Distance(c2 Coordinate) Distance {
 	sqr := (c.X-c2.X)*(c.X-c2.X) + (c.Y-c2.Y)*(c.Y-c2.Y) + (c.Z-c2.Z)*(c.Z-c2.Z)
 	return Distance(math.Sqrt(float64(sqr)))
+}
+
+// Vec3 returns the coordinate as vector.
+// Its unit is in meters.
+func (c Coordinate) Vec3() mgl64.Vec3 {
+	return mgl64.Vec3{float64(c.X), float64(c.Y), float64(c.Z)}
 }

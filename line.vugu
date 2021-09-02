@@ -1,0 +1,35 @@
+<div>
+	<main:TitleBar>
+		<button class="w3-bar-item w3-button w3-large w3-ripple w3-teal" @click='c.Navigate("/lines", nil)'><i class="fas fa-arrow-left"></i></button>
+		<span class="w3-bar-item w3-large" vg-content='fmt.Sprintf("Line %s", c.Key())'></span>
+	</main:TitleBar>
+
+	<div class="w3-container w3-row-padding">
+		<div class="w3-third">
+			<label>Point 1</label>
+			<main:PointSelectionComponent :Site="c.site" :BindValue="&c.P1"></main:PointSelectionComponent>
+		</div>
+
+		<div class="w3-third">
+			<label>Point 2</label>
+			<main:PointSelectionComponent :Site="c.site" :BindValue="&c.P2"></main:PointSelectionComponent>
+		</div>
+
+		<div class="w3-third">
+			<div class="w3-card-4">
+				<div class="w3-container w3-green w3-large" style="padding-bottom: 7px;">
+					<main:ToggleInputComponent LabelText="Fit to vector direction" :BindValue="&c.ParallelEnabled"></main:ToggleInputComponent>
+				</div>
+				<div class="w3-container">
+					<main:CoordinateComponent :Editable="true" :BindValue="&c.ParallelVector"></main:CoordinateComponent>
+					<label>Accuracy</label>
+					<main:AngleInputComponent min="0" :BindValue="&c.ParallelAccuracy"></main:AngleInputComponent>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="application/x-go">
+
+</script>

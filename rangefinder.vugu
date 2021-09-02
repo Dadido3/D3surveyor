@@ -6,13 +6,13 @@
 
 	<form class="w3-container w3-row-padding">
 		<div class="w3-half">
-			<label for="name">Name:</label>
-			<vgform:Input class="w3-input" type="text" name="name" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+			<label>Name:</label>
+			<vgform:Input class="w3-input" type="text" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
 		</div>
 
 		<div class="w3-half">
-			<label for="accuracy">Accuracy:</label>
-			<main:DistanceInputComponent name="accuracy" min="0" :BindValue="&c.Accuracy"></main:DistanceInputComponent>
+			<label>Accuracy:</label>
+			<main:DistanceInputComponent min="0" :BindValue="&c.Accuracy"></main:DistanceInputComponent>
 		</div>
 	</form>
 

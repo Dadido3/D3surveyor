@@ -4,8 +4,8 @@
 		<input class="w3-input" vg-if="c.BindValue != nil" name="value" type="number" required .value="c.BindValue" @change="c.handleValueChange(event)"></input>
 	</div>
 	<div vg-if="c.BindLock != nil">
-		<input name="lock" type="checkbox" .checked="c.BindLock" @change="c.handleLockChange(event)"></input>
-		<label for="lock"><i class="fas fa-lock"></i></label>
+		<input type="checkbox" .checked="c.BindLock" @change="c.handleLockChange(event)"></input>
+		<label><i class="fas fa-lock"></i></label>
 	</div>
 </div>
 

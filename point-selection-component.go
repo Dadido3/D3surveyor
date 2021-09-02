@@ -17,7 +17,6 @@ package main
 
 import (
 	"github.com/vugu/vugu"
-	"github.com/vugu/vugu/vgform"
 )
 
 type PointSelectionComponent struct {
@@ -27,16 +26,36 @@ type PointSelectionComponent struct {
 
 	AttrMap vugu.AttrMap
 
-	options vgform.MapOptions
+	options PointSelectionComponentOptions
 }
 
 func (c *PointSelectionComponent) Init(ctx vugu.InitCtx) {
-
 	// Only load the list at creation of the component.
 	// Updating it would cause the dropdown to show the wrong option.
-	c.options = vgform.MapOptions{"": ""}
 
-	for _, point := range c.Site.Points {
-		c.options[point.Key()] = point.Name
+	options := PointSelectionComponentOptions{
+		keys:    []string{""},
+		mapping: map[string]string{"": "-"},
 	}
+
+	// Generate options.
+	for _, point := range c.Site.PointsSorted() {
+		key := point.Key()
+		options.keys = append(options.keys, key)
+		options.mapping[key] = point.Name
+	}
+
+	c.options = options
 }
+
+// PointSelectionComponentOptions contains a list of sorted options.
+type PointSelectionComponentOptions struct {
+	keys    []string
+	mapping map[string]string
+}
+
+// KeyList implements vgform.KeyLister.
+func (o PointSelectionComponentOptions) KeyList() []string { return o.keys }
+
+// TextMap implements vgform.TextMapper.
+func (o PointSelectionComponentOptions) TextMap(key string) string { return o.mapping[key] }

@@ -15,12 +15,16 @@
 
 package main
 
-import "github.com/vugu/vugu"
+import "github.com/vugu/vgrouter"
 
-type CoordinateComponent struct {
-	AttrMap vugu.AttrMap
+type PageLines struct {
+	vgrouter.NavigatorRef `json:"-"`
 
-	BindValue *Coordinate
+	Site *Site
+}
 
-	Editable, Lockable bool
+func (c *PageLines) handleAdd() {
+	p := c.Site.NewLine()
+
+	c.Navigate("/line/"+p.Key(), nil)
 }
