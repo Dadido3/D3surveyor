@@ -19,7 +19,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/vugu/vugu"
 	"gonum.org/v1/gonum/optimize"
 )
 
@@ -34,26 +33,24 @@ type Residualer interface {
 	ResidualSqr() float64 // Returns the sum of squared residuals. (Each residual is divided by the accuracy of the measurement device).
 }
 
-func Optimize(eventEnv vugu.EventEnv, site *Site) {
+func Optimize(site *Site) {
 	tweakables, residuals := site.GetTweakablesAndResiduals()
 
-	ticker := time.NewTicker(1000 * time.Millisecond)
+	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 
+	// Function to optimize.
 	f := func(x []float64) float64 {
-		// Do some silly UI drawing syncing.
-		eventEnv.Lock()
+		// Do some silly sleep every now and then to prevent the UI from locking up.
+		// TODO: Remove optimizer sleep once WASM threads are fully supported
 		select {
 		case <-ticker.C:
-			defer func() {
-				eventEnv.UnlockRender()
-				time.Sleep(40 * time.Millisecond)
-			}()
+			time.Sleep(1 * time.Millisecond)
 		default:
-			defer eventEnv.UnlockOnly()
 		}
 
-		// TODO: Optimize a copy of the site, to prevent locking the UI.
+		site.Lock()
+		defer site.Unlock()
 
 		// Set tweakable values.
 		for i, tweakable := range tweakables {
@@ -97,9 +94,6 @@ func Optimize(eventEnv vugu.EventEnv, site *Site) {
 	}
 
 	log.Println(res.F, res.X, res.FuncEvaluations, res.MajorIterations)
-
-	eventEnv.Lock()
-	defer eventEnv.UnlockRender()
 
 	// Set tweakable values to the solution.
 	for i, tweakable := range tweakables {

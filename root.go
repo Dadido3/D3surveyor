@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/vugu/vgrouter"
 	"github.com/vugu/vugu"
@@ -42,7 +43,54 @@ func (r *Root) handleSidebarClose(event vugu.DOMEvent) {
 }
 
 func (r *Root) handleRecalculate(event vugu.DOMEvent) {
-	go Optimize(event.EventEnv(), globalSite)
+	// Create clone of site to optimize. Also create a pair of tweakables lists.
+	globalSite.RLock()
+	siteClone := globalSite.Copy()
+	OriginalTweakables, _ := globalSite.GetTweakablesAndResiduals()
+	CloneTweakables, _ := siteClone.GetTweakablesAndResiduals()
+	globalSite.RUnlock()
+
+	done := make(chan struct{})
+
+	// Copy the parameters from siteClone to globalSite.
+	uiSync := func() {
+		// Lock clone.
+		siteClone.RLock()
+		defer siteClone.RUnlock()
+
+		// Lock original site/event environment.
+		event.EventEnv().Lock()
+		defer event.EventEnv().UnlockRender()
+
+		// Overwrite the value of all globalSite tweakables with siteClone tweakables.
+		for i, tweakable := range CloneTweakables {
+			OriginalTweakables[i].SetTweakableValue(tweakable.TweakableValue())
+		}
+	}
+
+	// Call uiSync every now and then until the optimization is done.
+	go func() {
+		ticker := time.NewTicker(250 * time.Millisecond)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-done:
+				uiSync()
+				return
+			case <-ticker.C:
+				uiSync()
+			}
+		}
+	}()
+
+	// Optimize.
+	go func() {
+		Optimize(siteClone)
+
+		// Stop UI updates.
+		done <- struct{}{}
+	}()
 }
 
 func (r *Root) handleDownload(event vugu.DOMEvent) {

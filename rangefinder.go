@@ -68,6 +68,34 @@ func (r *Rangefinder) Delete() {
 	delete(r.site.Rangefinders, r.Key())
 }
 
+// Copy returns a copy of the given object.
+// Expensive data like images will not be copied, but referenced.
+func (r *Rangefinder) Copy() *Rangefinder {
+	copy := &Rangefinder{
+		Name:         r.Name,
+		CreatedAt:    r.CreatedAt,
+		Accuracy:     r.Accuracy,
+		Measurements: map[string]*RangefinderMeasurement{},
+	}
+
+	// Generate copies of all children.
+	for k, v := range r.Measurements {
+		copy.Measurements[k] = v.Copy()
+	}
+
+	// Restore keys and references.
+	copy.RestoreChildrenRefs()
+
+	return copy
+}
+
+// RestoreChildrenRefs updates the key of the children and any reference to this object.
+func (r *Rangefinder) RestoreChildrenRefs() {
+	for k, v := range r.Measurements {
+		v.key, v.rangefinder = k, r
+	}
+}
+
 func (r *Rangefinder) UnmarshalJSON(data []byte) error {
 	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
 	type tempType *Rangefinder
@@ -76,9 +104,7 @@ func (r *Rangefinder) UnmarshalJSON(data []byte) error {
 	}
 
 	// Restore keys and references.
-	for k, v := range r.Measurements {
-		v.key, v.rangefinder = k, r
-	}
+	r.RestoreChildrenRefs()
 
 	return nil
 }
@@ -86,7 +112,7 @@ func (r *Rangefinder) UnmarshalJSON(data []byte) error {
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
 func (r *Rangefinder) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 	tweakables, residuals := []Tweakable{}, []Residualer{}
-	for _, measurement := range r.Measurements {
+	for _, measurement := range r.MeasurementsSorted() {
 		newTweakables, newResiduals := measurement.GetTweakablesAndResiduals()
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}

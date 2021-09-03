@@ -62,14 +62,28 @@ func (l *Line) Delete() {
 	delete(l.site.Lines, l.Key())
 }
 
-/*func (p *Line) UnmarshalJSON(data []byte) error {
+// Copy returns a copy of the given object.
+// Expensive data like images will not be copied, but referenced.
+func (l *Line) Copy() *Line {
+	return &Line{
+		CreatedAt:        l.CreatedAt,
+		P1:               l.P1,
+		P2:               l.P2,
+		ParallelEnabled:  l.ParallelEnabled,
+		ParallelVector:   l.ParallelVector,
+		ParallelAccuracy: l.ParallelAccuracy,
+	}
+}
+
+/*func (l *Line) UnmarshalJSON(data []byte) error {
 	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
 	type tempType *Line
-	if err := json.Unmarshal(data, tempType(p)); err != nil {
+	if err := json.Unmarshal(data, tempType(l)); err != nil {
 		return err
 	}
 
 	// Restore keys and references.
+	l.RestoreChildrenRefs()
 
 	return nil
 }*/

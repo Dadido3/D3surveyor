@@ -56,6 +56,16 @@ func (p *Point) Delete() {
 	delete(p.site.Points, p.Key())
 }
 
+// Copy returns a copy of the given object.
+// Expensive data like images will not be copied, but referenced.
+func (p *Point) Copy() *Point {
+	return &Point{
+		Name:      p.Name,
+		CreatedAt: p.CreatedAt,
+		Position:  p.Position,
+	}
+}
+
 /*func (p *Point) UnmarshalJSON(data []byte) error {
 	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
 	type tempType *Point
@@ -64,6 +74,7 @@ func (p *Point) Delete() {
 	}
 
 	// Restore keys and references.
+	p.RestoreChildrenRefs()
 
 	return nil
 }*/

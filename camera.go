@@ -102,6 +102,36 @@ func (c *Camera) Delete() {
 	delete(c.site.Cameras, c.Key())
 }
 
+// Copy returns a copy of the given object.
+// Expensive data like images will not be copied, but referenced.
+func (c *Camera) Copy() *Camera {
+	copy := &Camera{
+		Name:            c.Name,
+		CreatedAt:       c.CreatedAt,
+		AngAccuracy:     c.AngAccuracy,
+		LongSideAOV:     c.LongSideAOV,
+		LongSideAOVLock: c.LongSideAOVLock,
+		Photos:          map[string]*CameraPhoto{},
+	}
+
+	// Generate copies of all children.
+	for k, v := range c.Photos {
+		copy.Photos[k] = v.Copy()
+	}
+
+	// Restore keys and references.
+	copy.RestoreChildrenRefs()
+
+	return copy
+}
+
+// RestoreChildrenRefs updates the key of the children and any reference to this object.
+func (c *Camera) RestoreChildrenRefs() {
+	for k, v := range c.Photos {
+		v.key, v.camera = k, c
+	}
+}
+
 func (c *Camera) UnmarshalJSON(data []byte) error {
 	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
 	type tempType *Camera
@@ -110,9 +140,7 @@ func (c *Camera) UnmarshalJSON(data []byte) error {
 	}
 
 	// Restore keys and references.
-	for k, v := range c.Photos {
-		v.key, v.camera = k, c
-	}
+	c.RestoreChildrenRefs()
 
 	return nil
 }
@@ -125,7 +153,7 @@ func (c *Camera) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 		tweakables = append(tweakables, &c.LongSideAOV)
 	}
 
-	for _, photo := range c.Photos {
+	for _, photo := range c.PhotosSorted() {
 		newTweakables, newResiduals := photo.GetTweakablesAndResiduals()
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}

@@ -54,3 +54,18 @@ func (p *CameraPhotoPoint) Key() string {
 func (p *CameraPhotoPoint) Delete() {
 	delete(p.photo.Points, p.Key())
 }
+
+// Copy returns a copy of the given object.
+// Expensive data like images will not be copied, but referenced.
+func (p *CameraPhotoPoint) Copy() *CameraPhotoPoint {
+	return &CameraPhotoPoint{
+		CreatedAt:  p.CreatedAt,
+		PointKey:   p.PointKey,
+		X:          p.X,
+		Y:          p.Y,
+		projectedX: p.projectedX,
+		projectedY: p.projectedY,
+		sr:         p.sr,
+		Suggested:  p.Suggested,
+	}
+}

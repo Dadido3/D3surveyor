@@ -71,6 +71,39 @@ func (t *Tripod) Delete() {
 	delete(t.site.Tripods, t.Key())
 }
 
+// Copy returns a copy of the given object.
+// Expensive data like images will not be copied, but referenced.
+func (t *Tripod) Copy() *Tripod {
+	copy := &Tripod{
+		Name:           t.Name,
+		CreatedAt:      t.CreatedAt,
+		Position:       t.Position,
+		Accuracy:       t.Accuracy,
+		Offset:         t.Offset,
+		OffsetSide:     t.OffsetSide,
+		OffsetLock:     t.OffsetLock,
+		OffsetSideLock: t.OffsetSideLock,
+		Measurements:   map[string]*TripodMeasurement{},
+	}
+
+	// Generate copies of all children.
+	for k, v := range t.Measurements {
+		copy.Measurements[k] = v.Copy()
+	}
+
+	// Restore keys and references.
+	copy.RestoreChildrenRefs()
+
+	return copy
+}
+
+// RestoreChildrenRefs updates the key of the children and any reference to this object.
+func (t *Tripod) RestoreChildrenRefs() {
+	for k, v := range t.Measurements {
+		v.key, v.tripod = k, t
+	}
+}
+
 func (t *Tripod) UnmarshalJSON(data []byte) error {
 	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
 	type tempType *Tripod
@@ -79,9 +112,7 @@ func (t *Tripod) UnmarshalJSON(data []byte) error {
 	}
 
 	// Restore keys and references.
-	for k, v := range t.Measurements {
-		v.key, v.tripod = k, t
-	}
+	t.RestoreChildrenRefs()
 
 	return nil
 }
@@ -97,7 +128,7 @@ func (t *Tripod) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 		tweakables = append(tweakables, &t.OffsetSide)
 	}
 
-	for _, measurement := range t.Measurements {
+	for _, measurement := range t.MeasurementsSorted() {
 		newTweakables, newResiduals := measurement.GetTweakablesAndResiduals()
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}

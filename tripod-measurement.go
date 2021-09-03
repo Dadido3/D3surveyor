@@ -56,6 +56,16 @@ func (tm *TripodMeasurement) Delete() {
 	delete(tm.tripod.Measurements, tm.Key())
 }
 
+// Copy returns a copy of the given object.
+// Expensive data like images will not be copied, but referenced.
+func (tm *TripodMeasurement) Copy() *TripodMeasurement {
+	return &TripodMeasurement{
+		CreatedAt:        tm.CreatedAt,
+		PointKey:         tm.PointKey,
+		MeasuredDistance: tm.MeasuredDistance,
+	}
+}
+
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
 func (tm *TripodMeasurement) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 	return nil, []Residualer{tm}

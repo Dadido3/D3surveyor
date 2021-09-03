@@ -55,6 +55,17 @@ func (d *RangefinderMeasurement) Delete() {
 	delete(d.rangefinder.Measurements, d.Key())
 }
 
+// Copy returns a copy of the given object.
+// Expensive data like images will not be copied, but referenced.
+func (d *RangefinderMeasurement) Copy() *RangefinderMeasurement {
+	return &RangefinderMeasurement{
+		CreatedAt:        d.CreatedAt,
+		P1:               d.P1,
+		P2:               d.P2,
+		MeasuredDistance: d.MeasuredDistance,
+	}
+}
+
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
 func (d *RangefinderMeasurement) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 	return nil, []Residualer{d}

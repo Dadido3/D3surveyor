@@ -18,6 +18,7 @@ package main
 import (
 	"encoding/json"
 	"sort"
+	"sync"
 
 	"github.com/teris-io/shortid"
 	"github.com/vugu/vgrouter"
@@ -25,6 +26,7 @@ import (
 
 // Site is the root container for all measurements, points and constraints of a place/site.
 type Site struct {
+	sync.RWMutex          `json:"-"`
 	vgrouter.NavigatorRef `json:"-"`
 
 	shortIDGen *shortid.Shortid
@@ -76,37 +78,78 @@ func NewSiteFromJSON(data []byte) (*Site, error) {
 	return site, nil
 }
 
+// Copy returns a copy of the given object.
+// Expensive data like images will not be copied, but referenced.
+func (s *Site) Copy() *Site {
+	copy := &Site{
+		Name:         s.Name,
+		Points:       map[string]*Point{},
+		Lines:        map[string]*Line{},
+		Cameras:      map[string]*Camera{},
+		Rangefinders: map[string]*Rangefinder{},
+		Tripods:      map[string]*Tripod{},
+	}
+
+	// Generate copies of all children.
+	for k, v := range s.Points {
+		copy.Points[k] = v.Copy()
+	}
+	for k, v := range s.Lines {
+		copy.Lines[k] = v.Copy()
+	}
+	for k, v := range s.Cameras {
+		copy.Cameras[k] = v.Copy()
+	}
+	for k, v := range s.Rangefinders {
+		copy.Rangefinders[k] = v.Copy()
+	}
+	for k, v := range s.Tripods {
+		copy.Tripods[k] = v.Copy()
+	}
+
+	// Restore keys and references.
+	copy.RestoreChildrenRefs()
+
+	return copy
+}
+
+// RestoreChildrenRefs updates the key of the children and any reference to this object.
+func (s *Site) RestoreChildrenRefs() {
+	for k, v := range s.Points {
+		v.key, v.site = k, s
+	}
+	for k, v := range s.Lines {
+		v.key, v.site = k, s
+	}
+	for k, v := range s.Cameras {
+		v.key, v.site = k, s
+	}
+	for k, v := range s.Rangefinders {
+		v.key, v.site = k, s
+	}
+	for k, v := range s.Tripods {
+		v.key, v.site = k, s
+	}
+}
+
 func (s *Site) UnmarshalJSON(data []byte) error {
 	newSite, err := NewSite("")
 	if err != nil {
 		return err
 	}
 
+	// Overwrite data of existing site. This basically resets the site.
+	*s = *newSite // TODO: Find better way to reset site data
+
 	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
 	type tempType *Site
-	if err := json.Unmarshal(data, tempType(newSite)); err != nil {
+	if err := json.Unmarshal(data, tempType(s)); err != nil {
 		return err
 	}
 
 	// Restore keys and references.
-	for k, v := range newSite.Points {
-		v.key, v.site = k, s
-	}
-	for k, v := range newSite.Lines {
-		v.key, v.site = k, s
-	}
-	for k, v := range newSite.Cameras {
-		v.key, v.site = k, s
-	}
-	for k, v := range newSite.Rangefinders {
-		v.key, v.site = k, s
-	}
-	for k, v := range newSite.Tripods {
-		v.key, v.site = k, s
-	}
+	s.RestoreChildrenRefs()
 
-	// Overwrite data of existing site.
-	*s = *newSite
 	return nil
 }
 
@@ -117,27 +160,27 @@ var globalSite *Site = MustNewSite("New")
 func (s *Site) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 	tweakables, residuals := []Tweakable{}, []Residualer{}
 
-	for _, point := range s.Points {
+	for _, point := range s.PointsSorted() {
 		newTweakables, newResiduals := point.GetTweakablesAndResiduals()
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}
 
-	for _, line := range s.Lines {
+	for _, line := range s.LinesSorted() {
 		newTweakables, newResiduals := line.GetTweakablesAndResiduals()
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}
 
-	for _, camera := range s.Cameras {
+	for _, camera := range s.CamerasSorted() {
 		newTweakables, newResiduals := camera.GetTweakablesAndResiduals()
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}
 
-	for _, rangefinder := range s.Rangefinders {
+	for _, rangefinder := range s.RangefindersSorted() {
 		newTweakables, newResiduals := rangefinder.GetTweakablesAndResiduals()
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}
 
-	for _, tripod := range s.Tripods {
+	for _, tripod := range s.TripodsSorted() {
 		newTweakables, newResiduals := tripod.GetTweakablesAndResiduals()
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}

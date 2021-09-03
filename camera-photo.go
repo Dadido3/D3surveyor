@@ -85,17 +85,37 @@ func (cp *CameraPhoto) Delete() {
 	}
 }
 
-func (cp *CameraPhoto) createPhotoBlob(imageData []byte) {
-	if cp.jsImageURL.Truthy() {
-		js.Global().Get("URL").Call("revokeObjectURL", cp.jsImageURL)
+// Copy returns a copy of the given object.
+// Expensive data like images will not be copied, but referenced.
+func (cp *CameraPhoto) Copy() *CameraPhoto {
+	copy := &CameraPhoto{
+		CreatedAt:   cp.CreatedAt,
+		ImageData:   cp.ImageData,
+		ImageWidth:  cp.ImageWidth,
+		ImageHeight: cp.ImageHeight,
+		jsImageBlob: cp.jsImageBlob,
+		jsImageURL:  cp.jsImageURL,
+		Position:    cp.Position,
+		Orientation: cp.Orientation,
+		Points:      map[string]*CameraPhotoPoint{},
 	}
 
-	dst := js.Global().Get("Uint8Array").New(len(imageData))
-	js.CopyBytesToJS(dst, imageData)
-	dstArray := js.Global().Get("Array").New(dst)
+	// Generate copies of all children.
+	for k, v := range cp.Points {
+		copy.Points[k] = v.Copy()
+	}
 
-	cp.jsImageBlob = js.Global().Get("Blob").New(dstArray, js.ValueOf(map[string]interface{}{"type": "image/*"}))
-	cp.jsImageURL = js.Global().Get("URL").Call("createObjectURL", cp.jsImageBlob) // This has to be freed when the photo is deleted.
+	// Restore keys and references.
+	copy.RestoreChildrenRefs()
+
+	return copy
+}
+
+// RestoreChildrenRefs updates the key of the children and any reference to this object.
+func (cp *CameraPhoto) RestoreChildrenRefs() {
+	for k, v := range cp.Points {
+		v.key, v.photo = k, cp
+	}
 }
 
 func (cp *CameraPhoto) UnmarshalJSON(data []byte) error {
@@ -109,11 +129,22 @@ func (cp *CameraPhoto) UnmarshalJSON(data []byte) error {
 	cp.createPhotoBlob(cp.ImageData)
 
 	// Restore keys and references.
-	for k, v := range cp.Points {
-		v.key, v.photo = k, cp
-	}
+	cp.RestoreChildrenRefs()
 
 	return nil
+}
+
+func (cp *CameraPhoto) createPhotoBlob(imageData []byte) {
+	if cp.jsImageURL.Truthy() {
+		js.Global().Get("URL").Call("revokeObjectURL", cp.jsImageURL)
+	}
+
+	dst := js.Global().Get("Uint8Array").New(len(imageData))
+	js.CopyBytesToJS(dst, imageData)
+	dstArray := js.Global().Get("Array").New(dst)
+
+	cp.jsImageBlob = js.Global().Get("Blob").New(dstArray, js.ValueOf(map[string]interface{}{"type": "image/*"}))
+	cp.jsImageURL = js.Global().Get("URL").Call("createObjectURL", cp.jsImageBlob) // This has to be freed when the photo is deleted.
 }
 
 func (cp *CameraPhoto) JsImageURL() string {
