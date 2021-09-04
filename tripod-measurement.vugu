@@ -11,6 +11,11 @@
 		</div>
 
 		<div class="w3-third">
+			<label>Point preview</label>
+			<main:PointViewComponent :Width="300" :Height="300" :Site="c.tripod.site" :PointKey="c.PointKey"></main:PointViewComponent>
+		</div>
+
+		<div class="w3-third">
 			<label>Measured distance</label>
 			<main:DistanceInputComponent min="0" :BindValue="&c.MeasuredDistance"></main:DistanceInputComponent>
 		</div>

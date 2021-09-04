@@ -4,12 +4,23 @@
 		<span class="w3-bar-item w3-large" vg-content='fmt.Sprintf("Point %s", c.Key())'></span>
 	</main:TitleBar>
 
-	<div class="w3-container">
-		<label>Name</label>
-		<vgform:Input class="w3-input" type="text" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+	<div class="w3-container w3-row-padding">
+		<div class="w3-third">
+			<label>Name</label>
+			<vgform:Input class="w3-input" type="text" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+		</div>
 
-		<label>Position</label>
-		<main:CoordinateComponent :Editable="true" :Lockable="true" :BindValue="&c.Position"></main:CoordinateComponent>
+		<div class="w3-third">
+			<label>Point 1 preview</label>
+			<main:PointViewComponent :Width="300" :Height="300" :Site="c.site" :PointKey="c.Key()"></main:PointViewComponent>
+		</div>
+
+		<div class="w3-third">
+			<div class="w3-card-4">
+				<div class="w3-container w3-green w3-large">Position</div>
+				<main:CoordinateComponent :Editable="true" :Lockable="true" :BindValue="&c.Position"></main:CoordinateComponent>
+			</div>
+		</div>
 	</div>
 
 </div>
