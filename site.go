@@ -31,6 +31,8 @@ type Site struct {
 
 	shortIDGen *shortid.Shortid
 
+	optimizerState OptimizerState
+
 	Name string
 
 	// Geometry data and measurements.
@@ -57,6 +59,9 @@ func NewSite(name string) (*Site, error) {
 		Tripods:      map[string]*Tripod{},
 	}
 
+	// Restore keys and references.
+	site.RestoreChildrenRefs()
+
 	return site, nil
 }
 
@@ -82,7 +87,8 @@ func NewSiteFromJSON(data []byte) (*Site, error) {
 // Expensive data like images will not be copied, but referenced.
 func (s *Site) Copy() *Site {
 	copy := &Site{
-		Name:         s.Name,
+		Name: s.Name,
+		//optimizerState: s.optimizerState.Copy(), // Don't copy optimizer state for now.
 		Points:       map[string]*Point{},
 		Lines:        map[string]*Line{},
 		Cameras:      map[string]*Camera{},
@@ -115,6 +121,8 @@ func (s *Site) Copy() *Site {
 
 // RestoreChildrenRefs updates the key of the children and any reference to this object.
 func (s *Site) RestoreChildrenRefs() {
+	s.optimizerState.site = s
+
 	for k, v := range s.Points {
 		v.key, v.site = k, s
 	}

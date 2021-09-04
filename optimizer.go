@@ -16,6 +16,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -33,14 +34,21 @@ type Residualer interface {
 	ResidualSqr() float64 // Returns the sum of squared residuals. (Each residual is divided by the accuracy of the measurement device).
 }
 
-func Optimize(site *Site) {
+func Optimize(site *Site, stopFunc func() bool) error {
 	tweakables, residuals := site.GetTweakablesAndResiduals()
+
+	if len(tweakables) == 0 {
+		return fmt.Errorf("there are no tweakable variables")
+	}
+	if len(tweakables) == 0 {
+		return fmt.Errorf("there are no residuals to be determined")
+	}
 
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 
 	// Function to optimize.
-	f := func(x []float64) float64 {
+	optimizeFunc := func(x []float64) float64 {
 		// Do some silly sleep every now and then to prevent the UI from locking up.
 		// TODO: Remove optimizer sleep once WASM threads are fully supported
 		select {
@@ -66,8 +74,18 @@ func Optimize(site *Site) {
 		return ssr
 	}
 
+	// Function to end the optimization prematurely.
+	statusFunc := func() (optimize.Status, error) {
+		if stopFunc() {
+			return optimize.Success, nil
+		}
+
+		return optimize.NotTerminated, nil
+	}
+
 	p := optimize.Problem{
-		Func: f,
+		Func:   optimizeFunc,
+		Status: statusFunc,
 	}
 
 	// Get the initial tweakable variables/parameters.
@@ -77,15 +95,8 @@ func Optimize(site *Site) {
 		//init = append(init, rand.Float64())
 	}
 
-	/*res, err := optimize.Minimize(p, init, nil, &optimize.CmaEsChol{InitStepSize: 0.01})
-	if err != nil {
-		log.Printf("Optimization failed: %v", err)
-	}
-	if err = res.Status.Err(); err != nil {
-		log.Printf("Optimization status error: %v", err)
-	}*/
-
-	res, err := optimize.Minimize(p, init, &optimize.Settings{Converger: &optimize.FunctionConverge{Absolute: 1e-10, Iterations: 1000}}, &optimize.NelderMead{})
+	//res, err := optimize.Minimize(p, init, nil, &optimize.CmaEsChol{InitStepSize: 0.01})
+	res, err := optimize.Minimize(p, init, &optimize.Settings{Converger: &optimize.FunctionConverge{Absolute: 1e-10, Iterations: 100000}}, &optimize.NelderMead{})
 	if err != nil {
 		log.Printf("Optimization failed: %v", err)
 	}
@@ -99,4 +110,6 @@ func Optimize(site *Site) {
 	for i, tweakable := range tweakables {
 		tweakable.SetTweakableValue(res.X[i])
 	}
+
+	return nil
 }

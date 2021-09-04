@@ -1,0 +1,3 @@
+<button vg-attr="c.AttrMap" @click="c.handleClick(event)">
+	<i :class="c.fontAwesomeClass"></i>
+</button>
