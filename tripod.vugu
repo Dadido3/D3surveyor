@@ -4,14 +4,14 @@
 		<span class="w3-bar-item w3-large" vg-content='fmt.Sprintf("Tripod %s", c.Key())'></span>
 	</main:TitleBar>
 
-	<form class="w3-container w3-row-padding">
+	<div class="w3-container w3-row-padding">
 		<div class="w3-third">
-			<label>Name:</label>
+			<label>Name</label>
 			<vgform:Input class="w3-input" type="text" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
 		</div>
 
 		<div class="w3-third">
-			<label>Accuracy:</label>
+			<label>Accuracy (m)</label>
 			<main:DistanceInputComponent min="0" :BindValue="&c.Accuracy"></main:DistanceInputComponent>
 		</div>
 
@@ -22,23 +22,20 @@
 			</div>
 		</div>
 
-	</form>
-
-	<form class="w3-container w3-row-padding">
 		<div class="w3-third">
-			<label>Offset:</label>
+			<label>Offset</label>
 			<main:DistanceInputComponent :BindValue="&c.Offset" :BindLock="&c.OffsetLock"></main:DistanceInputComponent>
 		</div>
 
 		<div class="w3-third">
-			<label>Side offset:</label>
+			<label>Side offset</label>
 			<main:DistanceInputComponent :BindValue="&c.OffsetSide" :BindLock="&c.OffsetSideLock"></main:DistanceInputComponent>
 		</div>
-	</form>
+	</div>
 
 	<div class="w3-container">
 		<span class="w3-large" vg-content='fmt.Sprintf("%d measurements", len(c.Measurements))'></span>
-		<button class="w3-large w3-button w3-teal" @click="c.handleAdd()"><i class="fas fa-plus"></i></button>
+		<button class="w3-large w3-button w3-teal" @click="c.handleAdd(event)"><i class="fas fa-plus"></i></button>
 
 		<ul class="w3-ul w3-card-4">
 			<li vg-for="_, measurement := range c.MeasurementsSorted()" class="w3-bar">

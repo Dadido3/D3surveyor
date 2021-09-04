@@ -3,12 +3,12 @@
 		<span class="w3-bar-item w3-large" vg-content='fmt.Sprintf("Site %q", c.Name)'></span>
 	</main:TitleBar>
 
-	<form class="w3-container w3-row-padding">
+	<div class="w3-container w3-row-padding">
 		<div class="w3-third">
 			<label>Name</label>
 			<vgform:Input class="w3-input" type="text" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
 		</div>
-	</form>
+	</div>
 
 	<div class="w3-container w3-row-padding">
 		<div class="w3-third">

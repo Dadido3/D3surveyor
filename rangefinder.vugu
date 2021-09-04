@@ -4,17 +4,17 @@
 		<span class="w3-bar-item w3-large" vg-content='fmt.Sprintf("Rangefinder %s", c.Key())'></span>
 	</main:TitleBar>
 
-	<form class="w3-container w3-row-padding">
+	<div class="w3-container w3-row-padding">
 		<div class="w3-half">
-			<label>Name:</label>
+			<label>Name</label>
 			<vgform:Input class="w3-input" type="text" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
 		</div>
 
 		<div class="w3-half">
-			<label>Accuracy:</label>
+			<label>Accuracy (m)</label>
 			<main:DistanceInputComponent min="0" :BindValue="&c.Accuracy"></main:DistanceInputComponent>
 		</div>
-	</form>
+	</div>
 
 	<div class="w3-container">
 		<span class="w3-large" vg-content='fmt.Sprintf("%d measurements", len(c.Measurements))'></span>

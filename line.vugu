@@ -32,7 +32,7 @@
 				</div>
 				<div class="w3-container">
 					<main:CoordinateComponent :Editable="true" :BindValue="&c.ParallelVector"></main:CoordinateComponent>
-					<label>Accuracy</label>
+					<label>Accuracy (deg)</label>
 					<main:AngleInputComponent min="0" :BindValue="&c.ParallelAccuracy"></main:AngleInputComponent>
 				</div>
 			</div>

@@ -46,7 +46,7 @@ func (s *Site) NewLine() *Line {
 		key:              key,
 		CreatedAt:        time.Now(),
 		ParallelVector:   Coordinate{X: 0, Y: 0, Z: 1},
-		ParallelAccuracy: Angle(0.1),
+		ParallelAccuracy: Angle(1 * math.Pi / 180),
 	}
 
 	s.Lines[key] = line

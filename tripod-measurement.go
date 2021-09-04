@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/vugu/vgrouter"
+	"github.com/vugu/vugu"
 )
 
 type TripodMeasurement struct {
@@ -45,6 +46,10 @@ func (t *Tripod) NewMeasurement() *TripodMeasurement {
 
 	t.Measurements[key] = rm
 
+	if suggestedPoint := t.SuggestPoint(); suggestedPoint != nil {
+		rm.PointKey = suggestedPoint.Key()
+	}
+
 	return rm
 }
 
@@ -63,6 +68,16 @@ func (tm *TripodMeasurement) Copy() *TripodMeasurement {
 		CreatedAt:        tm.CreatedAt,
 		PointKey:         tm.PointKey,
 		MeasuredDistance: tm.MeasuredDistance,
+	}
+}
+
+func (tm *TripodMeasurement) handleNextSuggestion(event vugu.DOMEvent) {
+	if tm.PointKey != "" {
+		tm.tripod.ignoredPoints = append(tm.tripod.ignoredPoints, tm.PointKey)
+	}
+
+	if suggestedPoint := tm.tripod.SuggestPoint(); suggestedPoint != nil {
+		tm.PointKey = suggestedPoint.Key()
 	}
 }
 

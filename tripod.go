@@ -17,10 +17,12 @@ package main
 
 import (
 	"encoding/json"
+	"math"
 	"sort"
 	"time"
 
 	"github.com/vugu/vgrouter"
+	"github.com/vugu/vugu"
 )
 
 type Tripod struct {
@@ -37,7 +39,8 @@ type Tripod struct {
 	Offset, OffsetSide         Distance   // Offset of the rangefinder from the pivot point.
 	OffsetLock, OffsetSideLock bool       // Prevent the values from being optimized.
 
-	Measurements map[string]*TripodMeasurement // List of measurements.
+	Measurements  map[string]*TripodMeasurement // List of measurements.
+	ignoredPoints []string                      // List of point keys that will not be suggested anymore.
 }
 
 func (s *Site) NewTripod(name string) *Tripod {
@@ -57,7 +60,7 @@ func (s *Site) NewTripod(name string) *Tripod {
 	return r
 }
 
-func (t *Tripod) handleAdd() {
+func (t *Tripod) handleAdd(event vugu.DOMEvent) {
 	measurement := t.NewMeasurement()
 
 	t.Navigate("/tripod/"+t.Key()+"/measurement/"+measurement.Key(), nil)
@@ -153,4 +156,57 @@ func (t *Tripod) MeasurementsSorted() []*TripodMeasurement {
 	})
 
 	return measurements
+}
+
+// PointUsed returns whether the point is already used in some measurement.
+func (t *Tripod) PointUsed(point *Point) bool {
+	if point == nil {
+		return false
+	}
+
+	for _, measurement := range t.Measurements {
+		if measurement.PointKey == point.Key() {
+			return true
+		}
+	}
+
+	return false
+}
+
+// PointSuggestionAllowed returns whether the point is allowed to be used as suggestion.
+func (t *Tripod) PointSuggestionAllowed(point *Point) bool {
+	if point == nil {
+		return false
+	}
+
+	for _, pointKey := range t.ignoredPoints {
+		if pointKey == point.Key() {
+			return false
+		}
+	}
+
+	return true
+}
+
+// SuggestPoint returns a point that should be measured next.
+func (t *Tripod) SuggestPoint() *Point {
+	// Go through all measurements, beginning from the newest.
+	// Search for a measurement with a valid point, use that point as "previous point".
+	for _, measurement := range t.MeasurementsSorted() {
+		if previousPoint, ok := t.site.Points[measurement.PointKey]; ok {
+
+			// Find unused point that is closest to the previous point.
+			closestPoint, closestDist := (*Point)(nil), Distance(math.Inf(1))
+			for _, point := range t.site.Points {
+				dist := point.Position.Distance(previousPoint.Position) // TODO: Use squared distance here
+				if closestDist > dist && t.PointSuggestionAllowed(point) && !t.PointUsed(point) {
+					closestDist, closestPoint = dist, point
+				}
+			}
+
+			return closestPoint
+		}
+	}
+
+	return nil
 }

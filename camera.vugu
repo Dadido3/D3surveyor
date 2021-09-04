@@ -4,14 +4,14 @@
 		<span class="w3-bar-item w3-large" vg-content='fmt.Sprintf("Camera %q (%s)", c.Name, c.Key())'></span>
 	</main:TitleBar>
 
-	<form class="w3-container w3-row-padding">
+	<div class="w3-container w3-row-padding">
 		<div class="w3-third">
 			<label>Name</label>
 			<vgform:Input class="w3-input" type="text" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
 		</div>
 
 		<div class="w3-third">
-			<label>Accuracy</label>
+			<label>Accuracy (deg)</label>
 			<main:AngleInputComponent min="0" :BindValue="&c.AngAccuracy"></main:AngleInputComponent>
 		</div>
 
@@ -19,7 +19,7 @@
 			<label>Angle of view</label>
 			<main:AngleInputComponent min="0" :BindValue="&c.LongSideAOV" :BindLock="&c.LongSideAOVLock"></main:AngleInputComponent>
 		</div>
-	</form>
+	</div>
 
 	<div class="w3-container">
 		<span class="w3-large" vg-content='fmt.Sprintf("%d photos", len(c.Photos))'></span>
