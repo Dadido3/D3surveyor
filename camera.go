@@ -170,7 +170,7 @@ func (c *Camera) GetProjectionMatrix(width, height float64) mgl64.Mat4 {
 		aovY = float64(c.LongSideAOV)
 	}
 
-	return mgl64.Perspective(aovY, aspect, 0.001, 1)
+	return mgl64.Perspective(aovY, aspect, 0.01, 10000)
 }
 
 // PhotosSorted returns the photos of the camera as a list sorted by date.

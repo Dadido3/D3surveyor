@@ -293,7 +293,7 @@ func (cp *CameraPhoto) UpdateSuggestions() {
 	// Update suggested mapped points.
 	for i, pointProjected := range pointsProjected {
 		point := points[i]
-		if pointProjected.Z() > 0 && pointProjected.X() >= 0 && pointProjected.X() <= 1 && pointProjected.Y() >= 0 && pointProjected.Y() <= 1 {
+		if pointProjected.Z() >= 0 && pointProjected.Z() <= 1 && pointProjected.X() >= 0 && pointProjected.X() <= 1 && pointProjected.Y() >= 0 && pointProjected.Y() <= 1 {
 			// The projection is valid, create or update point mapping.
 			var foundMappedPoint *CameraPhotoPoint
 			for _, mappedPoint := range cp.Points { // TODO: Remove stupid linear search
