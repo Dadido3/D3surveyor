@@ -101,8 +101,9 @@ There are many possible features that could be added in the future:
 
 - Other coordinate systems (e.g. WGS 84).
 - Use of the GPS metadata from images.
-- (More) constraints like parallelism, alignment to primary axes.
+- More constraints.
 - Tags to filter objects.
 - Optimizer improvements.
-- Suggest points or other parameters when creating new measurements.
+- List problems like measurements with a high sr.
+- Give user suggestions for a better result.
 - Documentation

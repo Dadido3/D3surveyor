@@ -32,21 +32,21 @@ type Line struct {
 
 	P1, P2 string
 
-	// Parallelism to a given vector.
-	ParallelEnabled  bool
-	ParallelVector   Coordinate
-	ParallelAccuracy Angle
+	// Fit line along a given direction vector.
+	DirectionEnabled  bool
+	DirectionVector   Coordinate
+	DirectionAccuracy Angle
 }
 
 func (s *Site) NewLine() *Line {
 	key := s.shortIDGen.MustGenerate()
 
 	line := &Line{
-		site:             s,
-		key:              key,
-		CreatedAt:        time.Now(),
-		ParallelVector:   Coordinate{X: 0, Y: 0, Z: 1},
-		ParallelAccuracy: Angle(1 * math.Pi / 180),
+		site:              s,
+		key:               key,
+		CreatedAt:         time.Now(),
+		DirectionVector:   Coordinate{X: 0, Y: 0, Z: 1},
+		DirectionAccuracy: Angle(1 * math.Pi / 180),
 	}
 
 	s.Lines[key] = line
@@ -66,12 +66,12 @@ func (l *Line) Delete() {
 // Expensive data like images will not be copied, but referenced.
 func (l *Line) Copy() *Line {
 	return &Line{
-		CreatedAt:        l.CreatedAt,
-		P1:               l.P1,
-		P2:               l.P2,
-		ParallelEnabled:  l.ParallelEnabled,
-		ParallelVector:   l.ParallelVector,
-		ParallelAccuracy: l.ParallelAccuracy,
+		CreatedAt:         l.CreatedAt,
+		P1:                l.P1,
+		P2:                l.P2,
+		DirectionEnabled:  l.DirectionEnabled,
+		DirectionVector:   l.DirectionVector,
+		DirectionAccuracy: l.DirectionAccuracy,
 	}
 }
 
@@ -108,10 +108,10 @@ func (l *Line) ResidualSqr() float64 {
 
 	ssr := 0.0
 
-	if l.ParallelEnabled {
-		v1, v2 := l.ParallelVector.Vec3(), p2.Position.Vec3().Sub(p1.Position.Vec3())
+	if l.DirectionEnabled {
+		v1, v2 := l.DirectionVector.Vec3(), p2.Position.Vec3().Sub(p1.Position.Vec3())
 
-		sr := sqr(math.Acos(v1.Dot(v2)/v1.Len()/v2.Len()) / float64(l.ParallelAccuracy))
+		sr := sqr(math.Acos(v1.Dot(v2)/v1.Len()/v2.Len()) / float64(l.DirectionAccuracy))
 		if math.IsNaN(sr) {
 			sr = 1000000
 		}

@@ -28,12 +28,12 @@
 		<div class="w3-third">
 			<div class="w3-card-4">
 				<div class="w3-container w3-green w3-large" style="padding-bottom: 7px;">
-					<main:ToggleInputComponent LabelText="Fit to vector direction" :BindValue="&c.ParallelEnabled"></main:ToggleInputComponent>
+					<main:ToggleInputComponent LabelText="Fit to vector direction" :BindValue="&c.DirectionEnabled"></main:ToggleInputComponent>
 				</div>
 				<div class="w3-container">
-					<main:CoordinateComponent :Editable="true" :BindValue="&c.ParallelVector"></main:CoordinateComponent>
+					<main:CoordinateComponent :Editable="true" :BindValue="&c.DirectionVector"></main:CoordinateComponent>
 					<label>Accuracy (deg)</label>
-					<main:AngleInputComponent min="0" :BindValue="&c.ParallelAccuracy"></main:AngleInputComponent>
+					<main:AngleInputComponent min="0" :BindValue="&c.DirectionAccuracy"></main:AngleInputComponent>
 				</div>
 			</div>
 		</div>
