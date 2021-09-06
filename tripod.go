@@ -47,12 +47,14 @@ func (s *Site) NewTripod(name string) *Tripod {
 	key := s.shortIDGen.MustGenerate()
 
 	r := &Tripod{
-		site:         s,
-		key:          key,
-		Name:         name,
-		CreatedAt:    time.Now(),
-		Accuracy:     0.01,
-		Measurements: map[string]*TripodMeasurement{},
+		site:           s,
+		key:            key,
+		Name:           name,
+		CreatedAt:      time.Now(),
+		Accuracy:       0.01,
+		OffsetLock:     false,
+		OffsetSideLock: true,
+		Measurements:   map[string]*TripodMeasurement{},
 	}
 
 	s.Tripods[key] = r
