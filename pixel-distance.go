@@ -15,7 +15,13 @@
 
 package main
 
-// sqr returns the square of the given value.
-func sqr(x float64) float64 {
-	return x * x
+// PixelDistance describes a length or absolute value in pixels.
+type PixelDistance float64
+
+func (p PixelDistance) Pixels() float64 {
+	return float64(p)
+}
+
+func (p PixelDistance) Sqr() float64 {
+	return float64(p * p)
 }

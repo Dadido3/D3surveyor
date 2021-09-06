@@ -21,35 +21,45 @@ import (
 	"github.com/go-gl/mathgl/mgl64"
 )
 
-type Coordinate struct {
-	X, Y, Z             Distance
-	LockX, LockY, LockZ bool // Lock (Don't optimize) the value.
+// Coordinate represents a point in the world.
+// This may also be a relative to another point.
+type Coordinate [3]Distance
+
+func (c Coordinate) X() Distance {
+	return c[0]
 }
 
-// GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
-func (c *Coordinate) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
-	tweakables := make([]Tweakable, 0, 3)
-	if !c.LockX {
-		tweakables = append(tweakables, &c.X)
-	}
-	if !c.LockY {
-		tweakables = append(tweakables, &c.Y)
-	}
-	if !c.LockZ {
-		tweakables = append(tweakables, &c.Z)
-	}
+func (c Coordinate) Y() Distance {
+	return c[1]
+}
 
-	return tweakables, nil
+func (c Coordinate) Z() Distance {
+	return c[2]
 }
 
 // Distance returns the distance between itself and the second coordinate.
-func (c *Coordinate) Distance(c2 Coordinate) Distance {
-	sqr := (c.X-c2.X)*(c.X-c2.X) + (c.Y-c2.Y)*(c.Y-c2.Y) + (c.Z-c2.Z)*(c.Z-c2.Z)
-	return Distance(math.Sqrt(float64(sqr)))
+func (c Coordinate) Distance(c2 Coordinate) Distance {
+	x, y, z := c[0]-c2[0], c[1]-c2[1], c[2]-c2[2]
+	sqrSum := float64(x*x + y*y + z*z)
+	return Distance(math.Sqrt(sqrSum))
+}
+
+func (c Coordinate) Add(c2 Coordinate) Coordinate {
+	return Coordinate{c[0] + c2[0], c[1] + c2[1], c[2] + c2[2]}
+}
+
+func (c Coordinate) Sub(c2 Coordinate) Coordinate {
+	return Coordinate{c[0] - c2[0], c[1] - c2[1], c[2] - c2[2]}
 }
 
 // Vec3 returns the coordinate as vector.
 // Its unit is in meters.
 func (c Coordinate) Vec3() mgl64.Vec3 {
-	return mgl64.Vec3{float64(c.X), float64(c.Y), float64(c.Z)}
+	return mgl64.Vec3{float64(c[0]), float64(c[1]), float64(c[2])}
+}
+
+// Vec4 returns the coordinate as vector.
+// Its unit is in meters.
+func (c Coordinate) Vec4(w float64) mgl64.Vec4 {
+	return mgl64.Vec4{float64(c[0]), float64(c[1]), float64(c[2]), w}
 }

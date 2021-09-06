@@ -15,17 +15,22 @@
 
 package main
 
-// Rotations represents a xyz euler rotation.
-type Rotation [3]Angle
-
-func (r Rotation) X() Angle {
-	return r[0]
+// RotationOptimizable represents a xyz euler rotation.
+// This object can be optimized.
+// Every direction can be locked to prevent optimization.
+type RotationOptimizable struct {
+	Rotation
+	Locked [3]bool // Lock (Don't optimize) the value.
 }
 
-func (r Rotation) Y() Angle {
-	return r[1]
-}
+// GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
+func (r *RotationOptimizable) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
+	tweakables := make([]Tweakable, 0, len(r.Rotation))
+	for i := range r.Rotation {
+		if !r.Locked[i] {
+			tweakables = append(tweakables, &r.Rotation[i])
+		}
+	}
 
-func (r Rotation) Z() Angle {
-	return r[2]
+	return tweakables, nil
 }

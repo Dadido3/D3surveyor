@@ -18,7 +18,7 @@
 		<div class="w3-third">
 			<div class="w3-card-4">
 				<div class="w3-container w3-green w3-large">Position</div>
-				<main:CoordinateComponent :Editable="true" :Lockable="true" :BindValue="&c.Position"></main:CoordinateComponent>
+				<main:CoordinateOptimizableComponent :Editable="true" :BindValue="&c.Position"></main:CoordinateOptimizableComponent>
 			</div>
 		</div>
 

@@ -37,16 +37,18 @@ type CameraPhoto struct {
 
 	CreatedAt time.Time
 
-	ImageData               []byte // TODO: Don't store the image as byte slice. Only store it as a js blob.
-	ImageWidth, ImageHeight int
+	ImageData          []byte // TODO: Don't store the image as byte slice. Only store it as a js blob
+	ImageWidthMigrate  int    `json:"ImageWidth"`  // Value to be migrated. // TODO: Remove value migration in the future
+	ImageHeightMigrate int    `json:"ImageHeight"` // Value to be migrated. // TODO: Remove value migration in the future
+	ImageSize          PixelCoordinate
 
 	jsImageBlob js.Value // Blob representing the image on the js side.
 	jsImageURL  js.Value // URL referencing the blob.
 
-	Position    Coordinate
-	Orientation Rotation
+	Position    CoordinateOptimizable
+	Orientation RotationOptimizable
 
-	Points map[string]*CameraPhotoPoint // List of points mapped to this photo.
+	Mappings map[string]*CameraPhotoMapping // List of mapped points.
 }
 
 func (c *Camera) NewPhoto(imageData []byte) (*CameraPhoto, error) {
@@ -58,13 +60,12 @@ func (c *Camera) NewPhoto(imageData []byte) (*CameraPhoto, error) {
 	key := c.site.shortIDGen.MustGenerate()
 
 	cp := &CameraPhoto{
-		camera:      c,
-		key:         key,
-		CreatedAt:   time.Now(),
-		ImageData:   imageData,
-		ImageWidth:  imageConf.Width,
-		ImageHeight: imageConf.Height,
-		Points:      map[string]*CameraPhotoPoint{},
+		camera:    c,
+		key:       key,
+		CreatedAt: time.Now(),
+		ImageData: imageData,
+		ImageSize: PixelCoordinate{PixelDistance(imageConf.Width), PixelDistance(imageConf.Height)},
+		Mappings:  map[string]*CameraPhotoMapping{},
 	}
 	cp.createPhotoBlob(imageData)
 
@@ -91,18 +92,17 @@ func (cp *CameraPhoto) Copy() *CameraPhoto {
 	copy := &CameraPhoto{
 		CreatedAt:   cp.CreatedAt,
 		ImageData:   cp.ImageData,
-		ImageWidth:  cp.ImageWidth,
-		ImageHeight: cp.ImageHeight,
+		ImageSize:   cp.ImageSize,
 		jsImageBlob: cp.jsImageBlob,
 		jsImageURL:  cp.jsImageURL,
 		Position:    cp.Position,
 		Orientation: cp.Orientation,
-		Points:      map[string]*CameraPhotoPoint{},
+		Mappings:    map[string]*CameraPhotoMapping{},
 	}
 
 	// Generate copies of all children.
-	for k, v := range cp.Points {
-		copy.Points[k] = v.Copy()
+	for k, v := range cp.Mappings {
+		copy.Mappings[k] = v.Copy()
 	}
 
 	// Restore keys and references.
@@ -113,7 +113,7 @@ func (cp *CameraPhoto) Copy() *CameraPhoto {
 
 // RestoreChildrenRefs updates the key of the children and any reference to this object.
 func (cp *CameraPhoto) RestoreChildrenRefs() {
-	for k, v := range cp.Points {
+	for k, v := range cp.Mappings {
 		v.key, v.photo = k, cp
 	}
 }
@@ -130,6 +130,16 @@ func (cp *CameraPhoto) UnmarshalJSON(data []byte) error {
 
 	// Restore keys and references.
 	cp.RestoreChildrenRefs()
+
+	// Migrate some values.
+	cp.ImageSize = PixelCoordinate{PixelDistance(cp.ImageWidthMigrate), PixelDistance(cp.ImageHeightMigrate)}
+
+	for _, mapping := range cp.Mappings {
+		mapping.Position = PixelCoordinate{
+			PixelDistance(mapping.XMigrate) * cp.ImageSize.X(),
+			PixelDistance(mapping.YMigrate) * cp.ImageSize.Y(),
+		}
+	}
 
 	return nil
 }
@@ -163,23 +173,21 @@ func (cp *CameraPhoto) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 func (cp *CameraPhoto) ResidualSqr() float64 {
 	camera, site := cp.camera, cp.camera.site
 
-	//width, height := cp.ImageWidth, cp.ImageHeight
-
-	// Generate list of mapped points and their coordinates. Ignore suggested points.
-	points := make([]*CameraPhotoPoint, 0, len(cp.Points))
-	pointsObj := make([]mgl64.Vec3, 0, len(cp.Points)) // Object/World coordinates of every point.
-	pointsImg := make([]mgl64.Vec3, 0, len(cp.Points)) // Image coordinates where every point is mapped to.
-	for _, point := range cp.Points {
-		if p, ok := site.Points[point.PointKey]; ok && !point.Suggested {
-			points = append(points, point)
-			pointsObj = append(pointsObj, mgl64.Vec3{float64(p.Position.X), float64(p.Position.Y), float64(p.Position.Z)})
-			pointsImg = append(pointsImg, mgl64.Vec3{point.X, point.Y, 1})
+	// Generate list of mappings and their coordinates. Ignore suggested mappings.
+	mappings := make([]*CameraPhotoMapping, 0, len(cp.Mappings))
+	worldCoordinates := make([]Coordinate, 0, len(cp.Mappings))    // World coordinates of every point.
+	imgCoordinates := make([]PixelCoordinate, 0, len(cp.Mappings)) // Image coordinates that each point is mapped to.
+	for _, mapping := range cp.Mappings {
+		if p, ok := site.Points[mapping.PointKey]; ok && !mapping.Suggested {
+			mappings = append(mappings, mapping)
+			worldCoordinates = append(worldCoordinates, p.Position.Coordinate)
+			imgCoordinates = append(imgCoordinates, mapping.Position)
 		}
 	}
 
-	// Project and unproject the points.
-	//pointsProjected := cp.Project(pointsObj)          // The object/world coordinates of every point projected into image coordinates.
-	pointsUnprojected, err := cp.UnProject(pointsImg) // The mapped image coordinates of every point projected into object/world coordinates.
+	// Unproject the mappings and project the points.
+	//projectedCoordinates := cp.Project(worldCoordinates)      // The world coordinates of every point projected into image coordinates.
+	unprojectedCoordinates, err := cp.Unproject(imgCoordinates) // The image coordinates of every mapped point projected into object/world coordinates.
 	if err != nil {
 		log.Printf("cp.UnProject() failed: %v", err)
 		return 1000000
@@ -188,12 +196,11 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 	// Calculate the angle difference between rays going out the camera and points.
 	// Sum up the squared angle residues.
 	ssr := 0.0
-	for i, point := range points {
-		pointObj, pointUnprojected := pointsObj[i], pointsUnprojected[i]
+	for i, mapping := range mappings {
+		worldCoordinate, unprojectedCoordinate := worldCoordinates[i], unprojectedCoordinates[i]
 
-		cpCoordinate := mgl64.Vec3{float64(cp.Position.X), float64(cp.Position.Y), float64(cp.Position.Z)}
-		v1 := pointUnprojected.Sub(cpCoordinate)
-		v2 := pointObj.Sub(cpCoordinate)
+		v1 := unprojectedCoordinate.Sub(cp.Position.Coordinate).Vec3()
+		v2 := worldCoordinate.Sub(cp.Position.Coordinate).Vec3()
 
 		angle := math.Acos(v1.Dot(v2) / v1.Len() / v2.Len())
 
@@ -202,44 +209,46 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 			continue
 		}
 
-		//pixelResidue := mgl64.Vec2{pointProjected.X() * float64(width), pointProjected.Y() * float64(height)}.Sub(mgl64.Vec2{pointImg.X() * float64(width), pointImg.Y() * float64(height)}).Len()
+		//pixelResidue := mgl64.Vec2{projectedCoordinate.X(), projectedCoordinate.Y()}.Sub(mgl64.Vec2{pointImg.X(), pointImg.Y()}).Len()
 
-		// Square the weighted pixel residue.
-		sr := sqr(angle / float64(camera.AngAccuracy))
+		// Square the weighted angular residue.
+		r := (angle / float64(camera.AngAccuracy))
+		sr := r * r
 		sr = math.Min(sr, 1000000)
-		point.sr = sr
+		mapping.sr = sr
 		ssr += sr
 	}
 
 	return ssr
 }
 
-// Project transforms a list of object/world coordinates into a list of image coordinates [0,1].
-func (cp *CameraPhoto) Project(objs []mgl64.Vec3) (win []mgl64.Vec3) {
-	projMatrix := cp.camera.GetProjectionMatrix(float64(cp.ImageWidth), float64(cp.ImageHeight))
+// Project transforms a list of object/world coordinates into a list of image coordinates.
+func (cp *CameraPhoto) Project(worldCoordinates []Coordinate) []PixelCoordinate {
+	projMatrix := cp.camera.GetProjectionMatrix(cp.ImageSize)
 	viewMatrix := cp.GetViewMatrix()
 
 	mvpMatrix := projMatrix.Mul4(viewMatrix)
 
-	wins := make([]mgl64.Vec3, len(objs))
-	for i, obj := range objs {
-		win := &wins[i]
+	imgCoordinates := make([]PixelCoordinate, len(worldCoordinates))
+	for i, worldCoordinate := range worldCoordinates {
+		imgCoordinate := &imgCoordinates[i]
 
-		obj4 := obj.Vec4(1)
+		obj4 := worldCoordinate.Vec4(1)
 
 		vpp := mvpMatrix.Mul4x1(obj4)
 		vpp = vpp.Mul(1 / vpp.W())
-		win[0] = 0 + (vpp[0]+1)/2
-		win[1] = 1 - (vpp[1]+1)/2
-		win[2] = (vpp[2] + 1) / 2
+
+		imgCoordinate[0] = 0 + cp.ImageSize.X()*PixelDistance(vpp[0]+1)/2
+		imgCoordinate[1] = cp.ImageSize.Y() - cp.ImageSize.Y()*PixelDistance(vpp[1]+1)/2
+		imgCoordinate[2] = PixelDistance(vpp[2]+1) / 2
 	}
 
-	return wins
+	return imgCoordinates
 }
 
-// UnProject transforms a list of image coordinates into object/world coordinates.
-func (cp *CameraPhoto) UnProject(wins []mgl64.Vec3) (obj []mgl64.Vec3, err error) {
-	projMatrix := cp.camera.GetProjectionMatrix(float64(cp.ImageWidth), float64(cp.ImageHeight))
+// Unproject transforms a list of image coordinates into world coordinates.
+func (cp *CameraPhoto) Unproject(imgCoordinates []PixelCoordinate) (worldCoordinates []Coordinate, err error) {
+	projMatrix := cp.camera.GetProjectionMatrix(cp.ImageSize)
 	viewMatrix := cp.GetViewMatrix()
 
 	mvpMatrixInv := projMatrix.Mul4(viewMatrix).Inv()
@@ -248,75 +257,77 @@ func (cp *CameraPhoto) UnProject(wins []mgl64.Vec3) (obj []mgl64.Vec3, err error
 		return nil, fmt.Errorf("could not find matrix inverse (projection times modelview is probably non-singular)")
 	}
 
-	objs := make([]mgl64.Vec3, len(wins))
-	for i, win := range wins {
-		obj := &objs[i]
+	worldCoordinates = make([]Coordinate, len(imgCoordinates))
+	for i, imgCoordinate := range imgCoordinates {
+		worldCoordinate := &worldCoordinates[i]
 
 		obj4 := mvpMatrixInv.Mul4x1(mgl64.Vec4{
-			(2 * (win[0] - 0)) - 1,
-			(2 * -(win[1] - 1)) - 1,
-			2*win[2] - 1,
+			float64((2*(imgCoordinate.X()-0))/cp.ImageSize.X() - 1),
+			float64((2*-(imgCoordinate.Y()-cp.ImageSize.Y()))/cp.ImageSize.Y() - 1),
+			float64(2*imgCoordinate.Z() - 1),
 			1.0,
 		})
-		*obj = obj4.Vec3()
 
-		obj[0] /= obj4[3]
-		obj[1] /= obj4[3]
-		obj[2] /= obj4[3]
+		obj4[0] /= obj4[3]
+		obj4[1] /= obj4[3]
+		obj4[2] /= obj4[3]
+
+		worldCoordinate[0] = Distance(obj4.X())
+		worldCoordinate[1] = Distance(obj4.Y())
+		worldCoordinate[2] = Distance(obj4.Z())
 	}
 
-	return objs, nil
+	return worldCoordinates, nil
 }
 
 // UpdateSuggestions recreates/updates all "suggested" point mappings.
 func (cp *CameraPhoto) UpdateSuggestions() {
 	site := cp.camera.site
 
-	// Remove all previously suggested points.
-	/*for key, point := range cp.Points {
-		if point.Suggested {
-			delete(cp.Points, key)
-		}
-	}*/
-
 	// Get a list of all points and their world coordinates.
 	points := make([]*Point, 0, len(site.Points))
-	pointsObj := make([]mgl64.Vec3, 0, len(site.Points)) // Object/World coordinates of every point.
+	worldCoordinates := make([]Coordinate, 0, len(site.Points)) // World coordinates of every point.
 	for _, point := range site.Points {
 		points = append(points, point)
-		pointsObj = append(pointsObj, mgl64.Vec3{float64(point.Position.X), float64(point.Position.Y), float64(point.Position.Z)})
+		worldCoordinates = append(worldCoordinates, point.Position.Coordinate)
 	}
 
 	// Project the points onto the photo.
-	pointsProjected := cp.Project(pointsObj) // The object/world coordinates of every point projected into image coordinates.
+	projectedCoordinates := cp.Project(worldCoordinates) // The object/world coordinates of every point projected into image coordinates.
 
 	// Update suggested mapped points.
-	for i, pointProjected := range pointsProjected {
+	for i, projectedCoordinate := range projectedCoordinates {
 		point := points[i]
-		if pointProjected.Z() >= 0 && pointProjected.Z() <= 1 && pointProjected.X() >= 0 && pointProjected.X() <= 1 && pointProjected.Y() >= 0 && pointProjected.Y() <= 1 {
+		if projectedCoordinate.Z() >= 0 && projectedCoordinate.Z() <= 1 && projectedCoordinate.X() >= 0 && projectedCoordinate.X() <= cp.ImageSize.X() && projectedCoordinate.Y() >= 0 && projectedCoordinate.Y() <= cp.ImageSize.Y() {
 			// The projection is valid, create or update point mapping.
-			var foundMappedPoint *CameraPhotoPoint
-			for _, mappedPoint := range cp.Points { // TODO: Remove stupid linear search
-				if mappedPoint.PointKey == point.Key() {
-					foundMappedPoint = mappedPoint
+			var foundMapping *CameraPhotoMapping
+			for _, mapping := range cp.Mappings { // TODO: Remove stupid linear search
+				if mapping.PointKey == point.Key() {
+					foundMapping = mapping
 					break
 				}
 			}
-			if foundMappedPoint == nil {
-				foundMappedPoint = cp.NewPoint()
-				foundMappedPoint.Suggested = true
+			if foundMapping == nil {
+				foundMapping = cp.NewMapping()
+				foundMapping.Suggested = true
 			}
 			// Update the projected coordinate for every found point.
-			foundMappedPoint.projectedX, foundMappedPoint.projectedY = pointProjected.X(), pointProjected.Y()
+			foundMapping.projectedPos = projectedCoordinate
 			// Only update suggested point mappings, not user placed ones.
-			if foundMappedPoint.Suggested {
-				foundMappedPoint.X, foundMappedPoint.Y, foundMappedPoint.PointKey = pointProjected.X(), pointProjected.Y(), point.Key()
+			if foundMapping.Suggested {
+				foundMapping.Position, foundMapping.PointKey = projectedCoordinate, point.Key()
 			}
 		} else {
 			// The projection is outside of the image, remove the suggested point mapping if there is any.
-			for _, mappedPoint := range cp.Points { // TODO: Remove stupid linear search
-				if mappedPoint.Suggested && mappedPoint.PointKey == point.Key() {
-					mappedPoint.Delete()
+			for _, mapping := range cp.Mappings { // TODO: Remove stupid linear search
+				if mapping.PointKey == point.Key() {
+					if mapping.Suggested {
+						// Delete if it's a suggested mapping.
+						mapping.Delete()
+					} else {
+						// Otherwise just set the projected coordinate to the expected coordinate.
+						mapping.projectedPos = mapping.Position
+					}
 					break
 				}
 			}
@@ -324,18 +335,18 @@ func (cp *CameraPhoto) UpdateSuggestions() {
 	}
 
 	// Remove any suggested mappings to non existing points.
-	for _, mappedPoint := range cp.Points {
-		if mappedPoint.Suggested {
-			if _, found := site.Points[mappedPoint.PointKey]; !found {
-				mappedPoint.Delete()
+	for _, mapping := range cp.Mappings {
+		if mapping.Suggested {
+			if _, found := site.Points[mapping.PointKey]; !found {
+				mapping.Delete()
 			}
 		}
 	}
 }
 
 func (cp *CameraPhoto) GetViewMatrix() mgl64.Mat4 {
-	quat := mgl64.AnglesToQuat(float64(-cp.Orientation.X), float64(-cp.Orientation.Y), float64(-cp.Orientation.Z), mgl64.XYZ)
+	quat := mgl64.AnglesToQuat(float64(-cp.Orientation.X()), float64(-cp.Orientation.Y()), float64(-cp.Orientation.Z()), mgl64.XYZ)
 	rotationMatrix := quat.Mat4()
-	translationMatrix := mgl64.Translate3D(float64(-cp.Position.X), float64(-cp.Position.Y), float64(-cp.Position.Z))
+	translationMatrix := mgl64.Translate3D(float64(-cp.Position.X()), float64(-cp.Position.Y()), float64(-cp.Position.Z()))
 	return rotationMatrix.Mul4(translationMatrix)
 }

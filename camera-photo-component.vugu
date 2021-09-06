@@ -8,9 +8,9 @@
 
 		<main:ToggleInputComponent LabelText="Show tripods" :BindValue="&c.showTripods"></main:ToggleInputComponent>
 
-		<vg-template vg-if="c.selectedPoint != nil">
+		<vg-template vg-if="c.selectedMapping != nil">
 			<label>Point:</label>
-			<main:PointSelectionComponent :Site="c.Photo.camera.site" :BindValue="&c.selectedPoint.PointKey"></main:PointSelectionComponent>
+			<main:PointSelectionComponent :Site="c.Photo.camera.site" :BindValue="&c.selectedMapping.PointKey"></main:PointSelectionComponent>
 		</vg-template>
 	</div>
 

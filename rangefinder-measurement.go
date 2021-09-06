@@ -84,5 +84,5 @@ func (d *RangefinderMeasurement) ResidualSqr() float64 {
 		return 0
 	}
 
-	return sqr(float64((p1.Position.Distance(p2.Position) - d.MeasuredDistance) / d.rangefinder.Accuracy)) // TODO: Check if this can be optimized
+	return ((p1.Position.Distance(p2.Position.Coordinate) - d.MeasuredDistance) / d.rangefinder.Accuracy).Sqr() // TODO: Check if this can be optimized
 }

@@ -34,10 +34,10 @@ type Tripod struct {
 	Name      string
 	CreatedAt time.Time
 
-	Position                   Coordinate // Pivot point of the tripod.
-	Accuracy                   Distance   // Accuracy of the measurement.
-	Offset, OffsetSide         Distance   // Offset of the rangefinder from the pivot point.
-	OffsetLock, OffsetSideLock bool       // Prevent the values from being optimized.
+	Position                   CoordinateOptimizable // Pivot point of the tripod.
+	Accuracy                   Distance              // Accuracy of the measurement.
+	Offset, OffsetSide         Distance              // Offset of the rangefinder from the pivot point.
+	OffsetLock, OffsetSideLock bool                  // Prevent the values from being optimized.
 
 	Measurements  map[string]*TripodMeasurement // List of measurements.
 	ignoredPoints []string                      // List of point keys that will not be suggested anymore.
@@ -200,7 +200,7 @@ func (t *Tripod) SuggestPoint() *Point {
 			// Find unused point that is closest to the previous point.
 			closestPoint, closestDist := (*Point)(nil), Distance(math.Inf(1))
 			for _, point := range t.site.Points {
-				dist := point.Position.Distance(previousPoint.Position) // TODO: Use squared distance here
+				dist := point.Position.Distance(previousPoint.Position.Coordinate) // TODO: Use squared distance here
 				if closestDist > dist && t.PointSuggestionAllowed(point) && !t.PointUsed(point) {
 					closestDist, closestPoint = dist, point
 				}

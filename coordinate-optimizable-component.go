@@ -15,17 +15,12 @@
 
 package main
 
-// Rotations represents a xyz euler rotation.
-type Rotation [3]Angle
+import "github.com/vugu/vugu"
 
-func (r Rotation) X() Angle {
-	return r[0]
-}
+type CoordinateOptimizableComponent struct {
+	AttrMap vugu.AttrMap
 
-func (r Rotation) Y() Angle {
-	return r[1]
-}
+	BindValue *CoordinateOptimizable
 
-func (r Rotation) Z() Angle {
-	return r[2]
+	Editable bool
 }

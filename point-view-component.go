@@ -32,18 +32,20 @@ type PointViewComponent struct {
 	imgWidth, imgHeight float64 // Image width and height in DOM pixels.
 }
 
-func (pv *PointViewComponent) Compute(ctx vugu.ComputeCtx) {
+func (c *PointViewComponent) Compute(ctx vugu.ComputeCtx) {
+
+	scaling := 0.5
 
 	// Find camera that contains photo that contains the point we are looking for. Don't use suggested point mappings.
-	for _, camera := range pv.Site.CamerasSorted() {
+	for _, camera := range c.Site.CamerasSorted() {
 		for _, photo := range camera.Photos {
-			for _, point := range photo.Points {
-				if !point.Suggested && point.PointKey == pv.PointKey {
+			for _, mapping := range photo.Mappings {
+				if !mapping.Suggested && mapping.PointKey == c.PointKey {
 					// Found point. Set everything up.
 
-					pv.imgWidth, pv.imgHeight = float64(photo.ImageWidth)/2, float64(photo.ImageHeight)/2
-					pv.left, pv.top = pv.Width/2-point.X*pv.imgWidth, pv.Height/2-point.Y*pv.imgHeight
-					pv.imageURL = photo.jsImageURL.String()
+					c.imgWidth, c.imgHeight = float64(photo.ImageSize.X())*scaling, float64(photo.ImageSize.Y())*scaling
+					c.left, c.top = c.Width/2-float64(mapping.Position.X())*scaling, c.Height/2-float64(mapping.Position.Y())*scaling
+					c.imageURL = photo.jsImageURL.String()
 
 					return
 				}
@@ -51,5 +53,5 @@ func (pv *PointViewComponent) Compute(ctx vugu.ComputeCtx) {
 		}
 	}
 
-	pv.imageURL = ""
+	c.imageURL = ""
 }

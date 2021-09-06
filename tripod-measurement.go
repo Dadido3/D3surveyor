@@ -94,8 +94,8 @@ func (tm *TripodMeasurement) ResidualSqr() float64 {
 	if point, ok := site.Points[tm.PointKey]; ok {
 		// Determine distance, add offset
 		directDistance := tm.MeasuredDistance + tripod.Offset
-		pivotDistance := Distance(math.Sqrt(sqr(float64(directDistance)) + sqr(float64(tripod.OffsetSide))))
-		return sqr(float64((pivotDistance - point.Position.Distance(tripod.Position)) / tripod.Accuracy))
+		pivotDistance := Distance(math.Sqrt(directDistance.Sqr() + tripod.OffsetSide.Sqr()))
+		return ((pivotDistance - point.Position.Distance(tripod.Position.Coordinate)) / tripod.Accuracy).Sqr()
 	}
 
 	return 0

@@ -15,7 +15,7 @@
 				<div class="w3-bar-item">
 					<span class="w3-large" vg-content="point.Name"></span>
 					<span vg-content="point.Key()"></span><br>
-					<main:CoordinateComponent style="display:flex" :BindValue="&point.Position"></main:CoordinateComponent>
+					<main:CoordinateOptimizableComponent style="display:flex" :BindValue="&point.Position"></main:CoordinateOptimizableComponent>
 				</div>
 			</li>
 		</ul>

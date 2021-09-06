@@ -160,17 +160,29 @@ func (c *Camera) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 	return tweakables, residuals
 }
 
-func (c *Camera) GetProjectionMatrix(width, height float64) mgl64.Mat4 {
-	aspect := width / height
+func (c *Camera) GetProjectionMatrix(imgSize PixelCoordinate) mgl64.Mat4 {
+	aspect := float64(imgSize.X() / imgSize.Y())
 
 	var aovY float64
-	if width > height {
+	if imgSize.X() > imgSize.Y() {
 		aovY = 2 * math.Atan(math.Tan(float64(c.LongSideAOV)*0.5)/aspect)
 	} else {
 		aovY = float64(c.LongSideAOV)
 	}
 
 	return mgl64.Perspective(aovY, aspect, 0.01, 10000)
+}
+
+// Undistort takes an image coordinate in pixels and returns the ideal coordinate in pixels.
+// The tranformation is based on the camera distortion model parameters.
+func (c *Camera) Undistort(cameraProjection PixelCoordinate) (idealProjection PixelCoordinate) {
+	return cameraProjection // TODO: Add photo undistort function
+}
+
+// Distort takes an image coordinate in pixels and returns the distorted/camera coordinate in pixels.
+// The tranformation is based on the camera distortion model parameters.
+func (c *Camera) Distort(idealProjection PixelCoordinate) (cameraProjection PixelCoordinate) {
+	return idealProjection // TODO: Add photo distort function
 }
 
 // PhotosSorted returns the photos of the camera as a list sorted by date.

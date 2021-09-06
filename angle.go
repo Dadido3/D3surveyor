@@ -15,14 +15,24 @@
 
 package main
 
-import "math"
+import (
+	"math"
+)
 
 // Angle describes a angle in radian.
 type Angle float64
 
+func (a Angle) Degree() float64 {
+	return float64(a * 360 / math.Pi)
+}
+
+func (a Angle) Radian() float64 {
+	return float64(a)
+}
+
 // TweakableValue returns the values mapped into optimizer space.
-func (a *Angle) TweakableValue() float64 {
-	return float64(*a)
+func (a Angle) TweakableValue() float64 {
+	return float64(a)
 }
 
 // SetTweakableValue converts and applies the given value from optimizer space.

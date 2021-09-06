@@ -22,5 +22,5 @@ type CoordinateComponent struct {
 
 	BindValue *Coordinate
 
-	Editable, Lockable bool
+	Editable bool
 }

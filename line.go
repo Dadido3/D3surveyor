@@ -45,7 +45,7 @@ func (s *Site) NewLine() *Line {
 		site:              s,
 		key:               key,
 		CreatedAt:         time.Now(),
-		DirectionVector:   Coordinate{X: 0, Y: 0, Z: 1},
+		DirectionVector:   Coordinate{0, 0, 1},
 		DirectionAccuracy: Angle(1 * math.Pi / 180),
 	}
 
@@ -111,7 +111,8 @@ func (l *Line) ResidualSqr() float64 {
 	if l.DirectionEnabled {
 		v1, v2 := l.DirectionVector.Vec3(), p2.Position.Vec3().Sub(p1.Position.Vec3())
 
-		sr := sqr(math.Acos(v1.Dot(v2)/v1.Len()/v2.Len()) / float64(l.DirectionAccuracy))
+		r := math.Acos(v1.Dot(v2)/v1.Len()/v2.Len()) / float64(l.DirectionAccuracy)
+		sr := r * r
 		if math.IsNaN(sr) {
 			sr = 1000000
 		}

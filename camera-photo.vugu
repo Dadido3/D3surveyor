@@ -8,13 +8,13 @@
 		<div class="w3-half">
 			<div class="w3-card-4">
 				<div class="w3-container w3-green w3-large">Position</div>
-				<main:CoordinateComponent :Editable="true" :Lockable="true" :BindValue="&c.Position"></main:CoordinateComponent>
+				<main:CoordinateOptimizableComponent :Editable="true" :BindValue="&c.Position"></main:CoordinateOptimizableComponent>
 			</div>
 		</div>
 		<div class="w3-half">
 			<div class="w3-card-4">
 				<div class="w3-container w3-green w3-large">Rotation</div>
-				<main:RotationComponent :Editable="true" :Lockable="true" :BindValue="&c.Orientation"></main:RotationComponent>
+				<main:RotationOptimizableComponent :Editable="true" :BindValue="&c.Orientation"></main:RotationOptimizableComponent>
 			</div>
 		</div>
 	</div>

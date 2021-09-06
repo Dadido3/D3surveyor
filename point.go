@@ -30,7 +30,7 @@ type Point struct {
 	Name      string
 	CreatedAt time.Time
 
-	Position Coordinate
+	Position CoordinateOptimizable
 }
 
 func (s *Site) NewPoint(name string) *Point {
