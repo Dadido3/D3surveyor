@@ -34,10 +34,10 @@ type Tripod struct {
 	Name      string
 	CreatedAt time.Time
 
-	Position                   CoordinateOptimizable // Pivot point of the tripod.
-	Accuracy                   Distance              // Accuracy of the measurement.
-	Offset, OffsetSide         Distance              // Offset of the rangefinder from the pivot point.
-	OffsetLock, OffsetSideLock bool                  // Prevent the values from being optimized.
+	Position                       CoordinateOptimizable // Pivot point of the tripod.
+	Accuracy                       Distance              // Accuracy of the measurement.
+	Offset, OffsetSide             Distance              // Offset of the rangefinder from the pivot point.
+	OffsetLocked, OffsetSideLocked bool                  // Prevent the values from being optimized.
 
 	Measurements  map[string]*TripodMeasurement // List of measurements.
 	ignoredPoints []string                      // List of point keys that will not be suggested anymore.
@@ -47,14 +47,14 @@ func (s *Site) NewTripod(name string) *Tripod {
 	key := s.shortIDGen.MustGenerate()
 
 	r := &Tripod{
-		site:           s,
-		key:            key,
-		Name:           name,
-		CreatedAt:      time.Now(),
-		Accuracy:       0.01,
-		OffsetLock:     false,
-		OffsetSideLock: true,
-		Measurements:   map[string]*TripodMeasurement{},
+		site:             s,
+		key:              key,
+		Name:             name,
+		CreatedAt:        time.Now(),
+		Accuracy:         0.01,
+		OffsetLocked:     false,
+		OffsetSideLocked: true,
+		Measurements:     map[string]*TripodMeasurement{},
 	}
 
 	s.Tripods[key] = r
@@ -80,15 +80,15 @@ func (t *Tripod) Delete() {
 // Expensive data like images will not be copied, but referenced.
 func (t *Tripod) Copy() *Tripod {
 	copy := &Tripod{
-		Name:           t.Name,
-		CreatedAt:      t.CreatedAt,
-		Position:       t.Position,
-		Accuracy:       t.Accuracy,
-		Offset:         t.Offset,
-		OffsetSide:     t.OffsetSide,
-		OffsetLock:     t.OffsetLock,
-		OffsetSideLock: t.OffsetSideLock,
-		Measurements:   map[string]*TripodMeasurement{},
+		Name:             t.Name,
+		CreatedAt:        t.CreatedAt,
+		Position:         t.Position,
+		Accuracy:         t.Accuracy,
+		Offset:           t.Offset,
+		OffsetSide:       t.OffsetSide,
+		OffsetLocked:     t.OffsetLocked,
+		OffsetSideLocked: t.OffsetSideLocked,
+		Measurements:     map[string]*TripodMeasurement{},
 	}
 
 	// Generate copies of all children.
@@ -126,10 +126,10 @@ func (t *Tripod) UnmarshalJSON(data []byte) error {
 func (t *Tripod) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 	tweakables, residuals := []Tweakable{}, []Residualer{}
 
-	if !t.OffsetLock {
+	if !t.OffsetLocked {
 		tweakables = append(tweakables, &t.Offset)
 	}
-	if !t.OffsetSideLock {
+	if !t.OffsetSideLocked {
 		tweakables = append(tweakables, &t.OffsetSide)
 	}
 

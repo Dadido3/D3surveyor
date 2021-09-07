@@ -42,8 +42,9 @@ type Camera struct {
 
 	AngAccuracy Angle // Accuracy of the measurement.
 
-	LongSideAOV     Angle // The angle of view of the longest side of every image.
-	LongSideAOVLock bool  // Prevent the value from being optimized.
+	LongSideAOV       Angle // The angle of view of the longest side of every image.
+	LongSideAOVLocked bool  // Prevent the value from being optimized.
+
 
 	Photos map[string]*CameraPhoto
 }
@@ -106,12 +107,12 @@ func (c *Camera) Delete() {
 // Expensive data like images will not be copied, but referenced.
 func (c *Camera) Copy() *Camera {
 	copy := &Camera{
-		Name:            c.Name,
-		CreatedAt:       c.CreatedAt,
-		AngAccuracy:     c.AngAccuracy,
-		LongSideAOV:     c.LongSideAOV,
-		LongSideAOVLock: c.LongSideAOVLock,
-		Photos:          map[string]*CameraPhoto{},
+		Name:              c.Name,
+		CreatedAt:         c.CreatedAt,
+		AngAccuracy:       c.AngAccuracy,
+		LongSideAOV:       c.LongSideAOV,
+		LongSideAOVLocked: c.LongSideAOVLocked,
+		Photos:            map[string]*CameraPhoto{},
 	}
 
 	// Generate copies of all children.
@@ -149,7 +150,7 @@ func (c *Camera) UnmarshalJSON(data []byte) error {
 func (c *Camera) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 	tweakables, residuals := []Tweakable{}, []Residualer{}
 
-	if !c.LongSideAOVLock {
+	if !c.LongSideAOVLocked {
 		tweakables = append(tweakables, &c.LongSideAOV)
 	}
 

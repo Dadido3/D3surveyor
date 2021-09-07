@@ -23,9 +23,9 @@ import (
 )
 
 type AngleInputComponent struct {
-	BindValue *Angle
-	BindLock  *bool
-	LabelText string
+	BindValue  *Angle
+	BindLocked *bool
+	LabelText  string
 
 	AttrMap vugu.AttrMap
 }
@@ -42,6 +42,6 @@ func (c *AngleInputComponent) handleValueChange(event vugu.DOMEvent) {
 	c.BindValue.SetDegrees(val)
 }
 
-func (c *AngleInputComponent) handleLockChange(event vugu.DOMEvent) {
-	*c.BindLock = event.PropBool("target", "checked")
+func (c *AngleInputComponent) handleLockedChange(event vugu.DOMEvent) {
+	*c.BindLocked = event.PropBool("target", "checked")
 }

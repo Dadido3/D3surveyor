@@ -24,12 +24,12 @@
 
 		<div class="w3-third">
 			<label>Offset</label>
-			<main:DistanceInputComponent :BindValue="&c.Offset" :BindLock="&c.OffsetLock"></main:DistanceInputComponent>
+			<main:DistanceInputComponent :BindValue="&c.Offset" :BindLocked="&c.OffsetLocked"></main:DistanceInputComponent>
 		</div>
 
 		<div class="w3-third">
 			<label>Side offset</label>
-			<main:DistanceInputComponent :BindValue="&c.OffsetSide" :BindLock="&c.OffsetSideLock"></main:DistanceInputComponent>
+			<main:DistanceInputComponent :BindValue="&c.OffsetSide" :BindLocked="&c.OffsetSideLocked"></main:DistanceInputComponent>
 		</div>
 	</div>
 

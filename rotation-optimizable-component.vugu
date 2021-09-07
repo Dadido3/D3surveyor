@@ -1,8 +1,8 @@
 <div vg-attr="c.AttrMap">
 	<vg-template vg-if="c.BindValue != nil && c.Editable">
-		<main:AngleInputComponent :BindValue="&c.BindValue.Rotation[0]" :BindLock="&c.BindValue.Locked[0]" LabelText="X"></main:AngleInputComponent>
-		<main:AngleInputComponent :BindValue="&c.BindValue.Rotation[1]" :BindLock="&c.BindValue.Locked[1]" LabelText="Y"></main:AngleInputComponent>
-		<main:AngleInputComponent :BindValue="&c.BindValue.Rotation[2]" :BindLock="&c.BindValue.Locked[2]" LabelText="Z"></main:AngleInputComponent>
+		<main:AngleInputComponent :BindValue="&c.BindValue.Rotation[0]" :BindLocked="&c.BindValue.Locked[0]" LabelText="X"></main:AngleInputComponent>
+		<main:AngleInputComponent :BindValue="&c.BindValue.Rotation[1]" :BindLocked="&c.BindValue.Locked[1]" LabelText="Y"></main:AngleInputComponent>
+		<main:AngleInputComponent :BindValue="&c.BindValue.Rotation[2]" :BindLocked="&c.BindValue.Locked[2]" LabelText="Z"></main:AngleInputComponent>
 	</vg-template>
 	<vg-template vg-if="c.BindValue != nil && !c.Editable">
 		<div>X: </span><span vg-content="c.BindValue.X()"></div>

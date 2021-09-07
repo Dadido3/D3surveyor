@@ -17,7 +17,7 @@
 
 		<div class="w3-third">
 			<label>Angle of view</label>
-			<main:AngleInputComponent min="0" :BindValue="&c.LongSideAOV" :BindLock="&c.LongSideAOVLock"></main:AngleInputComponent>
+			<main:AngleInputComponent min="0" :BindValue="&c.LongSideAOV" :BindLocked="&c.LongSideAOVLocked"></main:AngleInputComponent>
 		</div>
 	</div>
 

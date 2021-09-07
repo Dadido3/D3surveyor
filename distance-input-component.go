@@ -24,9 +24,9 @@ import (
 )
 
 type DistanceInputComponent struct {
-	BindValue *Distance
-	BindLock  *bool
-	LabelText string
+	BindValue  *Distance
+	BindLocked *bool
+	LabelText  string
 
 	AttrMap vugu.AttrMap
 }
@@ -44,6 +44,6 @@ func (c *DistanceInputComponent) handleValueChange(event vugu.DOMEvent) {
 	*c.BindValue = Distance(val)
 }
 
-func (c *DistanceInputComponent) handleLockChange(event vugu.DOMEvent) {
-	*c.BindLock = event.PropBool("target", "checked")
+func (c *DistanceInputComponent) handleLockedChange(event vugu.DOMEvent) {
+	*c.BindLocked = event.PropBool("target", "checked")
 }
