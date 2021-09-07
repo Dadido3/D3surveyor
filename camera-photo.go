@@ -325,8 +325,8 @@ func (cp *CameraPhoto) UpdateSuggestions() {
 						// Delete if it's a suggested mapping.
 						mapping.Delete()
 					} else {
-						// Otherwise just set the projected coordinate to the expected coordinate.
-						mapping.projectedPos = mapping.Position
+						// Otherwise just set the projected coordinate.
+						mapping.projectedPos = projectedCoordinate
 					}
 					break
 				}

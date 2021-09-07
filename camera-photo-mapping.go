@@ -31,8 +31,8 @@ type CameraPhotoMapping struct {
 	XMigrate float64 `json:"X"` // Value to be migrated. // TODO: Remove value migration in the future.
 	YMigrate float64 `json:"Y"` // Value to be migrated. // TODO: Remove value migration in the future.
 
-	Position     PixelCoordinate // Image position that maps the point to the photo. This is where the point should be on the image.
-	projectedPos PixelCoordinate // The point's projected position. This is where the point actually is on the image.
+	Position     PixelCoordinate // Image position that maps the point to the photo. This is where the point should be projected.
+	projectedPos PixelCoordinate // The point's projected position. This is where the point actually is projected.
 	sr           float64         // Current squared residue value.
 
 	Suggested bool // This mapping is just suggested, it wasn't placed or confirmed by the user (yet).
