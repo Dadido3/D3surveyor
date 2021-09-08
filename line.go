@@ -16,6 +16,7 @@
 package main
 
 import (
+	"encoding/json"
 	"math"
 	"time"
 
@@ -39,19 +40,26 @@ type Line struct {
 }
 
 func (s *Site) NewLine() *Line {
-	key := s.shortIDGen.MustGenerate()
+	l := new(Line)
+	l.initData()
+	l.initReferences(s, s.shortIDGen.MustGenerate())
 
-	line := &Line{
-		site:              s,
-		key:               key,
-		CreatedAt:         time.Now(),
-		DirectionVector:   Coordinate{0, 0, 1},
-		DirectionAccuracy: Angle(1 * math.Pi / 180),
-	}
+	return l
+}
 
-	s.Lines[key] = line
+// initData initializes the object with default values and other stuff.
+func (l *Line) initData() {
+	l.CreatedAt = time.Now()
+	l.DirectionVector = Coordinate{0, 0, 1}
+	l.DirectionAccuracy = Angle(1 * math.Pi / 180)
+}
 
-	return line
+// initReferences updates references from and to this object and its key.
+// This is only used internally to update references for copies or marshalled objects.
+// This can't be used on its own to transfer an object from one parent to another.
+func (l *Line) initReferences(newParent *Site, newKey string) {
+	l.site, l.key = newParent, newKey
+	l.site.Lines[l.Key()] = l
 }
 
 func (l *Line) Key() string {
@@ -64,29 +72,33 @@ func (l *Line) Delete() {
 
 // Copy returns a copy of the given object.
 // Expensive data like images will not be copied, but referenced.
-func (l *Line) Copy() *Line {
-	return &Line{
-		CreatedAt:         l.CreatedAt,
-		P1:                l.P1,
-		P2:                l.P2,
-		DirectionEnabled:  l.DirectionEnabled,
-		DirectionVector:   l.DirectionVector,
-		DirectionAccuracy: l.DirectionAccuracy,
-	}
+func (l *Line) Copy(newParent *Site, newKey string) *Line {
+	copy := new(Line)
+	copy.initData()
+	copy.initReferences(newParent, newKey)
+	copy.CreatedAt = l.CreatedAt
+	copy.P1 = l.P1
+	copy.P2 = l.P2
+	copy.DirectionEnabled = l.DirectionEnabled
+	copy.DirectionVector = l.DirectionVector
+	copy.DirectionAccuracy = l.DirectionAccuracy
+
+	return copy
 }
 
-/*func (l *Line) UnmarshalJSON(data []byte) error {
+func (l *Line) UnmarshalJSON(data []byte) error {
+	l.initData()
+
 	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
 	type tempType *Line
 	if err := json.Unmarshal(data, tempType(l)); err != nil {
 		return err
 	}
 
-	// Restore keys and references.
-	l.RestoreChildrenRefs()
+	// Update parent references and keys.
 
 	return nil
-}*/
+}
 
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
 func (l *Line) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {

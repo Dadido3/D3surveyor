@@ -16,6 +16,7 @@
 package main
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -39,36 +40,60 @@ type CameraPhotoMapping struct {
 }
 
 func (cp *CameraPhoto) NewMapping() *CameraPhotoMapping {
-	key := cp.camera.site.shortIDGen.MustGenerate()
+	m := new(CameraPhotoMapping)
+	m.initData()
+	m.initReferences(cp, cp.camera.site.shortIDGen.MustGenerate())
 
-	mapping := &CameraPhotoMapping{
-		photo:     cp,
-		key:       key,
-		CreatedAt: time.Now(),
-	}
-
-	cp.Mappings[key] = mapping
-
-	return mapping
+	return m
 }
 
-func (p *CameraPhotoMapping) Key() string {
-	return p.key
+// initData initializes the object with default values and other stuff.
+func (m *CameraPhotoMapping) initData() {
+	m.CreatedAt = time.Now()
 }
 
-func (p *CameraPhotoMapping) Delete() {
-	delete(p.photo.Mappings, p.Key())
+// initReferences updates references from and to this object and its key.
+// This is only used internally to update references for copies or marshalled objects.
+// This can't be used on its own to transfer an object from one parent to another.
+func (m *CameraPhotoMapping) initReferences(newParent *CameraPhoto, newKey string) {
+	m.photo, m.key = newParent, newKey
+	m.photo.Mappings[m.Key()] = m
+}
+
+func (m *CameraPhotoMapping) Key() string {
+	return m.key
+}
+
+func (m *CameraPhotoMapping) Delete() {
+	delete(m.photo.Mappings, m.Key())
 }
 
 // Copy returns a copy of the given object.
 // Expensive data like images will not be copied, but referenced.
-func (p *CameraPhotoMapping) Copy() *CameraPhotoMapping {
-	return &CameraPhotoMapping{
-		CreatedAt:    p.CreatedAt,
-		PointKey:     p.PointKey,
-		Position:     p.Position,
-		projectedPos: p.projectedPos,
-		sr:           p.sr,
-		Suggested:    p.Suggested,
+func (m *CameraPhotoMapping) Copy(newParent *CameraPhoto, newKey string) *CameraPhotoMapping {
+	copy := new(CameraPhotoMapping)
+	copy.initData()
+	copy.initReferences(newParent, newKey)
+	copy.CreatedAt = m.CreatedAt
+	copy.PointKey = m.PointKey
+	copy.Position = m.Position
+	copy.projectedPos = m.projectedPos
+	copy.sr = m.sr
+	copy.Suggested = m.Suggested
+
+	return copy
+}
+
+func (m *CameraPhotoMapping) UnmarshalJSON(data []byte) error {
+	m.initData()
+
+	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
+	type tempType *CameraPhotoMapping
+	if err := json.Unmarshal(data, tempType(m)); err != nil {
+		return err
 	}
+
+	// Update parent references and keys.
+
+	return nil
 }

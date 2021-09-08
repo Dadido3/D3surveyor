@@ -35,10 +35,8 @@ type CameraPhoto struct {
 
 	CreatedAt time.Time
 
-	ImageData          []byte // TODO: Don't store the image as byte slice. Only store it as a js blob
-	ImageWidthMigrate  int    `json:"ImageWidth"`  // Value to be migrated. // TODO: Remove value migration in the future
-	ImageHeightMigrate int    `json:"ImageHeight"` // Value to be migrated. // TODO: Remove value migration in the future
-	ImageSize          PixelCoordinate
+	ImageData []byte // TODO: Don't store the image as byte slice. Only store it as a js blob
+	imageSize PixelCoordinate
 
 	jsImageBlob js.Value // Blob representing the image on the js side.
 	jsImageURL  js.Value // URL referencing the blob.
@@ -50,26 +48,29 @@ type CameraPhoto struct {
 }
 
 func (c *Camera) NewPhoto(imageData []byte) (*CameraPhoto, error) {
-	imageConf, _, err := image.DecodeConfig(bytes.NewReader(imageData))
-	if err != nil {
+	cp := new(CameraPhoto)
+	cp.initData()
+	cp.ImageData = imageData
+	if err := cp.decodeImage(); err != nil {
 		return nil, err
 	}
-
-	key := c.site.shortIDGen.MustGenerate()
-
-	cp := &CameraPhoto{
-		camera:    c,
-		key:       key,
-		CreatedAt: time.Now(),
-		ImageData: imageData,
-		ImageSize: PixelCoordinate{PixelDistance(imageConf.Width), PixelDistance(imageConf.Height)},
-		Mappings:  map[string]*CameraPhotoMapping{},
-	}
-	cp.createPhotoBlob(imageData)
-
-	c.Photos[key] = cp
+	cp.initReferences(c, c.site.shortIDGen.MustGenerate())
 
 	return cp, nil
+}
+
+// initData initializes the object with default values and other stuff.
+func (cp *CameraPhoto) initData() {
+	cp.CreatedAt = time.Now()
+	cp.Mappings = map[string]*CameraPhotoMapping{}
+}
+
+// initReferences updates references from and to this object and its key.
+// This is only used internally to update references for copies or marshalled objects.
+// This can't be used on its own to transfer an object from one parent to another.
+func (cp *CameraPhoto) initReferences(newParent *Camera, newKey string) {
+	cp.camera, cp.key = newParent, newKey
+	cp.camera.Photos[cp.Key()] = cp
 }
 
 func (cp *CameraPhoto) Key() string {
@@ -86,63 +87,66 @@ func (cp *CameraPhoto) Delete() {
 
 // Copy returns a copy of the given object.
 // Expensive data like images will not be copied, but referenced.
-func (cp *CameraPhoto) Copy() *CameraPhoto {
-	copy := &CameraPhoto{
-		CreatedAt:   cp.CreatedAt,
-		ImageData:   cp.ImageData,
-		ImageSize:   cp.ImageSize,
-		jsImageBlob: cp.jsImageBlob,
-		jsImageURL:  cp.jsImageURL,
-		Position:    cp.Position,
-		Orientation: cp.Orientation,
-		Mappings:    map[string]*CameraPhotoMapping{},
-	}
+func (cp *CameraPhoto) Copy(newParent *Camera, newKey string) *CameraPhoto {
+	copy := new(CameraPhoto)
+	copy.initData()
+	copy.initReferences(newParent, newKey)
+	copy.CreatedAt = cp.CreatedAt
+	copy.ImageData = cp.ImageData
+	copy.imageSize = cp.imageSize
+	//copy.jsImageBlob = cp.jsImageBlob
+	//copy.jsImageURL = cp.jsImageURL // Don't copy the URL, as it needs to be freed // TODO: Have a global manager for shared images with JS
+	copy.Position = cp.Position
+	copy.Orientation = cp.Orientation
 
 	// Generate copies of all children.
 	for k, v := range cp.Mappings {
-		copy.Mappings[k] = v.Copy()
+		v.Copy(copy, k)
 	}
-
-	// Restore keys and references.
-	copy.RestoreChildrenRefs()
 
 	return copy
 }
 
-// RestoreChildrenRefs updates the key of the children and any reference to this object.
-func (cp *CameraPhoto) RestoreChildrenRefs() {
-	for k, v := range cp.Mappings {
-		v.key, v.photo = k, cp
-	}
-}
-
 func (cp *CameraPhoto) UnmarshalJSON(data []byte) error {
+	cp.initData()
+
 	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
 	type tempType *CameraPhoto
 	if err := json.Unmarshal(data, tempType(cp)); err != nil {
 		return err
 	}
 
-	// Load image on the js side.
-	cp.createPhotoBlob(cp.ImageData)
+	// Decode image and make it available on the JS side.
+	if err := cp.decodeImage(); err != nil {
+		return err
+	}
 
-	// Restore keys and references.
-	cp.RestoreChildrenRefs()
+	// Update parent references and keys.
+	for k, v := range cp.Mappings {
+		v.initReferences(cp, k)
+	}
 
 	// Migrate some values.
-	cp.ImageSize = PixelCoordinate{PixelDistance(cp.ImageWidthMigrate), PixelDistance(cp.ImageHeightMigrate)}
-
 	for _, mapping := range cp.Mappings {
 		mapping.Position = PixelCoordinate{
-			PixelDistance(mapping.XMigrate) * cp.ImageSize.X(),
-			PixelDistance(mapping.YMigrate) * cp.ImageSize.Y(),
+			PixelDistance(mapping.XMigrate) * cp.imageSize.X(),
+			PixelDistance(mapping.YMigrate) * cp.imageSize.Y(),
 		}
 	}
 
 	return nil
 }
 
-func (cp *CameraPhoto) createPhotoBlob(imageData []byte) {
+// decodeImage will try to decode the image and store the result in the CameraPhoto object.
+func (cp *CameraPhoto) decodeImage() error {
+	imageData := cp.ImageData
+
+	imageConf, _, err := image.DecodeConfig(bytes.NewReader(imageData))
+	if err != nil {
+		return err
+	}
+	cp.imageSize = PixelCoordinate{PixelDistance(imageConf.Width), PixelDistance(imageConf.Height)}
+
 	if cp.jsImageURL.Truthy() {
 		js.Global().Get("URL").Call("revokeObjectURL", cp.jsImageURL)
 	}
@@ -153,6 +157,8 @@ func (cp *CameraPhoto) createPhotoBlob(imageData []byte) {
 
 	cp.jsImageBlob = js.Global().Get("Blob").New(dstArray, js.ValueOf(map[string]interface{}{"type": "image/*"}))
 	cp.jsImageURL = js.Global().Get("URL").Call("createObjectURL", cp.jsImageBlob) // This has to be freed when the photo is deleted.
+
+	return nil
 }
 
 func (cp *CameraPhoto) JsImageURL() string {
@@ -209,7 +215,7 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 func (cp *CameraPhoto) Project(worldCoordinates []Coordinate) []PixelCoordinate {
 	camera := cp.camera
 
-	imageCenter := cp.ImageSize.Scaled(0.5)
+	imageCenter := cp.imageSize.Scaled(0.5)
 
 	focalLength := imageCenter.X().Pixels() / math.Tan(camera.HorizontalAOV.Radian()/2)
 
@@ -257,7 +263,7 @@ func (cp *CameraPhoto) UpdateSuggestions() {
 	// Update suggested mapped points.
 	for i, projectedCoordinate := range projectedCoordinates {
 		point := points[i]
-		if projectedCoordinate.Z() > 0 && projectedCoordinate.X() >= 0 && projectedCoordinate.X() <= cp.ImageSize.X() && projectedCoordinate.Y() >= 0 && projectedCoordinate.Y() <= cp.ImageSize.Y() {
+		if projectedCoordinate.Z() > 0 && projectedCoordinate.X() >= 0 && projectedCoordinate.X() <= cp.imageSize.X() && projectedCoordinate.Y() >= 0 && projectedCoordinate.Y() <= cp.imageSize.Y() {
 			// The projection is valid, create or update point mapping.
 			var foundMapping *CameraPhotoMapping
 			for _, mapping := range cp.Mappings { // TODO: Remove stupid linear search

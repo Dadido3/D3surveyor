@@ -38,20 +38,27 @@ type Rangefinder struct {
 }
 
 func (s *Site) NewRangefinder(name string) *Rangefinder {
-	key := s.shortIDGen.MustGenerate()
-
-	r := &Rangefinder{
-		site:         s,
-		key:          key,
-		Name:         name,
-		CreatedAt:    time.Now(),
-		Accuracy:     0.01,
-		Measurements: map[string]*RangefinderMeasurement{},
-	}
-
-	s.Rangefinders[key] = r
+	r := new(Rangefinder)
+	r.initData()
+	r.initReferences(s, s.shortIDGen.MustGenerate())
+	r.Name = name
 
 	return r
+}
+
+// initData initializes the object with default values and other stuff.
+func (r *Rangefinder) initData() {
+	r.CreatedAt = time.Now()
+	r.Accuracy = 0.01
+	r.Measurements = map[string]*RangefinderMeasurement{}
+}
+
+// initReferences updates references from and to this object and its key.
+// This is only used internally to update references for copies or marshalled objects.
+// This can't be used on its own to transfer an object from one parent to another.
+func (r *Rangefinder) initReferences(newParent *Site, newKey string) {
+	r.site, r.key = newParent, newKey
+	r.site.Rangefinders[r.Key()] = r
 }
 
 func (r *Rangefinder) handleAdd() {
@@ -70,41 +77,35 @@ func (r *Rangefinder) Delete() {
 
 // Copy returns a copy of the given object.
 // Expensive data like images will not be copied, but referenced.
-func (r *Rangefinder) Copy() *Rangefinder {
-	copy := &Rangefinder{
-		Name:         r.Name,
-		CreatedAt:    r.CreatedAt,
-		Accuracy:     r.Accuracy,
-		Measurements: map[string]*RangefinderMeasurement{},
-	}
+func (r *Rangefinder) Copy(newParent *Site, newKey string) *Rangefinder {
+	copy := new(Rangefinder)
+	copy.initData()
+	copy.initReferences(newParent, newKey)
+	copy.Name = r.Name
+	copy.CreatedAt = r.CreatedAt
+	copy.Accuracy = r.Accuracy
 
 	// Generate copies of all children.
 	for k, v := range r.Measurements {
-		copy.Measurements[k] = v.Copy()
+		v.Copy(copy, k)
 	}
-
-	// Restore keys and references.
-	copy.RestoreChildrenRefs()
 
 	return copy
 }
 
-// RestoreChildrenRefs updates the key of the children and any reference to this object.
-func (r *Rangefinder) RestoreChildrenRefs() {
-	for k, v := range r.Measurements {
-		v.key, v.rangefinder = k, r
-	}
-}
-
 func (r *Rangefinder) UnmarshalJSON(data []byte) error {
+	r.initData()
+
 	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
 	type tempType *Rangefinder
 	if err := json.Unmarshal(data, tempType(r)); err != nil {
 		return err
 	}
 
-	// Restore keys and references.
-	r.RestoreChildrenRefs()
+	// Update parent references and keys.
+	for k, v := range r.Measurements {
+		v.initReferences(r, k)
+	}
 
 	return nil
 }

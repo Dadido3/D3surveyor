@@ -16,6 +16,7 @@
 package main
 
 import (
+	"encoding/json"
 	"math"
 	"time"
 
@@ -36,21 +37,29 @@ type TripodMeasurement struct {
 }
 
 func (t *Tripod) NewMeasurement() *TripodMeasurement {
-	key := t.site.shortIDGen.MustGenerate()
+	tm := new(TripodMeasurement)
+	tm.initData()
+	tm.initReferences(t, t.site.shortIDGen.MustGenerate())
 
-	rm := &TripodMeasurement{
-		tripod:    t,
-		key:       key,
-		CreatedAt: time.Now(),
-	}
-
-	t.Measurements[key] = rm
-
+	// If possible suggest a point mapping.
 	if suggestedPoint := t.SuggestPoint(); suggestedPoint != nil {
-		rm.PointKey = suggestedPoint.Key()
+		tm.PointKey = suggestedPoint.Key()
 	}
 
-	return rm
+	return tm
+}
+
+// initData initializes the object with default values and other stuff.
+func (tm *TripodMeasurement) initData() {
+	tm.CreatedAt = time.Now()
+}
+
+// initReferences updates references from and to this object and its key.
+// This is only used internally to update references for copies or marshalled objects.
+// This can't be used on its own to transfer an object from one parent to another.
+func (tm *TripodMeasurement) initReferences(newParent *Tripod, newKey string) {
+	tm.tripod, tm.key = newParent, newKey
+	tm.tripod.Measurements[tm.Key()] = tm
 }
 
 func (tm *TripodMeasurement) Key() string {
@@ -63,12 +72,29 @@ func (tm *TripodMeasurement) Delete() {
 
 // Copy returns a copy of the given object.
 // Expensive data like images will not be copied, but referenced.
-func (tm *TripodMeasurement) Copy() *TripodMeasurement {
-	return &TripodMeasurement{
-		CreatedAt:        tm.CreatedAt,
-		PointKey:         tm.PointKey,
-		MeasuredDistance: tm.MeasuredDistance,
+func (tm *TripodMeasurement) Copy(newParent *Tripod, newKey string) *TripodMeasurement {
+	copy := new(TripodMeasurement)
+	copy.initData()
+	copy.initReferences(newParent, newKey)
+	copy.CreatedAt = tm.CreatedAt
+	copy.PointKey = tm.PointKey
+	copy.MeasuredDistance = tm.MeasuredDistance
+
+	return copy
+}
+
+func (tm *TripodMeasurement) UnmarshalJSON(data []byte) error {
+	tm.initData()
+
+	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
+	type tempType *TripodMeasurement
+	if err := json.Unmarshal(data, tempType(tm)); err != nil {
+		return err
 	}
+
+	// Update parent references and keys.
+
+	return nil
 }
 
 func (tm *TripodMeasurement) handleNextSuggestion(event vugu.DOMEvent) {

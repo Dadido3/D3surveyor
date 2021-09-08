@@ -43,7 +43,7 @@ func (c *PointViewComponent) Compute(ctx vugu.ComputeCtx) {
 				if !mapping.Suggested && mapping.PointKey == c.PointKey {
 					// Found point. Set everything up.
 
-					c.imgWidth, c.imgHeight = float64(photo.ImageSize.X())*scaling, float64(photo.ImageSize.Y())*scaling
+					c.imgWidth, c.imgHeight = float64(photo.imageSize.X())*scaling, float64(photo.imageSize.Y())*scaling
 					c.left, c.top = c.Width/2-float64(mapping.Position.X())*scaling, c.Height/2-float64(mapping.Position.Y())*scaling
 					c.imageURL = photo.jsImageURL.String()
 

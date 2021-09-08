@@ -16,6 +16,7 @@
 package main
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/vugu/vgrouter"
@@ -34,55 +35,79 @@ type RangefinderMeasurement struct {
 }
 
 func (r *Rangefinder) NewMeasurement() *RangefinderMeasurement {
-	key := r.site.shortIDGen.MustGenerate()
-
-	rm := &RangefinderMeasurement{
-		rangefinder: r,
-		key:         key,
-		CreatedAt:   time.Now(),
-	}
-
-	r.Measurements[key] = rm
+	rm := new(RangefinderMeasurement)
+	rm.initData()
+	rm.initReferences(r, r.site.shortIDGen.MustGenerate())
 
 	return rm
 }
 
-func (d *RangefinderMeasurement) Key() string {
-	return d.key
+// initData initializes the object with default values and other stuff.
+func (rm *RangefinderMeasurement) initData() {
+	rm.CreatedAt = time.Now()
 }
 
-func (d *RangefinderMeasurement) Delete() {
-	delete(d.rangefinder.Measurements, d.Key())
+// initReferences updates references from and to this object and its key.
+// This is only used internally to update references for copies or marshalled objects.
+// This can't be used on its own to transfer an object from one parent to another.
+func (rm *RangefinderMeasurement) initReferences(newParent *Rangefinder, newKey string) {
+	rm.rangefinder, rm.key = newParent, newKey
+	rm.rangefinder.Measurements[rm.Key()] = rm
+}
+
+func (rm *RangefinderMeasurement) Key() string {
+	return rm.key
+}
+
+func (rm *RangefinderMeasurement) Delete() {
+	delete(rm.rangefinder.Measurements, rm.Key())
 }
 
 // Copy returns a copy of the given object.
 // Expensive data like images will not be copied, but referenced.
-func (d *RangefinderMeasurement) Copy() *RangefinderMeasurement {
-	return &RangefinderMeasurement{
-		CreatedAt:        d.CreatedAt,
-		P1:               d.P1,
-		P2:               d.P2,
-		MeasuredDistance: d.MeasuredDistance,
+func (rm *RangefinderMeasurement) Copy(newParent *Rangefinder, newKey string) *RangefinderMeasurement {
+	copy := new(RangefinderMeasurement)
+	copy.initData()
+	copy.initReferences(newParent, newKey)
+	copy.CreatedAt = rm.CreatedAt
+	copy.P1 = rm.P1
+	copy.P2 = rm.P2
+	copy.MeasuredDistance = rm.MeasuredDistance
+
+	return copy
+}
+
+func (rm *RangefinderMeasurement) UnmarshalJSON(data []byte) error {
+	rm.initData()
+
+	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
+	type tempType *RangefinderMeasurement
+	if err := json.Unmarshal(data, tempType(rm)); err != nil {
+		return err
 	}
+
+	// Update parent references and keys.
+
+	return nil
 }
 
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
-func (d *RangefinderMeasurement) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
-	return nil, []Residualer{d}
+func (rm *RangefinderMeasurement) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
+	return nil, []Residualer{rm}
 }
 
 // ResidualSqr returns the sum of squared residuals. (Each residual is divided by the accuracy of the measurement device).
-func (d *RangefinderMeasurement) ResidualSqr() float64 {
-	site := d.rangefinder.site
+func (rm *RangefinderMeasurement) ResidualSqr() float64 {
+	site := rm.rangefinder.site
 
-	p1, ok := site.Points[d.P1]
+	p1, ok := site.Points[rm.P1]
 	if !ok {
 		return 0
 	}
-	p2, ok := site.Points[d.P2]
+	p2, ok := site.Points[rm.P2]
 	if !ok {
 		return 0
 	}
 
-	return ((p1.Position.Distance(p2.Position.Coordinate) - d.MeasuredDistance) / d.rangefinder.Accuracy).Sqr() // TODO: Check if this can be optimized
+	return ((p1.Position.Distance(p2.Position.Coordinate) - rm.MeasuredDistance) / rm.rangefinder.Accuracy).Sqr() // TODO: Check if this can be optimized
 }

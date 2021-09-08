@@ -16,6 +16,7 @@
 package main
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/vugu/vgrouter"
@@ -34,50 +35,62 @@ type Point struct {
 }
 
 func (s *Site) NewPoint(name string) *Point {
-	key := s.shortIDGen.MustGenerate()
+	p := new(Point)
+	p.initData()
+	p.initReferences(s, s.shortIDGen.MustGenerate())
+	p.Name = name
 
-	point := &Point{
-		site:      s,
-		key:       key,
-		Name:      name,
-		CreatedAt: time.Now(),
-	}
+	return p
+}
 
-	s.Points[key] = point
+// initData initializes the object with default values and other stuff.
+func (p *Point) initData() {
+	p.CreatedAt = time.Now()
+}
 
-	return point
+// initReferences updates references from and to this object and its key.
+// This is only used internally to update references for copies or marshalled objects.
+// This can't be used on its own to transfer an object from one parent to another.
+func (p *Point) initReferences(newParent *Site, newKey string) {
+	p.site, p.key = newParent, newKey
+	p.site.Points[p.Key()] = p
 }
 
 func (p *Point) Key() string {
 	return p.key
 }
 
+// Delete removes the parent's reference to this object.
 func (p *Point) Delete() {
 	delete(p.site.Points, p.Key())
 }
 
 // Copy returns a copy of the given object.
 // Expensive data like images will not be copied, but referenced.
-func (p *Point) Copy() *Point {
-	return &Point{
-		Name:      p.Name,
-		CreatedAt: p.CreatedAt,
-		Position:  p.Position,
-	}
+func (p *Point) Copy(newParent *Site, newKey string) *Point {
+	copy := new(Point)
+	copy.initData()
+	copy.initReferences(newParent, newKey)
+	copy.Name = p.Name
+	copy.CreatedAt = p.CreatedAt
+	copy.Position = p.Position
+
+	return copy
 }
 
-/*func (p *Point) UnmarshalJSON(data []byte) error {
+func (p *Point) UnmarshalJSON(data []byte) error {
+	p.initData()
+
 	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
 	type tempType *Point
 	if err := json.Unmarshal(data, tempType(p)); err != nil {
 		return err
 	}
 
-	// Restore keys and references.
-	p.RestoreChildrenRefs()
+	// Update parent references and keys.
 
 	return nil
-}*/
+}
 
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
 func (p *Point) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {

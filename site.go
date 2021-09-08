@@ -21,13 +21,11 @@ import (
 	"sync"
 
 	"github.com/teris-io/shortid"
-	"github.com/vugu/vgrouter"
 )
 
 // Site is the root container for all measurements, points and constraints of a place/site.
 type Site struct {
-	sync.RWMutex          `json:"-"`
-	vgrouter.NavigatorRef `json:"-"`
+	sync.RWMutex `json:"-"`
 
 	shortIDGen *shortid.Shortid
 
@@ -43,39 +41,18 @@ type Site struct {
 	Tripods      map[string]*Tripod
 }
 
-func NewSite(name string) (*Site, error) {
-	shortIDGen, err := shortid.New(0, shortid.DefaultABC, 1234)
-	if err != nil {
-		return nil, err
-	}
+func NewSite(name string) *Site {
+	s := new(Site)
+	s.initData()
+	s.Name = name
 
-	site := &Site{
-		shortIDGen:   shortIDGen,
-		Name:         name,
-		Points:       map[string]*Point{},
-		Lines:        map[string]*Line{},
-		Cameras:      map[string]*Camera{},
-		Rangefinders: map[string]*Rangefinder{},
-		Tripods:      map[string]*Tripod{},
-	}
-
-	// Restore keys and references.
-	site.RestoreChildrenRefs()
-
-	return site, nil
-}
-
-func MustNewSite(name string) *Site {
-	site, err := NewSite(name)
-	if err != nil {
-		panic(err)
-	}
-
-	return site
+	return s
 }
 
 func NewSiteFromJSON(data []byte) (*Site, error) {
-	site := &Site{}
+	site := new(Site)
+
+	// The site will be initialized by UnmarshalJSON.
 	if err := json.Unmarshal(data, site); err != nil {
 		return nil, err
 	}
@@ -83,71 +60,47 @@ func NewSiteFromJSON(data []byte) (*Site, error) {
 	return site, nil
 }
 
+// Initialize the object with default values and other stuff.
+func (s *Site) initData() {
+	s.shortIDGen = shortid.MustNew(0, shortid.DefaultABC, 1234)
+	s.optimizerState.site = s
+	s.Points = map[string]*Point{}
+	s.Lines = map[string]*Line{}
+	s.Cameras = map[string]*Camera{}
+	s.Rangefinders = map[string]*Rangefinder{}
+	s.Tripods = map[string]*Tripod{}
+}
+
 // Copy returns a copy of the given object.
 // Expensive data like images will not be copied, but referenced.
 func (s *Site) Copy() *Site {
-	copy := &Site{
-		Name: s.Name,
-		//optimizerState: s.optimizerState.Copy(), // Don't copy optimizer state for now.
-		Points:       map[string]*Point{},
-		Lines:        map[string]*Line{},
-		Cameras:      map[string]*Camera{},
-		Rangefinders: map[string]*Rangefinder{},
-		Tripods:      map[string]*Tripod{},
-	}
+	copy := new(Site)
+	copy.initData()
+	//copy.updateReferences(newParent, newKey)
+	copy.Name = s.Name
 
-	// Generate copies of all children.
+	// Generate copies of all children. Also update their parent reference and key.
 	for k, v := range s.Points {
-		copy.Points[k] = v.Copy()
+		v.Copy(copy, k)
 	}
 	for k, v := range s.Lines {
-		copy.Lines[k] = v.Copy()
+		v.Copy(copy, k)
 	}
 	for k, v := range s.Cameras {
-		copy.Cameras[k] = v.Copy()
+		v.Copy(copy, k)
 	}
 	for k, v := range s.Rangefinders {
-		copy.Rangefinders[k] = v.Copy()
+		v.Copy(copy, k)
 	}
 	for k, v := range s.Tripods {
-		copy.Tripods[k] = v.Copy()
+		v.Copy(copy, k)
 	}
-
-	// Restore keys and references.
-	copy.RestoreChildrenRefs()
 
 	return copy
 }
 
-// RestoreChildrenRefs updates the key of the children and any reference to this object.
-func (s *Site) RestoreChildrenRefs() {
-	s.optimizerState.site = s
-
-	for k, v := range s.Points {
-		v.key, v.site = k, s
-	}
-	for k, v := range s.Lines {
-		v.key, v.site = k, s
-	}
-	for k, v := range s.Cameras {
-		v.key, v.site = k, s
-	}
-	for k, v := range s.Rangefinders {
-		v.key, v.site = k, s
-	}
-	for k, v := range s.Tripods {
-		v.key, v.site = k, s
-	}
-}
-
 func (s *Site) UnmarshalJSON(data []byte) error {
-	newSite, err := NewSite("")
-	if err != nil {
-		return err
-	}
-
-	// Overwrite data of existing site. This basically resets the site.
-	*s = *newSite // TODO: Find better way to reset site data
+	s.initData()
 
 	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
 	type tempType *Site
@@ -155,14 +108,28 @@ func (s *Site) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	// Restore keys and references.
-	s.RestoreChildrenRefs()
+	// Update parent references and keys.
+	for k, v := range s.Points {
+		v.initReferences(s, k)
+	}
+	for k, v := range s.Lines {
+		v.initReferences(s, k)
+	}
+	for k, v := range s.Cameras {
+		v.initReferences(s, k)
+	}
+	for k, v := range s.Rangefinders {
+		v.initReferences(s, k)
+	}
+	for k, v := range s.Tripods {
+		v.initReferences(s, k)
+	}
 
 	return nil
 }
 
 // Global site data structure that contains all data about a specific site/place.
-var globalSite *Site = MustNewSite("New")
+var globalSite *Site = NewSite("New")
 
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
 func (s *Site) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {

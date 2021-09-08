@@ -44,22 +44,29 @@ type Tripod struct {
 }
 
 func (s *Site) NewTripod(name string) *Tripod {
-	key := s.shortIDGen.MustGenerate()
+	t := new(Tripod)
+	t.initData()
+	t.initReferences(s, s.shortIDGen.MustGenerate())
+	t.Name = name
 
-	r := &Tripod{
-		site:             s,
-		key:              key,
-		Name:             name,
-		CreatedAt:        time.Now(),
-		Accuracy:         0.01,
-		OffsetLocked:     false,
-		OffsetSideLocked: true,
-		Measurements:     map[string]*TripodMeasurement{},
-	}
+	return t
+}
 
-	s.Tripods[key] = r
+// initData initializes the object with default values and other stuff.
+func (t *Tripod) initData() {
+	t.CreatedAt = time.Now()
+	t.Accuracy = 0.01
+	t.OffsetLocked = false
+	t.OffsetSideLocked = true
+	t.Measurements = map[string]*TripodMeasurement{}
+}
 
-	return r
+// initReferences updates references from and to this object and its key.
+// This is only used internally to update references for copies or marshalled objects.
+// This can't be used on its own to transfer an object from one parent to another.
+func (t *Tripod) initReferences(newParent *Site, newKey string) {
+	t.site, t.key = newParent, newKey
+	t.site.Tripods[t.Key()] = t
 }
 
 func (t *Tripod) handleAdd(event vugu.DOMEvent) {
@@ -78,46 +85,40 @@ func (t *Tripod) Delete() {
 
 // Copy returns a copy of the given object.
 // Expensive data like images will not be copied, but referenced.
-func (t *Tripod) Copy() *Tripod {
-	copy := &Tripod{
-		Name:             t.Name,
-		CreatedAt:        t.CreatedAt,
-		Position:         t.Position,
-		Accuracy:         t.Accuracy,
-		Offset:           t.Offset,
-		OffsetSide:       t.OffsetSide,
-		OffsetLocked:     t.OffsetLocked,
-		OffsetSideLocked: t.OffsetSideLocked,
-		Measurements:     map[string]*TripodMeasurement{},
-	}
+func (t *Tripod) Copy(newParent *Site, newKey string) *Tripod {
+	copy := new(Tripod)
+	copy.initData()
+	copy.initReferences(newParent, newKey)
+	copy.Name = t.Name
+	copy.CreatedAt = t.CreatedAt
+	copy.Position = t.Position
+	copy.Accuracy = t.Accuracy
+	copy.Offset = t.Offset
+	copy.OffsetSide = t.OffsetSide
+	copy.OffsetLocked = t.OffsetLocked
+	copy.OffsetSideLocked = t.OffsetSideLocked
 
 	// Generate copies of all children.
 	for k, v := range t.Measurements {
-		copy.Measurements[k] = v.Copy()
+		v.Copy(copy, k)
 	}
-
-	// Restore keys and references.
-	copy.RestoreChildrenRefs()
 
 	return copy
 }
 
-// RestoreChildrenRefs updates the key of the children and any reference to this object.
-func (t *Tripod) RestoreChildrenRefs() {
-	for k, v := range t.Measurements {
-		v.key, v.tripod = k, t
-	}
-}
-
 func (t *Tripod) UnmarshalJSON(data []byte) error {
+	t.initData()
+
 	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
 	type tempType *Tripod
 	if err := json.Unmarshal(data, tempType(t)); err != nil {
 		return err
 	}
 
-	// Restore keys and references.
-	t.RestoreChildrenRefs()
+	// Update parent references and keys.
+	for k, v := range t.Measurements {
+		v.initReferences(t, k)
+	}
 
 	return nil
 }

@@ -27,7 +27,7 @@ import (
 
 	"github.com/vugu/vgrouter"
 	"github.com/vugu/vugu"
-	"github.com/vugu/vugu/js"
+	js "github.com/vugu/vugu/js"
 )
 
 // Amount of camera distortion coefficients.
@@ -58,23 +58,79 @@ type Camera struct {
 }
 
 func (s *Site) NewCamera(name string) *Camera {
-	key := s.shortIDGen.MustGenerate()
-
-	c := &Camera{
-		site:                         s,
-		key:                          key,
-		Name:                         name,
-		CreatedAt:                    time.Now(),
-		PixelAccuracy:                100,
-		HorizontalAOV:                70 * 2 * math.Pi / 360, // Start with a guess of 70 deg for AOV.
-		DistortionCenterOffsetLocked: true,
-		DistortionKsLocked:           [2]bool{true, true},
-		Photos:                       map[string]*CameraPhoto{},
-	}
-
-	s.Cameras[key] = c
+	c := new(Camera)
+	c.initData()
+	c.initReferences(s, s.shortIDGen.MustGenerate())
+	c.Name = name
 
 	return c
+}
+
+// initData initializes the object with default values and other stuff.
+func (c *Camera) initData() {
+	c.CreatedAt = time.Now()
+	c.PixelAccuracy = 100
+	c.HorizontalAOV = 70 * 2 * math.Pi / 360 // Start with a guess of 70 deg for AOV.
+	c.DistortionCenterOffsetLocked = true
+	c.DistortionKsLocked = [2]bool{true, true}
+	c.Photos = map[string]*CameraPhoto{}
+}
+
+// initReferences updates references from and to this object and its key.
+// This is only used internally to update references for copies or marshalled objects.
+// This can't be used on its own to transfer an object from one parent to another.
+func (c *Camera) initReferences(newParent *Site, newKey string) {
+	c.site, c.key = newParent, newKey
+	c.site.Cameras[c.Key()] = c
+}
+
+func (c *Camera) Key() string {
+	return c.key
+}
+
+func (c *Camera) Delete() {
+	delete(c.site.Cameras, c.Key())
+}
+
+// Copy returns a copy of the given object.
+// Expensive data like images will not be copied, but referenced.
+func (c *Camera) Copy(newParent *Site, newKey string) *Camera {
+	copy := new(Camera)
+	copy.initData()
+	copy.initReferences(newParent, newKey)
+	copy.Name = c.Name
+	copy.CreatedAt = c.CreatedAt
+	copy.PixelAccuracy = c.PixelAccuracy
+	copy.HorizontalAOV = c.HorizontalAOV
+	copy.HorizontalAOVLocked = c.HorizontalAOVLocked
+	copy.DistortionCenterOffset = c.DistortionCenterOffset
+	copy.DistortionCenterOffsetLocked = c.DistortionCenterOffsetLocked
+	copy.DistortionKs = c.DistortionKs
+	copy.DistortionKsLocked = c.DistortionKsLocked
+
+	// Generate copies of all children.
+	for k, v := range c.Photos {
+		v.Copy(copy, k)
+	}
+
+	return copy
+}
+
+func (c *Camera) UnmarshalJSON(data []byte) error {
+	c.initData()
+
+	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
+	type tempType *Camera
+	if err := json.Unmarshal(data, tempType(c)); err != nil {
+		return err
+	}
+
+	// Update parent references and keys.
+	for k, v := range c.Photos {
+		v.initReferences(c, k)
+	}
+
+	return nil
 }
 
 func (c *Camera) handleFileChange(event vugu.DOMEvent) {
@@ -103,61 +159,6 @@ func (c *Camera) handleFileChange(event vugu.DOMEvent) {
 
 	imgFile := js.Global().Get("document").Call("getElementById", "photo-upload").Get("files").Index(0)
 	fileReader.Call("readAsArrayBuffer", imgFile)
-}
-
-func (c *Camera) Key() string {
-	return c.key
-}
-
-func (c *Camera) Delete() {
-	delete(c.site.Cameras, c.Key())
-}
-
-// Copy returns a copy of the given object.
-// Expensive data like images will not be copied, but referenced.
-func (c *Camera) Copy() *Camera {
-	copy := &Camera{
-		Name:                         c.Name,
-		CreatedAt:                    c.CreatedAt,
-		PixelAccuracy:                c.PixelAccuracy,
-		HorizontalAOV:                c.HorizontalAOV,
-		HorizontalAOVLocked:          c.HorizontalAOVLocked,
-		DistortionCenterOffset:       c.DistortionCenterOffset,
-		DistortionCenterOffsetLocked: c.DistortionCenterOffsetLocked,
-		DistortionKs:                 c.DistortionKs,
-		DistortionKsLocked:           c.DistortionKsLocked,
-		Photos:                       map[string]*CameraPhoto{},
-	}
-
-	// Generate copies of all children.
-	for k, v := range c.Photos {
-		copy.Photos[k] = v.Copy()
-	}
-
-	// Restore keys and references.
-	copy.RestoreChildrenRefs()
-
-	return copy
-}
-
-// RestoreChildrenRefs updates the key of the children and any reference to this object.
-func (c *Camera) RestoreChildrenRefs() {
-	for k, v := range c.Photos {
-		v.key, v.camera = k, c
-	}
-}
-
-func (c *Camera) UnmarshalJSON(data []byte) error {
-	// Unmarshal structure normally. Cast it into a different type to prevent recursion with json.Unmarshal.
-	type tempType *Camera
-	if err := json.Unmarshal(data, tempType(c)); err != nil {
-		return err
-	}
-
-	// Restore keys and references.
-	c.RestoreChildrenRefs()
-
-	return nil
 }
 
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
