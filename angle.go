@@ -16,14 +16,22 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"math"
+	"strconv"
+	"strings"
 )
 
 // Angle describes a angle in radian.
 type Angle float64
 
 func (a Angle) Degree() float64 {
-	return float64(a * 360 / math.Pi)
+	return float64(a * (180 / math.Pi))
+}
+
+func (a *Angle) SetDegree(deg float64) {
+	*a = Angle(deg * (math.Pi / 180))
 }
 
 func (a Angle) Radian() float64 {
@@ -50,10 +58,18 @@ func (a Angle) Normalized() Angle {
 	return Angle(rad)
 }
 
-func (a Angle) Degrees() float64 {
-	return float64(a) * (180 / math.Pi)
+func (a *Angle) InputParse(strVal string) {
+	strVal = strings.ReplaceAll(strVal, ",", ".")
+
+	val, err := strconv.ParseFloat(strVal, 64)
+	if err != nil {
+		log.Printf("strconv.ParseFloat() failed: %v", err)
+		return
+	}
+
+	a.SetDegree(val)
 }
 
-func (a *Angle) SetDegrees(deg float64) {
-	*a = Angle(deg * (math.Pi / 180))
+func (a Angle) InputString() string {
+	return fmt.Sprintf("%f", a.Degree())
 }

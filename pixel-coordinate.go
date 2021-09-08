@@ -17,9 +17,10 @@ package main
 
 import "math"
 
-// PixelCoordinate represents a position on a photo measured in pixels.
+// PixelCoordinate represents a position in the image space measured in pixels.
 // Origin is at the top left.
-// The Z component ranges from 0 being the at far end clipping plane to 1 being at the near end clipping plane. // TODO: Check Z direction for correctness, it may be swapped
+// The Z component is in meters and has it's origin at the nodal point of the camera.
+// Positive Z values are in front of the camera (Into the direction of the camera).
 type PixelCoordinate [3]PixelDistance
 
 func (p PixelCoordinate) X() PixelDistance {
@@ -30,8 +31,8 @@ func (p PixelCoordinate) Y() PixelDistance {
 	return p[1]
 }
 
-func (p PixelCoordinate) Z() PixelDistance {
-	return p[2]
+func (p PixelCoordinate) Z() Distance {
+	return Distance(p[2])
 }
 
 // IsZero returns whether all components are 0.

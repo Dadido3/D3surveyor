@@ -271,7 +271,7 @@ func (c *CameraPhotoComponent) handleDblClick(event vugu.DOMEvent) {
 	} else {
 		// Create new mapping mapping at event position.
 		mapping := c.Photo.NewMapping()
-		mapping.Position = PixelCoordinate{PixelDistance(xVir), PixelDistance(yVir)}
+		mapping.Position = PixelCoordinate{xVir, yVir}
 	}
 }
 

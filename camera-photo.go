@@ -18,9 +18,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"image"
-	"log"
 	"math"
 	"time"
 
@@ -175,45 +173,30 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 
 	// Generate list of mappings and their coordinates. Ignore suggested mappings.
 	mappings := make([]*CameraPhotoMapping, 0, len(cp.Mappings))
-	worldCoordinates := make([]Coordinate, 0, len(cp.Mappings))    // World coordinates of every point.
-	imgCoordinates := make([]PixelCoordinate, 0, len(cp.Mappings)) // Image coordinates that each point is mapped to.
+	worldCoordinates := make([]Coordinate, 0, len(cp.Mappings)) // World coordinates of every point.
 	for _, mapping := range cp.Mappings {
 		if p, ok := site.Points[mapping.PointKey]; ok && !mapping.Suggested {
 			mappings = append(mappings, mapping)
 			worldCoordinates = append(worldCoordinates, p.Position.Coordinate)
-			imgCoordinates = append(imgCoordinates, mapping.Position)
 		}
 	}
 
-	// Unproject the mappings and project the points.
-	//projectedCoordinates := cp.Project(worldCoordinates)      // The world coordinates of every point projected into image coordinates.
-	unprojectedCoordinates, err := cp.Unproject(imgCoordinates) // The image coordinates of every mapped point projected into object/world coordinates.
-	if err != nil {
-		log.Printf("cp.UnProject() failed: %v", err)
-		return 1000000
-	}
+	// Project the points.
+	projectedCoordinates := cp.Project(worldCoordinates) // The world coordinates of every point projected into image coordinates.
 
-	// Calculate the angle difference between rays going out the camera and points.
-	// Sum up the squared angle residues.
+	// Calculate the distance in pixels for every point.
+	// Sum up the squared distance residues.
 	ssr := 0.0
 	for i, mapping := range mappings {
-		worldCoordinate, unprojectedCoordinate := worldCoordinates[i], unprojectedCoordinates[i]
+		projectedCoordinate := projectedCoordinates[i]
 
-		v1 := unprojectedCoordinate.Sub(cp.Position.Coordinate).Vec3()
-		v2 := worldCoordinate.Sub(cp.Position.Coordinate).Vec3()
-
-		angle := math.Acos(v1.Dot(v2) / v1.Len() / v2.Len())
-
-		if math.IsNaN(angle) {
+		// Ignore points behind the photo.
+		if projectedCoordinate.Z() <= 0 {
 			ssr += 1000000
 			continue
 		}
 
-		//pixelResidue := mgl64.Vec2{projectedCoordinate.X(), projectedCoordinate.Y()}.Sub(mgl64.Vec2{pointImg.X(), pointImg.Y()}).Len()
-
-		// Square the weighted angular residue.
-		r := (angle / float64(camera.AngAccuracy))
-		sr := r * r
+		sr := projectedCoordinate.DistanceSqr(mapping.Position) / camera.PixelAccuracy.Sqr()
 		sr = math.Min(sr, 1000000)
 		mapping.sr = sr
 		ssr += sr
@@ -224,64 +207,36 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 
 // Project transforms a list of object/world coordinates into a list of (distorted) image coordinates.
 func (cp *CameraPhoto) Project(worldCoordinates []Coordinate) []PixelCoordinate {
-	projMatrix := cp.camera.GetProjectionMatrix(cp.ImageSize)
-	viewMatrix := cp.GetViewMatrix()
+	camera := cp.camera
 
-	mvpMatrix := projMatrix.Mul4(viewMatrix)
+	imageCenter := cp.ImageSize.Scaled(0.5)
 
-	cameraCoordinates := make([]PixelCoordinate, len(worldCoordinates))
+	focalLength := imageCenter.X().Pixels() / math.Tan(camera.HorizontalAOV.Radian()/2)
+
+	cameraMatrix := cp.GetCameraViewMatrix()
+
+	projectedCoordinates := make([]PixelCoordinate, len(worldCoordinates))
 	for i, worldCoordinate := range worldCoordinates {
 		obj4 := worldCoordinate.Vec4(1)
 
-		vpp := mvpMatrix.Mul4x1(obj4)
-		vpp = vpp.Mul(1 / vpp.W())
+		// Rotate and translate the world coordinate into the camera coordinate system.
+		loc4 := cameraMatrix.Mul4x1(obj4)
 
-		idealProjection := PixelCoordinate{
-			0 + cp.ImageSize.X()*PixelDistance(vpp[0]+1)/2,
-			cp.ImageSize.Y() - cp.ImageSize.Y()*PixelDistance(vpp[1]+1)/2,
-			PixelDistance(vpp[2]+1) / 2,
+		// Scale X and Y camera coordinates on Z distance. (Perspective projection)
+		localCoordinate := PixelCoordinate{
+			PixelDistance(loc4[0] / loc4[2]),
+			PixelDistance(loc4[1] / loc4[2]),
+			PixelDistance(loc4[2]),
 		}
 
-		cameraCoordinates[i] = cp.camera.Distort(idealProjection)
+		// Radially distort the coordinates.
+		radiusSqr := localCoordinate.LengthSqr()
+		distortedCoordinate := localCoordinate.Scaled(camera.radialDistortFactor(radiusSqr))
+
+		projectedCoordinates[i] = imageCenter.Add(camera.DistortionCenterOffset).Add(distortedCoordinate.Scaled(focalLength))
 	}
 
-	return cameraCoordinates
-}
-
-// Unproject transforms a list of (distorted) image coordinates into world coordinates.
-func (cp *CameraPhoto) Unproject(cameraCoordinates []PixelCoordinate) (worldCoordinates []Coordinate, err error) {
-	projMatrix := cp.camera.GetProjectionMatrix(cp.ImageSize)
-	viewMatrix := cp.GetViewMatrix()
-
-	mvpMatrixInv := projMatrix.Mul4(viewMatrix).Inv()
-	var blank mgl64.Mat4
-	if mvpMatrixInv == blank {
-		return nil, fmt.Errorf("could not find matrix inverse (projection times modelview is probably non-singular)")
-	}
-
-	worldCoordinates = make([]Coordinate, len(cameraCoordinates))
-	for i, cameraCoordinate := range cameraCoordinates {
-		worldCoordinate := &worldCoordinates[i]
-
-		idealCoordinate := cp.camera.Undistort(cameraCoordinate)
-
-		obj4 := mvpMatrixInv.Mul4x1(mgl64.Vec4{
-			float64((2*(idealCoordinate.X()-0))/cp.ImageSize.X() - 1),
-			float64((2*-(idealCoordinate.Y()-cp.ImageSize.Y()))/cp.ImageSize.Y() - 1),
-			float64(2*idealCoordinate.Z() - 1),
-			1.0,
-		})
-
-		obj4[0] /= obj4[3]
-		obj4[1] /= obj4[3]
-		obj4[2] /= obj4[3]
-
-		worldCoordinate[0] = Distance(obj4.X())
-		worldCoordinate[1] = Distance(obj4.Y())
-		worldCoordinate[2] = Distance(obj4.Z())
-	}
-
-	return worldCoordinates, nil
+	return projectedCoordinates
 }
 
 // UpdateSuggestions recreates/updates all "suggested" point mappings.
@@ -302,7 +257,7 @@ func (cp *CameraPhoto) UpdateSuggestions() {
 	// Update suggested mapped points.
 	for i, projectedCoordinate := range projectedCoordinates {
 		point := points[i]
-		if projectedCoordinate.Z() >= 0 && projectedCoordinate.Z() <= 1 && projectedCoordinate.X() >= 0 && projectedCoordinate.X() <= cp.ImageSize.X() && projectedCoordinate.Y() >= 0 && projectedCoordinate.Y() <= cp.ImageSize.Y() {
+		if projectedCoordinate.Z() > 0 && projectedCoordinate.X() >= 0 && projectedCoordinate.X() <= cp.ImageSize.X() && projectedCoordinate.Y() >= 0 && projectedCoordinate.Y() <= cp.ImageSize.Y() {
 			// The projection is valid, create or update point mapping.
 			var foundMapping *CameraPhotoMapping
 			for _, mapping := range cp.Mappings { // TODO: Remove stupid linear search
@@ -348,7 +303,8 @@ func (cp *CameraPhoto) UpdateSuggestions() {
 	}
 }
 
-func (cp *CameraPhoto) GetViewMatrix() mgl64.Mat4 {
+// GetCameraViewMatrix returns a matrix that transforms world coordinates into local camera coordinates.
+func (cp *CameraPhoto) GetCameraViewMatrix() mgl64.Mat4 {
 	quat := mgl64.AnglesToQuat(float64(-cp.Orientation.X()), float64(-cp.Orientation.Y()), float64(-cp.Orientation.Z()), mgl64.XYZ)
 	rotationMatrix := quat.Mat4()
 	translationMatrix := mgl64.Translate3D(float64(-cp.Position.X()), float64(-cp.Position.Y()), float64(-cp.Position.Z()))

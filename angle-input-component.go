@@ -39,7 +39,7 @@ func (c *AngleInputComponent) handleValueChange(event vugu.DOMEvent) {
 		return
 	}
 
-	c.BindValue.SetDegrees(val)
+	c.BindValue.SetDegree(val)
 }
 
 func (c *AngleInputComponent) handleLockedChange(event vugu.DOMEvent) {

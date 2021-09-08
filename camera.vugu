@@ -11,10 +11,10 @@
 		</div>
 
 		<div class="w3-third">
-			<label>Angle of view</label>
-			<main:AngleInputComponent min="0" :BindValue="&c.LongSideAOV" :BindLocked="&c.LongSideAOVLocked"></main:AngleInputComponent>
-			<label>Accuracy (deg)</label>
-			<main:AngleInputComponent min="0" :BindValue="&c.AngAccuracy"></main:AngleInputComponent>
+			<label>Horizontal angle of view</label>
+			<main:GeneralInputComponent :BindValue="&c.HorizontalAOV" :BindLocked="&c.HorizontalAOVLocked"></main:GeneralInputComponent>
+			<label>Accuracy (pixels)</label>
+			<main:GeneralInputComponent :BindValue="&c.PixelAccuracy"></main:GeneralInputComponent>
 		</div>
 
 		<div class="w3-third">
@@ -23,8 +23,11 @@
 			<label>K2</label>
 			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionKs[1]" :BindLocked="&c.DistortionKsLocked[1]"></main:GeneralInputComponent>
 			<div class="w3-card">
-				<div class="w3-container w3-green w3-large">Distortion image center (pixels)</div>
-				<main:PixelCoordinateComponent :Editable="true" :HideZ="true" :BindValue="&c.DistortionImageCenter"></main:PixelCoordinateComponent>
+				<div class="w3-container w3-green w3-large" style="padding-bottom: 7px;">
+					Distortion center offset (pixels)
+					<main:ToggleInputComponent LabelText="Lock" :BindValue="&c.DistortionCenterOffsetLocked"></main:ToggleInputComponent>
+				</div>
+				<main:PixelCoordinateComponent :Editable="true" :HideZ="true" :BindValue="&c.DistortionCenterOffset"></main:PixelCoordinateComponent>
 			</div>
 		</div>
 	</div>
