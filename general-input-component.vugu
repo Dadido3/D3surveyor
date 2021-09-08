@@ -1,0 +1,30 @@
+<div vg-attr="c.AttrMap" class="d3-q409n0igjq4gt">
+	<label vg-if='c.LabelText != ""' vg-content="c.LabelText"></label>
+	<div class="d3-2t40jiwgrj4sk">
+		<input class="w3-input" :type="c.InputType" .value="c.inputContent()" @change="c.handleValueChange(event)"></input>
+	</div>
+	<div vg-if="c.BindLocked != nil">
+		<label>
+			<input type="checkbox" .checked="c.BindLocked" @change="c.handleLockedChange(event)"></input>
+			<i class="fas fa-lock"></i>
+		</label>
+	</div>
+</div>
+
+<style>
+	.d3-q409n0igjq4gt {
+		display: flex;
+	}
+
+	.d3-q409n0igjq4gt > label {
+		padding: 0 8px;
+	}
+
+	.d3-q409n0igjq4gt > div > input {
+		padding: 0 8px;
+	}
+
+	.d3-2t40jiwgrj4sk {
+		flex-grow: 1;
+	}
+</style>

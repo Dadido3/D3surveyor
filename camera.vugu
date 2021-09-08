@@ -19,6 +19,13 @@
 			<label>Angle of view</label>
 			<main:AngleInputComponent min="0" :BindValue="&c.LongSideAOV" :BindLocked="&c.LongSideAOVLocked"></main:AngleInputComponent>
 		</div>
+
+		<div class="w3-third">
+			<label>K1</label>
+			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionKs[0]" :BindLocked="&c.DistortionKsLocked[0]"></main:GeneralInputComponent>
+			<label>K2</label>
+			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionKs[1]" :BindLocked="&c.DistortionKsLocked[1]"></main:GeneralInputComponent>
+		</div>
 	</div>
 
 	<div class="w3-container">

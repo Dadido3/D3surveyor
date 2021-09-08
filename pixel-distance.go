@@ -22,6 +22,16 @@ func (p PixelDistance) Pixels() float64 {
 	return float64(p)
 }
 
+// TweakableValue returns the values mapped into optimizer space.
+func (p PixelDistance) TweakableValue() float64 {
+	return float64(p)
+}
+
+// SetTweakableValue converts and applies the given value from optimizer space.
+func (p *PixelDistance) SetTweakableValue(v float64) {
+	*p = PixelDistance(v)
+}
+
 func (p PixelDistance) Sqr() float64 {
 	return float64(p * p)
 }

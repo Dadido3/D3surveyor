@@ -26,7 +26,7 @@ func generateObj(site *Site) []byte {
 	for key, point := range site.Points {
 		pointKeyIndices[key] = counter
 		counter++
-		result += fmt.Sprintf("v %f %f %f\n", point.Position.X, point.Position.Y, point.Position.Z)
+		result += fmt.Sprintf("v %f %f %f\n", point.Position.X().Meters(), point.Position.Y().Meters(), point.Position.Z().Meters())
 	}
 
 	result += "\n#List of lines\n"
@@ -58,7 +58,7 @@ func generateObj(site *Site) []byte {
 		result += fmt.Sprintf("o Tripod_%s_%s\n", tripod.Key(), tripod.Name)
 		pointKeyIndices[tripod.Key()] = counter
 		counter++
-		result += fmt.Sprintf("v %f %f %f\n", tripod.Position.X, tripod.Position.Y, tripod.Position.Z)
+		result += fmt.Sprintf("v %f %f %f\n", tripod.Position.X().Meters(), tripod.Position.Y().Meters(), tripod.Position.Z().Meters())
 		for _, measurement := range tripod.Measurements {
 			indexP1, ok1 := pointKeyIndices[tripod.Key()]
 			indexP2, ok2 := pointKeyIndices[measurement.PointKey]

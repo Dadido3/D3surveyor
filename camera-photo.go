@@ -222,32 +222,34 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 	return ssr
 }
 
-// Project transforms a list of object/world coordinates into a list of image coordinates.
+// Project transforms a list of object/world coordinates into a list of (distorted) image coordinates.
 func (cp *CameraPhoto) Project(worldCoordinates []Coordinate) []PixelCoordinate {
 	projMatrix := cp.camera.GetProjectionMatrix(cp.ImageSize)
 	viewMatrix := cp.GetViewMatrix()
 
 	mvpMatrix := projMatrix.Mul4(viewMatrix)
 
-	imgCoordinates := make([]PixelCoordinate, len(worldCoordinates))
+	cameraCoordinates := make([]PixelCoordinate, len(worldCoordinates))
 	for i, worldCoordinate := range worldCoordinates {
-		imgCoordinate := &imgCoordinates[i]
-
 		obj4 := worldCoordinate.Vec4(1)
 
 		vpp := mvpMatrix.Mul4x1(obj4)
 		vpp = vpp.Mul(1 / vpp.W())
 
-		imgCoordinate[0] = 0 + cp.ImageSize.X()*PixelDistance(vpp[0]+1)/2
-		imgCoordinate[1] = cp.ImageSize.Y() - cp.ImageSize.Y()*PixelDistance(vpp[1]+1)/2
-		imgCoordinate[2] = PixelDistance(vpp[2]+1) / 2
+		idealProjection := PixelCoordinate{
+			0 + cp.ImageSize.X()*PixelDistance(vpp[0]+1)/2,
+			cp.ImageSize.Y() - cp.ImageSize.Y()*PixelDistance(vpp[1]+1)/2,
+			PixelDistance(vpp[2]+1) / 2,
+		}
+
+		cameraCoordinates[i] = cp.camera.Distort(idealProjection)
 	}
 
-	return imgCoordinates
+	return cameraCoordinates
 }
 
-// Unproject transforms a list of image coordinates into world coordinates.
-func (cp *CameraPhoto) Unproject(imgCoordinates []PixelCoordinate) (worldCoordinates []Coordinate, err error) {
+// Unproject transforms a list of (distorted) image coordinates into world coordinates.
+func (cp *CameraPhoto) Unproject(cameraCoordinates []PixelCoordinate) (worldCoordinates []Coordinate, err error) {
 	projMatrix := cp.camera.GetProjectionMatrix(cp.ImageSize)
 	viewMatrix := cp.GetViewMatrix()
 
@@ -257,14 +259,16 @@ func (cp *CameraPhoto) Unproject(imgCoordinates []PixelCoordinate) (worldCoordin
 		return nil, fmt.Errorf("could not find matrix inverse (projection times modelview is probably non-singular)")
 	}
 
-	worldCoordinates = make([]Coordinate, len(imgCoordinates))
-	for i, imgCoordinate := range imgCoordinates {
+	worldCoordinates = make([]Coordinate, len(cameraCoordinates))
+	for i, cameraCoordinate := range cameraCoordinates {
 		worldCoordinate := &worldCoordinates[i]
 
+		idealCoordinate := cp.camera.Undistort(cameraCoordinate)
+
 		obj4 := mvpMatrixInv.Mul4x1(mgl64.Vec4{
-			float64((2*(imgCoordinate.X()-0))/cp.ImageSize.X() - 1),
-			float64((2*-(imgCoordinate.Y()-cp.ImageSize.Y()))/cp.ImageSize.Y() - 1),
-			float64(2*imgCoordinate.Z() - 1),
+			float64((2*(idealCoordinate.X()-0))/cp.ImageSize.X() - 1),
+			float64((2*-(idealCoordinate.Y()-cp.ImageSize.Y()))/cp.ImageSize.Y() - 1),
+			float64(2*idealCoordinate.Z() - 1),
 			1.0,
 		})
 

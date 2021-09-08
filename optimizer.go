@@ -18,6 +18,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
+	"strconv"
+	"strings"
 	"time"
 
 	"gonum.org/v1/gonum/optimize"
@@ -27,6 +30,60 @@ import (
 type Tweakable interface {
 	TweakableValue() float64     // TweakableValue returns the values mapped into optimizer space.
 	SetTweakableValue(v float64) // SetTweakableValue converts and applies the given value from optimizer space.
+}
+
+// TweakableFloat is a optimizable float in the range of -inf to +inf.
+type TweakableFloat float64
+
+func (t TweakableFloat) TweakableValue() float64 {
+	return float64(t)
+}
+
+func (t *TweakableFloat) SetTweakableValue(v float64) {
+	*t = TweakableFloat(v)
+}
+
+func (t *TweakableFloat) InputParse(strVal string) {
+	strVal = strings.ReplaceAll(strVal, ",", ".")
+
+	val, err := strconv.ParseFloat(strVal, 64)
+	if err != nil {
+		log.Printf("strconv.ParseFloat() failed: %v", err)
+		return
+	}
+
+	*t = TweakableFloat(val)
+}
+
+func (t TweakableFloat) InputString() string {
+	return fmt.Sprint(t)
+}
+
+// TweakablePositiveFloat is a optimizable float in the range of 0 to +inf.
+type TweakablePositiveFloat float64
+
+func (t TweakablePositiveFloat) TweakableValue() float64 {
+	return math.Log(float64(t))
+}
+
+func (t *TweakablePositiveFloat) SetTweakableValue(v float64) {
+	*t = TweakablePositiveFloat(math.Exp(v))
+}
+
+func (t *TweakablePositiveFloat) InputParse(strVal string) {
+	strVal = strings.ReplaceAll(strVal, ",", ".")
+
+	val, err := strconv.ParseFloat(strVal, 64)
+	if err != nil {
+		log.Printf("strconv.ParseFloat() failed: %v", err)
+		return
+	}
+
+	*t = TweakablePositiveFloat(val)
+}
+
+func (t TweakablePositiveFloat) InputString() string {
+	return fmt.Sprint(t)
 }
 
 // Residualer is implemented by objects that can have residuals of measurements or constraints.

@@ -31,6 +31,9 @@ import (
 	"github.com/vugu/vugu/js"
 )
 
+// Amount of camera distortion coefficients.
+const CameraDistortionKs = 2
+
 type Camera struct {
 	vgrouter.NavigatorRef `json:"-"`
 
@@ -45,6 +48,11 @@ type Camera struct {
 	LongSideAOV       Angle // The angle of view of the longest side of every image.
 	LongSideAOVLocked bool  // Prevent the value from being optimized.
 
+	// Lens distortion model parameters.
+	DistortionImageCenter       PixelCoordinate                    // TODO: Determine image center by first image
+	DistortionImageCenterLocked bool                               // Locked state of the image center.
+	DistortionKs                [CameraDistortionKs]TweakableFloat // List of distortion coefficients.
+	DistortionKsLocked          [CameraDistortionKs]bool           // Locked state of the distortion coefficients.
 
 	Photos map[string]*CameraPhoto
 }
@@ -53,13 +61,15 @@ func (s *Site) NewCamera(name string) *Camera {
 	key := s.shortIDGen.MustGenerate()
 
 	c := &Camera{
-		site:        s,
-		key:         key,
-		Name:        name,
-		CreatedAt:   time.Now(),
-		AngAccuracy: 0.2, // Assume ~10 deg of accuracy.
-		LongSideAOV: 1.2, // Start with ~70 deg of AOV.
-		Photos:      map[string]*CameraPhoto{},
+		site:                        s,
+		key:                         key,
+		Name:                        name,
+		CreatedAt:                   time.Now(),
+		AngAccuracy:                 0.2, // Assume ~10 deg of accuracy.
+		LongSideAOV:                 1.2, // Start with ~70 deg of AOV.
+		DistortionImageCenterLocked: true,
+		DistortionKsLocked:          [2]bool{true, true},
+		Photos:                      map[string]*CameraPhoto{},
 	}
 
 	s.Cameras[key] = c
@@ -107,12 +117,16 @@ func (c *Camera) Delete() {
 // Expensive data like images will not be copied, but referenced.
 func (c *Camera) Copy() *Camera {
 	copy := &Camera{
-		Name:              c.Name,
-		CreatedAt:         c.CreatedAt,
-		AngAccuracy:       c.AngAccuracy,
-		LongSideAOV:       c.LongSideAOV,
-		LongSideAOVLocked: c.LongSideAOVLocked,
-		Photos:            map[string]*CameraPhoto{},
+		Name:                        c.Name,
+		CreatedAt:                   c.CreatedAt,
+		AngAccuracy:                 c.AngAccuracy,
+		LongSideAOV:                 c.LongSideAOV,
+		LongSideAOVLocked:           c.LongSideAOVLocked,
+		DistortionImageCenter:       c.DistortionImageCenter,
+		DistortionImageCenterLocked: c.DistortionImageCenterLocked,
+		DistortionKs:                c.DistortionKs,
+		DistortionKsLocked:          c.DistortionKsLocked,
+		Photos:                      map[string]*CameraPhoto{},
 	}
 
 	// Generate copies of all children.
@@ -154,6 +168,17 @@ func (c *Camera) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 		tweakables = append(tweakables, &c.LongSideAOV)
 	}
 
+	if !c.DistortionImageCenterLocked {
+		tweakables = append(tweakables, &c.DistortionImageCenter[0])
+		tweakables = append(tweakables, &c.DistortionImageCenter[1])
+	}
+
+	for i, locked := range c.DistortionKsLocked {
+		if !locked {
+			tweakables = append(tweakables, &c.DistortionKs[i])
+		}
+	}
+
 	for _, photo := range c.PhotosSorted() {
 		newTweakables, newResiduals := photo.GetTweakablesAndResiduals()
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
@@ -174,16 +199,63 @@ func (c *Camera) GetProjectionMatrix(imgSize PixelCoordinate) mgl64.Mat4 {
 	return mgl64.Perspective(aovY, aspect, 0.01, 10000)
 }
 
-// Undistort takes an image coordinate in pixels and returns the ideal coordinate in pixels.
-// The tranformation is based on the camera distortion model parameters.
-func (c *Camera) Undistort(cameraProjection PixelCoordinate) (idealProjection PixelCoordinate) {
-	return cameraProjection // TODO: Add photo undistort function
+// RadialUndistort returns a radial scaling factor for the given distorted radius.
+func (c *Camera) radialUndistort(radiusSqr float64) float64 {
+	k1, k2 := float64(c.DistortionKs[0]), float64(c.DistortionKs[1])
+
+	return 1 + k1*radiusSqr + k2*radiusSqr*radiusSqr
 }
 
-// Distort takes an image coordinate in pixels and returns the distorted/camera coordinate in pixels.
-// The tranformation is based on the camera distortion model parameters.
+// Undistort takes a distorted/camera coordinate and returns the coordinate of an ideal projection.
+// The tranformation is based on the camera distortion model parameters/coefficients.
+func (c *Camera) Undistort(cameraProjection PixelCoordinate) (idealProjection PixelCoordinate) {
+	// Set distortion image center if it's not set.
+	// Assuming it is not set when all its components are 0.
+	if c.DistortionImageCenter.IsZero() {
+		for _, photo := range c.Photos {
+			c.DistortionImageCenter = photo.ImageSize.Scaled(0.5)
+			break
+		}
+	}
+
+	// u = c + (d - c) * (1 + K_1 * r² + K_2 * r⁴)
+	// With u being the undistorted/ideal projection vector,
+	// c being the "center of the image" vector,
+	// d being the distorted vector, and
+	// r being the distance of d from the center.
+
+	centered := cameraProjection.Sub(c.DistortionImageCenter)
+	radiusSqr := centered.Scaled(0.0001).LengthSqr() // Scale the radius by a hardcoded value of 1/10000
+	radialScaling := c.radialUndistort(radiusSqr)
+
+	return c.DistortionImageCenter.Add(centered.Scaled(radialScaling))
+}
+
+// Distort takes an ideal projection coordinate and returns the distorted/camera coordinate.
+// The tranformation is based on the camera distortion model parameters/coefficients.
 func (c *Camera) Distort(idealProjection PixelCoordinate) (cameraProjection PixelCoordinate) {
-	return idealProjection // TODO: Add photo distort function
+	// Set distortion image center if it's not set.
+	// Assuming it is not set when all its components are 0.
+	if c.DistortionImageCenter.IsZero() {
+		for _, photo := range c.Photos {
+			c.DistortionImageCenter = photo.ImageSize.Scaled(0.5)
+			break
+		}
+	}
+
+	// Get the initial radius.
+	centered := idealProjection.Sub(c.DistortionImageCenter)
+	undistortedRadius := centered.Scaled(0.0001).Length()
+
+	// Iteratively calculate the inverse of Undistort().
+	distortedRadius := undistortedRadius
+	radialScaling := 0.0
+	for i := 0; i < 5; i++ {
+		radialScaling = c.radialUndistort(distortedRadius.Sqr())
+		distortedRadius = undistortedRadius / PixelDistance(radialScaling)
+	}
+
+	return c.DistortionImageCenter.Add(centered.Scaled(1 / radialScaling))
 }
 
 // PhotosSorted returns the photos of the camera as a list sorted by date.
