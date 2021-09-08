@@ -11,13 +11,10 @@
 		</div>
 
 		<div class="w3-third">
-			<label>Accuracy (deg)</label>
-			<main:AngleInputComponent min="0" :BindValue="&c.AngAccuracy"></main:AngleInputComponent>
-		</div>
-
-		<div class="w3-third">
 			<label>Angle of view</label>
 			<main:AngleInputComponent min="0" :BindValue="&c.LongSideAOV" :BindLocked="&c.LongSideAOVLocked"></main:AngleInputComponent>
+			<label>Accuracy (deg)</label>
+			<main:AngleInputComponent min="0" :BindValue="&c.AngAccuracy"></main:AngleInputComponent>
 		</div>
 
 		<div class="w3-third">
@@ -25,6 +22,10 @@
 			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionKs[0]" :BindLocked="&c.DistortionKsLocked[0]"></main:GeneralInputComponent>
 			<label>K2</label>
 			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionKs[1]" :BindLocked="&c.DistortionKsLocked[1]"></main:GeneralInputComponent>
+			<div class="w3-card">
+				<div class="w3-container w3-green w3-large">Distortion image center (pixels)</div>
+				<main:PixelCoordinateComponent :Editable="true" :HideZ="true" :BindValue="&c.DistortionImageCenter"></main:PixelCoordinateComponent>
+			</div>
 		</div>
 	</div>
 
@@ -34,7 +35,7 @@
 
 		<input style="display:none;" type="file" id="photo-upload" @change="c.handleFileChange(event)">
 
-		<ul class="w3-ul w3-card-4">
+		<ul class="w3-ul w3-card">
 			<li vg-for="_, photo := range c.PhotosSorted()" class="w3-bar">
 				<span @click="photo.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
 				<span @click='c.Navigate("/camera/" + c.Key() + "/photo/" + photo.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>

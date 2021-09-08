@@ -12,21 +12,21 @@
 
 	<div class="w3-container w3-row-padding">
 		<div class="w3-third">
-			<div class="w3-card-4">
+			<div class="w3-card">
 				<div class="w3-container w3-green w3-large">Points</div>
 				<div class="w3-container" vg-content='fmt.Sprintf("Count: %d", len(c.Points))'></div>
 			</div>
 		</div>
 
 		<div class="w3-third">
-			<div class="w3-card-4">
+			<div class="w3-card">
 				<div class="w3-container w3-green w3-large">Rangefinders</div>
 				<div class="w3-container" vg-content='fmt.Sprintf("Count: %d", len(c.Rangefinders))'></div>
 			</div>
 		</div>
 
 		<div class="w3-third">
-			<div class="w3-card-4">
+			<div class="w3-card">
 				<div class="w3-container w3-green w3-large">Cameras</div>
 				<div class="w3-container" vg-content='fmt.Sprintf("Count: %d", len(c.Cameras))'></div>
 			</div>
@@ -34,14 +34,14 @@
 	</div>
 	<div class="w3-container w3-row-padding">
 		<div class="w3-third">
-			<div class="w3-card-4">
+			<div class="w3-card">
 				<div class="w3-container w3-green w3-large">Tripods</div>
 				<div class="w3-container" vg-content='fmt.Sprintf("Count: %d", len(c.Tripods))'></div>
 			</div>
 		</div>
 
 		<div class="w3-third">
-			<div class="w3-card-4">
+			<div class="w3-card">
 				<div class="w3-container w3-green w3-large">Lines</div>
 				<div class="w3-container" vg-content='fmt.Sprintf("Count: %d", len(c.Lines))'></div>
 			</div>

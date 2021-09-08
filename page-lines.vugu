@@ -5,7 +5,7 @@
 	</main:TitleBar>
 
 	<div class="w3-container">
-		<ul class="w3-ul w3-card-4">
+		<ul class="w3-ul w3-card">
 			<li vg-for="_, line := range c.Site.LinesSorted()" class="w3-bar">
 				<span @click="line.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
 				<span @click='c.Navigate("/line/" + line.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>

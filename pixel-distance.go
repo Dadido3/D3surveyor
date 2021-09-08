@@ -15,7 +15,14 @@
 
 package main
 
-// PixelDistance describes a length or absolute value in pixels.
+import (
+	"fmt"
+	"log"
+	"strconv"
+	"strings"
+)
+
+// PixelDistance describes a length or absolute position in pixels.
 type PixelDistance float64
 
 func (p PixelDistance) Pixels() float64 {
@@ -34,4 +41,20 @@ func (p *PixelDistance) SetTweakableValue(v float64) {
 
 func (p PixelDistance) Sqr() float64 {
 	return float64(p * p)
+}
+
+func (p *PixelDistance) InputParse(strVal string) {
+	strVal = strings.ReplaceAll(strVal, ",", ".")
+
+	val, err := strconv.ParseFloat(strVal, 64)
+	if err != nil {
+		log.Printf("strconv.ParseFloat() failed: %v", err)
+		return
+	}
+
+	*p = PixelDistance(val)
+}
+
+func (p PixelDistance) InputString() string {
+	return fmt.Sprintf("%f", p)
 }

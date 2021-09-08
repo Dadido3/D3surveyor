@@ -16,7 +16,7 @@
 		</div>
 
 		<div class="w3-third">
-			<div class="w3-card-4">
+			<div class="w3-card">
 				<div class="w3-container w3-green w3-large">Position</div>
 				<main:CoordinateOptimizableComponent :Editable="true" :BindValue="&c.Position"></main:CoordinateOptimizableComponent>
 			</div>
@@ -37,7 +37,7 @@
 		<span class="w3-large" vg-content='fmt.Sprintf("%d measurements", len(c.Measurements))'></span>
 		<button class="w3-large w3-button w3-teal" @click="c.handleAdd(event)"><i class="fas fa-plus"></i></button>
 
-		<ul class="w3-ul w3-card-4">
+		<ul class="w3-ul w3-card">
 			<li vg-for="_, measurement := range c.MeasurementsSorted()" class="w3-bar">
 				<span @click="measurement.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
 				<span @click='c.Navigate("/tripod/" + c.Key() + "/measurement/" + measurement.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>

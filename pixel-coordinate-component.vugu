@@ -1,0 +1,15 @@
+<div vg-attr="c.AttrMap">
+	<vg-template vg-if="c.BindValue != nil && c.Editable">
+		<main:GeneralInputComponent :BindValue="&c.BindValue[0]" LabelText="X"></main:GeneralInputComponent>
+		<main:GeneralInputComponent :BindValue="&c.BindValue[1]" LabelText="Y"></main:GeneralInputComponent>
+		<main:GeneralInputComponent :BindValue="&c.BindValue[2]" LabelText="Z" vg-if="!c.HideZ"></main:GeneralInputComponent>
+	</vg-template>
+	<vg-template vg-if="c.BindValue != nil && !c.Editable">
+		<div>X: </span><span vg-content='fmt.Sprintf("%.4f", c.BindValue.X())'></div>
+		<div>Y: </span><span vg-content='fmt.Sprintf("%.4f", c.BindValue.Y())'></div>
+		<div>Z: </span><span vg-content='fmt.Sprintf("%.4f", c.BindValue.Z())' vg-if="!c.HideZ"></div>
+	</vg-template>
+</div>
+
+<style>
+</style>

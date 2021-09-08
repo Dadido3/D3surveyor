@@ -5,7 +5,7 @@
 	</main:TitleBar>
 
 	<div class="w3-container">
-		<ul class="w3-ul w3-card-4">
+		<ul class="w3-ul w3-card">
 			<li vg-for="_, camera := range c.Site.CamerasSorted()" class="w3-bar">
 				<span @click="camera.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
 				<span @click='c.Navigate("/camera/" + camera.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>
@@ -16,7 +16,7 @@
 
 				<div class="w3-container">
 					<span class="w3-large">Photos</span>
-					<ul class="w3-ul w3-card-4">
+					<ul class="w3-ul w3-card">
 						<li vg-for="_, photo := range camera.PhotosSorted()" class="w3-bar">
 							<span @click="photo.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
 							<span @click='c.Navigate("/camera/" + camera.Key() + "/photo/" + photo.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>

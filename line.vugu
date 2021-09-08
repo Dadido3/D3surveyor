@@ -26,7 +26,7 @@
 		</div>
 
 		<div class="w3-third">
-			<div class="w3-card-4">
+			<div class="w3-card">
 				<div class="w3-container w3-green w3-large" style="padding-bottom: 7px;">
 					<main:ToggleInputComponent LabelText="Fit to vector direction" :BindValue="&c.DirectionEnabled"></main:ToggleInputComponent>
 				</div>
