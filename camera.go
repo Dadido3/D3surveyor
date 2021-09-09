@@ -31,7 +31,7 @@ import (
 )
 
 // Amount of camera distortion coefficients.
-const CameraDistortionKs = 2
+const CameraDistortionKs, CameraDistortionPs, CameraDistortionBs = 4, 4, 2
 
 type Camera struct {
 	vgrouter.NavigatorRef `json:"-"`
@@ -48,11 +48,17 @@ type Camera struct {
 	HorizontalAOVLocked bool  // Prevent the value from being optimized.
 
 	// Lens distortion model parameters.
+	// We will the Brown-Conrady model with the transformation direction from undistorted to distorted.
+	// This is similar to what OpenCV uses, see: https://docs.opencv.org/3.4/d9/d0c/group__calib3d.html
 
-	DistortionCenterOffset       PixelCoordinate                    // Image center offset measured from the real image center. (Offset of the principal point)
-	DistortionCenterOffsetLocked bool                               // Locked state of the image center offset.
-	DistortionKs                 [CameraDistortionKs]TweakableFloat // List of distortion coefficients.
-	DistortionKsLocked           [CameraDistortionKs]bool           // Locked state of the distortion coefficients.
+	PrincipalPointOffset       PixelCoordinate
+	PrincipalPointOffsetLocked bool
+	DistortionKs               [CameraDistortionKs]TweakableFloat // List of radial distortion coefficients.
+	DistortionKsLocked         [CameraDistortionKs]bool           // Locked state of the distortion coefficients.
+	DistortionPs               [CameraDistortionPs]TweakableFloat // List of tangential distortion coefficients.
+	DistortionPsLocked         [CameraDistortionPs]bool           // Locked state of the distortion coefficients.
+	DistortionBs               [CameraDistortionBs]PixelDistance  // List of affinity and non-orthogonality distortion coefficients.
+	DistortionBsLocked         [CameraDistortionBs]bool           // Locked state of the distortion coefficients.
 
 	Photos map[string]*CameraPhoto
 }
@@ -71,8 +77,10 @@ func (c *Camera) initData() {
 	c.CreatedAt = time.Now()
 	c.PixelAccuracy = 100
 	c.HorizontalAOV = 70 * 2 * math.Pi / 360 // Start with a guess of 70 deg for AOV.
-	c.DistortionCenterOffsetLocked = true
-	c.DistortionKsLocked = [2]bool{true, true}
+	c.PrincipalPointOffsetLocked = true
+	c.DistortionKsLocked = [4]bool{true, true, true, true}
+	c.DistortionPsLocked = [4]bool{true, true, true, true}
+	c.DistortionBsLocked = [2]bool{true, true}
 	c.Photos = map[string]*CameraPhoto{}
 }
 
@@ -103,10 +111,14 @@ func (c *Camera) Copy(newParent *Site, newKey string) *Camera {
 	copy.PixelAccuracy = c.PixelAccuracy
 	copy.HorizontalAOV = c.HorizontalAOV
 	copy.HorizontalAOVLocked = c.HorizontalAOVLocked
-	copy.DistortionCenterOffset = c.DistortionCenterOffset
-	copy.DistortionCenterOffsetLocked = c.DistortionCenterOffsetLocked
+	copy.PrincipalPointOffset = c.PrincipalPointOffset
+	copy.PrincipalPointOffsetLocked = c.PrincipalPointOffsetLocked
 	copy.DistortionKs = c.DistortionKs
 	copy.DistortionKsLocked = c.DistortionKsLocked
+	copy.DistortionPs = c.DistortionPs
+	copy.DistortionPsLocked = c.DistortionPsLocked
+	copy.DistortionBs = c.DistortionBs
+	copy.DistortionBsLocked = c.DistortionBsLocked
 
 	// Generate copies of all children.
 	for k, v := range c.Photos {
@@ -169,9 +181,9 @@ func (c *Camera) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 		tweakables = append(tweakables, &c.HorizontalAOV)
 	}
 
-	if !c.DistortionCenterOffsetLocked {
-		tweakables = append(tweakables, &c.DistortionCenterOffset[0])
-		tweakables = append(tweakables, &c.DistortionCenterOffset[1])
+	if !c.PrincipalPointOffsetLocked {
+		tweakables = append(tweakables, &c.PrincipalPointOffset[0])
+		tweakables = append(tweakables, &c.PrincipalPointOffset[1])
 	}
 
 	for i, locked := range c.DistortionKsLocked {
@@ -185,14 +197,6 @@ func (c *Camera) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 		tweakables, residuals = append(tweakables, newTweakables...), append(residuals, newResiduals...)
 	}
 	return tweakables, residuals
-}
-
-// radialDistortFactor returns a radial scaling factor for the given undistorted (quared) radius.
-// Any undistorted coordinate scaled with this factor around the distortion center will result in an distorted coordinate.
-func (c *Camera) radialDistortFactor(radiusSqr float64) float64 {
-	k1, k2 := float64(c.DistortionKs[0]), float64(c.DistortionKs[1])
-
-	return 1 + k1*radiusSqr + k2*radiusSqr*radiusSqr
 }
 
 // PhotosSorted returns the photos of the camera as a list sorted by date.

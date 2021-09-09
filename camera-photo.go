@@ -215,6 +215,10 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 func (cp *CameraPhoto) Project(worldCoordinates []Coordinate) []PixelCoordinate {
 	camera := cp.camera
 
+	k1, k2, k3, k4 := float64(camera.DistortionKs[0]), float64(camera.DistortionKs[1]), float64(camera.DistortionKs[2]), float64(camera.DistortionKs[3])
+	p1, p2, p3, p4 := float64(camera.DistortionPs[0]), float64(camera.DistortionPs[1]), float64(camera.DistortionPs[2]), float64(camera.DistortionPs[3])
+	b1, b2 := camera.DistortionBs[0], camera.DistortionBs[1]
+
 	imageCenter := cp.imageSize.Scaled(0.5)
 
 	focalLength := imageCenter.X().Pixels() / math.Tan(camera.HorizontalAOV.Radian()/2)
@@ -235,11 +239,25 @@ func (cp *CameraPhoto) Project(worldCoordinates []Coordinate) []PixelCoordinate 
 			PixelDistance(loc4[2]),
 		}
 
-		// Radially distort the coordinates.
 		radiusSqr := localCoordinate.LengthSqr()
-		distortedCoordinate := localCoordinate.Scaled(camera.radialDistortFactor(radiusSqr))
 
-		projectedCoordinates[i] = imageCenter.Add(camera.DistortionCenterOffset).Add(distortedCoordinate.Scaled(focalLength))
+		// Radial distortion.
+		distortedCoordinate := localCoordinate.Scaled(1 + k1*radiusSqr + k2*radiusSqr*radiusSqr + k3*radiusSqr*radiusSqr*radiusSqr + k4*radiusSqr*radiusSqr*radiusSqr*radiusSqr)
+		// Tangential distortion.
+		lx, ly := localCoordinate.X().Pixels(), localCoordinate.Y().Pixels()
+		lxSqr, lySqr := lx*lx, ly*ly
+		lxy := lx * ly
+		p3p4 := PixelDistance(1 + p3*radiusSqr + p4*radiusSqr*radiusSqr)
+		distortedCoordinate = distortedCoordinate.Add(PixelCoordinate{
+			PixelDistance(p1*(radiusSqr+2*lxSqr)+2*p2*lxy) * p3p4,
+			PixelDistance(p2*(radiusSqr+2*lySqr)+2*p1*lxy) * p3p4,
+		})
+
+		// Transformation into image space and last distortion.
+		imgCoordinate := imageCenter.Add(camera.PrincipalPointOffset).Add(distortedCoordinate.Scaled(focalLength))
+		imgCoordinate[0] += distortedCoordinate.X()*b1 + distortedCoordinate.Y()*b2
+
+		projectedCoordinates[i] = imgCoordinate
 	}
 
 	return projectedCoordinates

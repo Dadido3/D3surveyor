@@ -153,7 +153,7 @@ func Optimize(site *Site, stopFunc func() bool) error {
 	}
 
 	//res, err := optimize.Minimize(p, init, nil, &optimize.CmaEsChol{InitStepSize: 0.01})
-	res, err := optimize.Minimize(p, init, &optimize.Settings{Converger: &optimize.FunctionConverge{Absolute: 1e-10, Iterations: 100000}}, &optimize.NelderMead{SimplexSize: 10})
+	res, err := optimize.Minimize(p, init, &optimize.Settings{Converger: &optimize.FunctionConverge{Absolute: 1e-10, Iterations: 100000}}, &optimize.NelderMead{})
 	if err != nil {
 		log.Printf("Optimization failed: %v", err)
 	}

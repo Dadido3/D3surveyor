@@ -22,12 +22,28 @@
 			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionKs[0]" :BindLocked="&c.DistortionKsLocked[0]"></main:GeneralInputComponent>
 			<label>K2</label>
 			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionKs[1]" :BindLocked="&c.DistortionKsLocked[1]"></main:GeneralInputComponent>
+			<label>K3</label>
+			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionKs[2]" :BindLocked="&c.DistortionKsLocked[2]"></main:GeneralInputComponent>
+			<label>K4</label>
+			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionKs[3]" :BindLocked="&c.DistortionKsLocked[3]"></main:GeneralInputComponent>
+			<label>P1</label>
+			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionPs[0]" :BindLocked="&c.DistortionPsLocked[0]"></main:GeneralInputComponent>
+			<label>P2</label>
+			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionPs[1]" :BindLocked="&c.DistortionPsLocked[1]"></main:GeneralInputComponent>
+			<label>P3</label>
+			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionPs[2]" :BindLocked="&c.DistortionPsLocked[2]"></main:GeneralInputComponent>
+			<label>P4</label>
+			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionPs[3]" :BindLocked="&c.DistortionPsLocked[3]"></main:GeneralInputComponent>
+			<label>B1</label>
+			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionBs[0]" :BindLocked="&c.DistortionBsLocked[0]"></main:GeneralInputComponent>
+			<label>B2</label>
+			<main:GeneralInputComponent InputType="number" :BindValue="&c.DistortionBs[1]" :BindLocked="&c.DistortionBsLocked[1]"></main:GeneralInputComponent>
 			<div class="w3-card">
 				<div class="w3-container w3-green w3-large" style="padding-bottom: 7px;">
 					Distortion center offset (pixels)
-					<main:ToggleInputComponent LabelText="Lock" :BindValue="&c.DistortionCenterOffsetLocked"></main:ToggleInputComponent>
+					<main:ToggleInputComponent LabelText="Lock" :BindValue="&c.PrincipalPointOffsetLocked"></main:ToggleInputComponent>
 				</div>
-				<main:PixelCoordinateComponent :Editable="true" :HideZ="true" :BindValue="&c.DistortionCenterOffset"></main:PixelCoordinateComponent>
+				<main:PixelCoordinateComponent :Editable="true" :HideZ="true" :BindValue="&c.PrincipalPointOffset"></main:PixelCoordinateComponent>
 			</div>
 		</div>
 	</div>

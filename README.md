@@ -9,6 +9,8 @@ Additional measurements can be added to increase accuracy.
 
 [Click here to run the current release in the browser!](https://dadido3.github.io/D3surveyor/)
 
+An example project is located [here](https://raw.githubusercontent.com/Dadido3/D3surveyor/master/example/testscene-1/unoptimized.D3survey).
+
 > :warning: This is a proof-of-concept that works to some extent, but still has many rough edges and limitations.
 
 ![Image showing camera settings and a list of taken photos](/images/example-camera.png) ![Image showing the points mapping editor](/images/example-camera-photo.png)
@@ -23,8 +25,8 @@ You need
 
 Here are the basic steps of how to achieve good (or any) results:
 
-1. Create a new camera object and set its `Angle of view` to match coarsely the long side angle of view of your images you gonna take.
-2. Lock the `Angle of view` parameter.
+1. Create a new camera object and set its `Horizontal angle of view` to match coarsely the long side angle of view of your images you gonna take.
+2. Lock the `Horizontal angle of view` parameter.
 3. Add new photos to the camera object.
    Either import previously taken images, or directly capture new ones on your phone.
    The images should contain as many points of interest as possible, and they should be taken from different positions and perspectives.
@@ -42,9 +44,9 @@ Here are the basic steps of how to achieve good (or any) results:
 
 ## Useful information
 
-- Keep the `Angle of view` parameter of cameras locked, because if the software can't find a good matching solution it will find the trivial solution.
+- Keep the `Horizontal angle of view` parameter of cameras locked, because if the software can't find a good matching solution it will find the trivial solution.
   That is all cameras floating into infinity while the the angle of view approaches 0.
-  Once there is a good solution, you can unlock it to let the optimizer find a better `Angle of view`.
+  Once there is a good solution, you can unlock it to let the optimizer find a better `Horizontal angle of view`.
 - If you already have a good network of points and want to add an additional photo, you only need to add 3 point mappings (flags) to let the optimizer find the photo's origin and orientation.
   Once the photo is correctly aligned in the 3D space, the software will show suggested point mappings that can be confirmed by double clicking on them.
 
@@ -106,4 +108,5 @@ There are many possible features that could be added in the future:
 - Optimizer improvements.
 - List problems like measurements with a high sr.
 - Give user suggestions for a better result.
+- Optimize single entity only.
 - Documentation
