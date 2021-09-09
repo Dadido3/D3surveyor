@@ -455,7 +455,8 @@ func (c *CameraPhotoComponent) canvasRedraw(canvas js.Value) {
 		drawCtx.Call("setLineDash", []interface{}{5, 2})
 		drawCtx.Set("shadowBlur", 0)
 		for _, tripod := range site.Tripods {
-			tripodProjected := c.Photo.Project([]Coordinate{tripod.Position.Coordinate})[0]
+			tripodProjectedTemp, _ := c.Photo.Project([]Coordinate{tripod.Position.Coordinate})
+			tripodProjected := tripodProjectedTemp[0] // TODO: Filter out tripods that can't be really projected
 
 			for _, measurement := range tripod.Measurements {
 				pointKey := measurement.PointKey

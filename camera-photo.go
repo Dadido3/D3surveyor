@@ -188,7 +188,7 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 	}
 
 	// Project the points.
-	projectedCoordinates := cp.Project(worldCoordinates) // The world coordinates of every point projected into image coordinates.
+	projectedCoordinates, _ := cp.Project(worldCoordinates) // The world coordinates of every point projected into image coordinates.
 
 	// Calculate the distance in pixels for every point.
 	// Sum up the squared distance residues.
@@ -211,8 +211,8 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 	return ssr
 }
 
-// Project transforms a list of object/world coordinates into a list of (distorted) image coordinates.
-func (cp *CameraPhoto) Project(worldCoordinates []Coordinate) []PixelCoordinate {
+// Project transforms a list of object/world coordinates into a list of (distorted and undistorted) image coordinates.
+func (cp *CameraPhoto) Project(worldCoordinates []Coordinate) (distorted, undistorted []PixelCoordinate) {
 	camera := cp.camera
 
 	k1, k2, k3, k4 := float64(camera.DistortionKs[0]), float64(camera.DistortionKs[1]), float64(camera.DistortionKs[2]), float64(camera.DistortionKs[3])
@@ -225,7 +225,8 @@ func (cp *CameraPhoto) Project(worldCoordinates []Coordinate) []PixelCoordinate 
 
 	cameraMatrix := cp.GetCameraViewMatrix()
 
-	projectedCoordinates := make([]PixelCoordinate, len(worldCoordinates))
+	distortedCoordinates := make([]PixelCoordinate, len(worldCoordinates))
+	undistortedCoordinates := make([]PixelCoordinate, len(worldCoordinates))
 	for i, worldCoordinate := range worldCoordinates {
 		obj4 := worldCoordinate.Vec4(1)
 
@@ -253,14 +254,19 @@ func (cp *CameraPhoto) Project(worldCoordinates []Coordinate) []PixelCoordinate 
 			PixelDistance(p2*(radiusSqr+2*lySqr)+2*p1*lxy) * p3p4,
 		})
 
+		imgBaseCoordinates := imageCenter.Add(camera.PrincipalPointOffset)
+
 		// Transformation into image space and last distortion.
-		imgCoordinate := imageCenter.Add(camera.PrincipalPointOffset).Add(distortedCoordinate.Scaled(focalLength))
+		imgCoordinate := imgBaseCoordinates.Add(distortedCoordinate.Scaled(focalLength))
 		imgCoordinate[0] += distortedCoordinate.X()*b1 + distortedCoordinate.Y()*b2
 
-		projectedCoordinates[i] = imgCoordinate
+		// Store projected and distorted coordinate.
+		distortedCoordinates[i] = imgCoordinate
+		// Store projected but non distorted coordinate.
+		undistortedCoordinates[i] = imgBaseCoordinates.Add(localCoordinate.Scaled(focalLength))
 	}
 
-	return projectedCoordinates
+	return distortedCoordinates, undistortedCoordinates
 }
 
 // UpdateSuggestions recreates/updates all "suggested" point mappings.
@@ -276,13 +282,15 @@ func (cp *CameraPhoto) UpdateSuggestions() {
 	}
 
 	// Project the points onto the photo.
-	projectedCoordinates := cp.Project(worldCoordinates) // The object/world coordinates of every point projected into image coordinates.
+	projectedCoordinates, projectedUndistortedCoordinates := cp.Project(worldCoordinates) // The object/world coordinates of every point projected into image coordinates.
 
 	// Update suggested mapped points.
 	for i, projectedCoordinate := range projectedCoordinates {
 		point := points[i]
-		if projectedCoordinate.Z() > 0 && projectedCoordinate.X() >= 0 && projectedCoordinate.X() <= cp.imageSize.X() && projectedCoordinate.Y() >= 0 && projectedCoordinate.Y() <= cp.imageSize.Y() {
-			// The projection is valid, create or update point mapping.
+		projectedUndistortedCoordinate := projectedUndistortedCoordinates[i]
+		if projectedCoordinate.Z() > 0 && projectedCoordinate.X() >= 0 && projectedCoordinate.X() <= cp.imageSize.X() && projectedCoordinate.Y() >= 0 && projectedCoordinate.Y() <= cp.imageSize.Y() && projectedCoordinate.DistanceSqr(projectedUndistortedCoordinate) <= 200*200 {
+			// The projection is inside the viewing frustum, and the distance between the distorted and undistorted point is not too large.
+			// Create or update point mapping.
 			var foundMapping *CameraPhotoMapping
 			for _, mapping := range cp.Mappings { // TODO: Remove stupid linear search
 				if mapping.PointKey == point.Key() {
