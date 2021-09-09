@@ -27,7 +27,7 @@
 
 		<div class="w3-third">
 			<label>Measured distance</label>
-			<main:DistanceInputComponent min="0" :BindValue="&c.MeasuredDistance"></main:DistanceInputComponent>
+			<main:GeneralInputComponent InputType="number" :BindValue="&c.MeasuredDistance"></main:GeneralInputComponent>
 		</div>
 	</div>
 </div>

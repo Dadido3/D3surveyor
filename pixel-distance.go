@@ -43,7 +43,13 @@ func (p PixelDistance) Sqr() float64 {
 	return float64(p * p)
 }
 
-func (p *PixelDistance) InputParse(strVal string) {
+// InputValue implements the valuer interface of the general input component.
+func (p PixelDistance) InputValue() string {
+	return fmt.Sprintf("%.13g", p)
+}
+
+// SetInputValue implements the valuer interface of the general input component.
+func (p *PixelDistance) SetInputValue(strVal string) {
 	strVal = strings.ReplaceAll(strVal, ",", ".")
 
 	val, err := strconv.ParseFloat(strVal, 64)
@@ -53,8 +59,4 @@ func (p *PixelDistance) InputParse(strVal string) {
 	}
 
 	*p = PixelDistance(val)
-}
-
-func (p PixelDistance) InputString() string {
-	return fmt.Sprintf("%f", p)
 }

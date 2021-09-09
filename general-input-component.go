@@ -20,8 +20,22 @@ import (
 )
 
 type GeneralInputValuer interface {
-	InputParse(string)
-	InputString() string
+	InputValue() string
+	SetInputValue(string)
+}
+
+type GeneralInputStringPtr struct {
+	Value *string
+}
+
+// InputValue implements the valuer interface of the general input component.
+func (g GeneralInputStringPtr) InputValue() string {
+	return *g.Value
+}
+
+// SetInputValue implements the valuer interface of the general input component.
+func (g GeneralInputStringPtr) SetInputValue(strVal string) {
+	*g.Value = strVal
 }
 
 // GeneralInputComponent is a generalized input component that takes any value that implement the GeneralInputValuer interface.
@@ -44,12 +58,12 @@ func (c *GeneralInputComponent) Init(ctx vugu.InitCtx) {
 func (c *GeneralInputComponent) handleValueChange(event vugu.DOMEvent) {
 	strVal := event.PropString("target", "value")
 
-	c.BindValue.InputParse(strVal)
+	c.BindValue.SetInputValue(strVal)
 }
 
 func (c *GeneralInputComponent) inputContent() string {
 	if c.BindValue != nil {
-		return c.BindValue.InputString()
+		return c.BindValue.InputValue()
 	}
 
 	return ""

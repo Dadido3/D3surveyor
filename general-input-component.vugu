@@ -1,7 +1,7 @@
 <div vg-attr="c.AttrMap" class="d3-q409n0igjq4gt">
 	<label vg-if='c.LabelText != ""' vg-content="c.LabelText"></label>
 	<div class="d3-2t40jiwgrj4sk">
-		<input class="w3-input" :type="c.InputType" .value="c.inputContent()" @change="c.handleValueChange(event)"></input>
+		<input class="w3-input" .type="c.InputType" .value="c.inputContent()" @change="c.handleValueChange(event)"></input>
 	</div>
 	<div vg-if="c.BindLocked != nil">
 		<label>

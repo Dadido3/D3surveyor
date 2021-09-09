@@ -33,7 +33,7 @@
 				<div class="w3-container">
 					<main:CoordinateComponent :Editable="true" :BindValue="&c.DirectionVector"></main:CoordinateComponent>
 					<label>Accuracy (deg)</label>
-					<main:AngleInputComponent min="0" :BindValue="&c.DirectionAccuracy"></main:AngleInputComponent>
+					<main:GeneralInputComponent InputType="number" :BindValue="&c.DirectionAccuracy"></main:GeneralInputComponent>
 				</div>
 			</div>
 		</div>

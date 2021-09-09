@@ -15,6 +15,13 @@
 
 package main
 
+import (
+	"fmt"
+	"log"
+	"strconv"
+	"strings"
+)
+
 // Distance describes a distance in meters, or an absolute position measured by its distance from the origin.
 type Distance float64
 
@@ -30,6 +37,24 @@ func (d Distance) TweakableValue() float64 {
 // SetTweakableValue converts and applies the given value from optimizer space.
 func (d *Distance) SetTweakableValue(v float64) {
 	*d = Distance(v)
+}
+
+// InputValue implements the valuer interface of the general input component.
+func (d Distance) InputValue() string {
+	return fmt.Sprintf("%.13g", d)
+}
+
+// SetInputValue implements the valuer interface of the general input component.
+func (d *Distance) SetInputValue(strVal string) {
+	strVal = strings.ReplaceAll(strVal, ",", ".")
+
+	val, err := strconv.ParseFloat(strVal, 64)
+	if err != nil {
+		log.Printf("strconv.ParseFloat() failed: %v", err)
+		return
+	}
+
+	*d = Distance(val)
 }
 
 func (d Distance) Sqr() float64 {

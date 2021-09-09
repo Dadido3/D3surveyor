@@ -48,17 +48,13 @@ func (a *Angle) SetTweakableValue(v float64) {
 	*a = Angle(v).Normalized()
 }
 
-// Normalized returns the angle in the range of [0,2π).
-func (a Angle) Normalized() Angle {
-	rad := math.Remainder(float64(a), 2*math.Pi)
-	if rad < 0 {
-		rad += 2 * math.Pi
-	}
-
-	return Angle(rad)
+// InputValue implements the valuer interface of the general input component.
+func (a Angle) InputValue() string {
+	return fmt.Sprintf("%.13g", a.Degree())
 }
 
-func (a *Angle) InputParse(strVal string) {
+// SetInputValue implements the valuer interface of the general input component.
+func (a *Angle) SetInputValue(strVal string) {
 	strVal = strings.ReplaceAll(strVal, ",", ".")
 
 	val, err := strconv.ParseFloat(strVal, 64)
@@ -70,6 +66,12 @@ func (a *Angle) InputParse(strVal string) {
 	a.SetDegree(val)
 }
 
-func (a Angle) InputString() string {
-	return fmt.Sprintf("%f", a.Degree())
+// Normalized returns the angle in the range of [0,2π).
+func (a Angle) Normalized() Angle {
+	rad := math.Remainder(float64(a), 2*math.Pi)
+	if rad < 0 {
+		rad += 2 * math.Pi
+	}
+
+	return Angle(rad)
 }

@@ -43,7 +43,13 @@ func (t *TweakableFloat) SetTweakableValue(v float64) {
 	*t = TweakableFloat(v)
 }
 
-func (t *TweakableFloat) InputParse(strVal string) {
+// InputValue implements the valuer interface of the general input component.
+func (t TweakableFloat) InputValue() string {
+	return fmt.Sprintf("%.13g", t)
+}
+
+// SetInputValue implements the valuer interface of the general input component.
+func (t *TweakableFloat) SetInputValue(strVal string) {
 	strVal = strings.ReplaceAll(strVal, ",", ".")
 
 	val, err := strconv.ParseFloat(strVal, 64)
@@ -53,10 +59,6 @@ func (t *TweakableFloat) InputParse(strVal string) {
 	}
 
 	*t = TweakableFloat(val)
-}
-
-func (t TweakableFloat) InputString() string {
-	return fmt.Sprint(t)
 }
 
 // TweakablePositiveFloat is a optimizable float in the range of 0 to +inf.
@@ -70,7 +72,13 @@ func (t *TweakablePositiveFloat) SetTweakableValue(v float64) {
 	*t = TweakablePositiveFloat(math.Exp(v))
 }
 
-func (t *TweakablePositiveFloat) InputParse(strVal string) {
+// InputValue implements the valuer interface of the general input component.
+func (t TweakablePositiveFloat) InputValue() string {
+	return fmt.Sprintf("%.13g", t)
+}
+
+// SetInputValue implements the valuer interface of the general input component.
+func (t *TweakablePositiveFloat) SetInputValue(strVal string) {
 	strVal = strings.ReplaceAll(strVal, ",", ".")
 
 	val, err := strconv.ParseFloat(strVal, 64)
@@ -80,10 +88,6 @@ func (t *TweakablePositiveFloat) InputParse(strVal string) {
 	}
 
 	*t = TweakablePositiveFloat(val)
-}
-
-func (t TweakablePositiveFloat) InputString() string {
-	return fmt.Sprint(t)
 }
 
 // Residualer is implemented by objects that can have residuals of measurements or constraints.

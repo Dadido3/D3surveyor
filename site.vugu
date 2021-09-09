@@ -6,7 +6,7 @@
 	<div class="w3-container w3-row-padding">
 		<div class="w3-third">
 			<label>Name</label>
-			<vgform:Input class="w3-input" type="text" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+			<main:GeneralInputComponent InputType="text" :BindValue="GeneralInputStringPtr{&c.Name}"></main:GeneralInputComponent>
 		</div>
 	</div>
 
@@ -49,7 +49,3 @@
 	</div>
 
 </div>
-
-<script type="application/x-go">
-	import "github.com/vugu/vugu/vgform"
-</script>

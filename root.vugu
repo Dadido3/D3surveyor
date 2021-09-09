@@ -9,7 +9,7 @@
 						<button class="w3-bar-item w3-button" class="w3-bar-item w3-button w3-hide-large" @click="c.handleSidebarClose(event)"><i class="fas fa-bars"></i></button>
 						<button class="w3-bar-item w3-button" @click="c.handleDownload(event)"><i class="far fa-save"></i></button>
 						<button class="w3-bar-item w3-button" @click="c.handleUploadClick(event)"><i class="far fa-folder-open"></i></button>
-						<input class="w3-hide" type="file" id="site-upload" @change="c.handleUpload(event)" accept=".D3survey">
+						<input class="w3-hide" type="file" id="site-upload" @change="c.handleUpload(event)" accept=".D3survey"></input>
 						<main:OptimizerComponent class="w3-bar-item w3-button" :OptimizerState="&globalSite.optimizerState"></main:OptimizerComponent>
 						<button class="w3-bar-item w3-button" @click="c.handleExport(event)"><i class="fas fa-file-export"></i></button>
 					</div>

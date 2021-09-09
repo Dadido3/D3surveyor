@@ -7,14 +7,14 @@
 	<div class="w3-container w3-row-padding">
 		<div class="w3-third">
 			<label>Name</label>
-			<vgform:Input class="w3-input" type="text" :Value='vgform.StringPtr{&c.Name}'></vgform:Input>
+			<main:GeneralInputComponent InputType="text" :BindValue="GeneralInputStringPtr{&c.Name}"></main:GeneralInputComponent>
 		</div>
 
 		<div class="w3-third">
 			<label>Horizontal angle of view</label>
-			<main:GeneralInputComponent :BindValue="&c.HorizontalAOV" :BindLocked="&c.HorizontalAOVLocked"></main:GeneralInputComponent>
+			<main:GeneralInputComponent InputType="number" :BindValue="&c.HorizontalAOV" :BindLocked="&c.HorizontalAOVLocked"></main:GeneralInputComponent>
 			<label>Accuracy (pixels)</label>
-			<main:GeneralInputComponent :BindValue="&c.PixelAccuracy"></main:GeneralInputComponent>
+			<main:GeneralInputComponent InputType="number" :BindValue="&c.PixelAccuracy"></main:GeneralInputComponent>
 		</div>
 
 		<div class="w3-third">
@@ -68,8 +68,3 @@
 		</ul>
 	</div>
 </div>
-
-<script type="application/x-go">
-	import "github.com/vugu/vugu/vgform"
-</script>
-
