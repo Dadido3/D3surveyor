@@ -77,6 +77,7 @@ func (c *Camera) initData() {
 	c.CreatedAt = time.Now()
 	c.PixelAccuracy = 100
 	c.HorizontalAOV = 70 * 2 * math.Pi / 360 // Start with a guess of 70 deg for AOV.
+	c.HorizontalAOVLocked = true             // Lock AOV by default.
 	c.PrincipalPointOffsetLocked = true
 	c.DistortionKsLocked = [4]bool{true, true, true, true}
 	c.DistortionPsLocked = [4]bool{true, true, true, true}
