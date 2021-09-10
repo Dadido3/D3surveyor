@@ -198,12 +198,12 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 
 		// Ignore points behind the photo.
 		if projectedCoordinate.Z() <= 0 {
-			ssr += 1000000
+			ssr += 100000000 + projectedCoordinate.Z().Sqr()*1000000 // Create a gradient for points that are behind the camera to help the solver.
 			continue
 		}
 
 		sr := projectedCoordinate.DistanceSqr(mapping.Position) / camera.PixelAccuracy.Sqr()
-		sr = math.Min(sr, 1000000)
+		sr = math.Min(sr, 100000000)
 		mapping.sr = sr
 		ssr += sr
 	}
