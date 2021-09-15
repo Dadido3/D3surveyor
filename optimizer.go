@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"gonum.org/v1/gonum/optimize"
+	"github.com/maorshutman/lm"
 )
 
 // Tweakable is implemented by objects which can be modified in the optimization process.
@@ -105,17 +105,23 @@ func Optimize(site *Site, stopFunc func() bool) error {
 		return fmt.Errorf("there are no residuals to be determined")
 	}
 
+	// Stuff to prevent the UI from lockung up. // TODO: Remove optimizer sleep once WASM threads are fully supported
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
+	counter := 0
 
 	// Function to optimize.
-	optimizeFunc := func(x []float64) float64 {
+	optimizeFunc := func(dst, x []float64) {
 		// Do some silly sleep every now and then to prevent the UI from locking up.
-		// TODO: Remove optimizer sleep once WASM threads are fully supported
 		select {
 		case <-ticker.C:
-			time.Sleep(1 * time.Millisecond)
+			log.Print(time.Now())
+			time.Sleep(1 * time.Nanosecond)
 		default:
+			if counter--; counter <= 0 { // This is pretty silly, but otherwise the UI still may lock up.
+				counter = 1000
+				time.Sleep(1 * time.Nanosecond)
+			}
 		}
 
 		site.Lock()
@@ -126,17 +132,14 @@ func Optimize(site *Site, stopFunc func() bool) error {
 			tweakable.SetTweakableValue(x[i])
 		}
 
-		// Get sum of squared residuals.
-		ssr := 0.0
-		for _, residual := range residuals {
-			ssr += residual.ResidualSqr()
+		// Get squared residuals of all functions.
+		for i, residual := range residuals {
+			dst[i] = residual.ResidualSqr()
 		}
-
-		return ssr
 	}
 
 	// Function to end the optimization prematurely.
-	statusFunc := func() (optimize.Status, error) {
+	/*statusFunc := func() (optimize.Status, error) {
 		if stopFunc() {
 			return optimize.Success, nil
 		}
@@ -163,11 +166,38 @@ func Optimize(site *Site, stopFunc func() bool) error {
 	}
 	if err = res.Status.Err(); err != nil {
 		log.Printf("Optimization status error: %v", err)
+	}*/
+
+	//log.Println(res.F, res.X, res.FuncEvaluations, res.MajorIterations)
+
+	// Get the initial tweakable variables/parameters.
+	init := make([]float64, 0, len(tweakables))
+	for _, tweakable := range tweakables {
+		init = append(init, tweakable.TweakableValue())
 	}
 
-	log.Println(res.F, res.X, res.FuncEvaluations, res.MajorIterations)
+	numJac := lm.NumJac{Func: optimizeFunc}
 
-	// Set tweakable values to the solution.
+	problem := lm.LMProblem{
+		Dim:        len(init),
+		Size:       len(residuals),
+		Func:       optimizeFunc,
+		Jac:        numJac.Jac,
+		InitParams: init,
+		Tau:        1e-6,
+		Eps1:       1e-8,
+		Eps2:       1e-8,
+	}
+
+	log.Println(problem)
+
+	res, err := lm.LM(problem, &lm.Settings{Iterations: 1000, ObjectiveTol: 1e-16})
+	log.Println(res)
+	if err != nil {
+		log.Println(err)
+	}
+
+	// Apply the final solution to the tweakable variables.
 	for i, tweakable := range tweakables {
 		tweakable.SetTweakableValue(res.X[i])
 	}
