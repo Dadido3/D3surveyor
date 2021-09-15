@@ -34,7 +34,7 @@ type CameraPhotoMapping struct {
 
 	Position     PixelCoordinate // Image position that maps the point to the photo. This is where the point should be projected.
 	projectedPos PixelCoordinate // The point's projected position. This is where the point actually is projected.
-	sr           float64         // Current squared residue value.
+	sr           float64         // Current squared residual value.
 
 	Suggested bool // This mapping is just suggested, it wasn't placed or confirmed by the user (yet).
 }

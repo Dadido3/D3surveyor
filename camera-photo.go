@@ -191,7 +191,7 @@ func (cp *CameraPhoto) ResidualSqr() float64 {
 	projectedCoordinates, _ := cp.Project(worldCoordinates) // The world coordinates of every point projected into image coordinates.
 
 	// Calculate the distance in pixels for every point.
-	// Sum up the squared distance residues.
+	// Sum up the squared distance residuals.
 	ssr := 0.0
 	for i, mapping := range mappings {
 		projectedCoordinate := projectedCoordinates[i]
