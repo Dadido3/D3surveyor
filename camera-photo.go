@@ -126,14 +126,6 @@ func (cp *CameraPhoto) UnmarshalJSON(data []byte) error {
 		v.initReferences(cp, k)
 	}
 
-	// Migrate some values.
-	for _, mapping := range cp.Mappings {
-		mapping.Position = PixelCoordinate{
-			PixelDistance(mapping.XMigrate) * cp.imageSize.X(),
-			PixelDistance(mapping.YMigrate) * cp.imageSize.Y(),
-		}
-	}
-
 	return nil
 }
 
