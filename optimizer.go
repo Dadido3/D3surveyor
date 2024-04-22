@@ -101,7 +101,7 @@ func Optimize(site *Site, stopFunc func() bool) error {
 	if len(tweakables) == 0 {
 		return fmt.Errorf("there are no tweakable variables")
 	}
-	if len(tweakables) == 0 {
+	if len(residuals) == 0 {
 		return fmt.Errorf("there are no residuals to be determined")
 	}
 
