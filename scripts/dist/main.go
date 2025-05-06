@@ -1,4 +1,4 @@
-// Copyright (C) 2021 David Vogel
+// Copyright (C) 2021-2025 David Vogel
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -12,8 +12,6 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-//go:build ignore
 
 package main
 
@@ -51,7 +49,7 @@ func main() {
 	distutil.MustCopyDirFiltered(filepath.Join(".", "static"), filepath.Join(*dist, "static"), nil)
 
 	// Find and copy wasm_exec.js.
-	distutil.MustCopyFile(distutil.MustWasmExecJsPath(), filepath.Join(*dist, "wasm_exec.js"))
+	distutil.MustCopyFile(MustWasmExecJsPath(), filepath.Join(*dist, "wasm_exec.js"))
 
 	// Check for vugugen and go get if not there.
 	if _, err := exec.LookPath("vugugen"); err != nil {

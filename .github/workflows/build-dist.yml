@@ -14,14 +14,14 @@ jobs:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
-          go-version: ^1.17
+          go-version: ^1.23
         id: go
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
 
       - name: Compile application and create distribution
-        run: go run -v ./scripts/dist.go -tagname ${{ github.event.release.tag_name }} -urlpathprefix /D3surveyor
+        run: go run -v ./scripts/dist -tagname ${{ github.event.release.tag_name }} -urlpathprefix /D3surveyor
 
       - name: Deploy to github pages
         uses: peaceiris/actions-gh-pages@v3

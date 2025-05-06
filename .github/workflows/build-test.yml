@@ -12,15 +12,15 @@ jobs:
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
-          go-version: ^1.17
+          go-version: ^1.23
         id: go
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
 
-      - name: Compile dev server        # Ensure it will build.
-        run: go build -v ./devserver.go # Work path does not matter much.
-        working-directory: ./scripts    # Correct path, regardless.
+      - name: Compile dev server                # Ensure it will build.
+        run: go build -v                        # Work path does not matter much.
+        working-directory: ./scripts/devserver  # Correct path, regardless.
 
       - name: Compile application and create distribution
-        run: go run -v ./scripts/dist.go -tagname 0.0.0-${{ github.sha }}
+        run: go run -v ./scripts/dist -tagname 0.0.0-${{ github.sha }}

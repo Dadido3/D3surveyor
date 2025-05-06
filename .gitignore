@@ -72,6 +72,6 @@ $RECYCLE.BIN/
 
 __debug_bin
 
-*_vgen.go
+*_gen.go
 
 /dist

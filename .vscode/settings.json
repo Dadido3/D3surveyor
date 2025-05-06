@@ -31,10 +31,6 @@
         "vugugen",
         "zoomable"
     ],
-    "go.toolsEnvVars": {
-        "GOOS": "js",
-        "GOARCH": "wasm"
-    },
     "licenser.author": "David Vogel",
     "licenser.license": "AGPLv3",
     "licenser.projectName": "D3surveyor",

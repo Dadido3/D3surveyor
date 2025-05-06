@@ -1,25 +1,23 @@
 module github.com/Dadido3/D3surveyor
 
-go 1.17
+go 1.23.0
+
+toolchain go1.24.2
 
 require (
-	github.com/coreos/go-semver v0.3.0
-	github.com/go-gl/mathgl v1.0.0
-	github.com/stretchr/testify v1.7.0 // indirect
-	github.com/teris-io/shortid v0.0.0-20201117134242-e59966efd125
+	github.com/coreos/go-semver v0.3.1
+	github.com/go-gl/mathgl v1.2.0
+	github.com/teris-io/shortid v0.0.0-20220617161101-71ec9f2aa569
 	github.com/vugu/vgrouter v0.0.0-20200725205318-eeb478c42e5d
 	github.com/vugu/vjson v0.0.0-20200505061711-f9cbed27d3d9
-	github.com/vugu/vugu v0.3.4
-	golang.org/x/exp v0.0.0-20210812203943-8c280c88aa00 // indirect
-	golang.org/x/tools v0.1.5 // indirect
-	gonum.org/v1/gonum v0.9.3
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	github.com/vugu/vugu v0.4.1-0.20250416142129-3fe01084fba2
+	golang.org/x/tools v0.33.0 // indirect
+	gonum.org/v1/gonum v0.16.0
 )
 
 require (
 	github.com/vugu/html v0.0.0-20190914200101-c62dc20b8289 // indirect
 	github.com/vugu/xxhash v0.0.0-20191111030615-ed24d0179019 // indirect
-	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d // indirect
+	golang.org/x/mod v0.24.0 // indirect
+	golang.org/x/text v0.25.0 // indirect
 )
-
-replace github.com/vugu/vugu => github.com/Dadido3/vugu v0.3.5-0.20210813162808-b37266913721

@@ -1,4 +1,4 @@
-// Copyright (C) 2021 David Vogel
+// Copyright (C) 2021-2025 David Vogel
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -12,8 +12,6 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-//go:build ignore
 
 package main
 
@@ -33,11 +31,14 @@ func main() {
 	simplehttp.DefaultStaticData["Title"] = "D3surveyor dev"
 	simplehttp.DefaultStaticData["CSSFiles"] = []string{"/static/css/w3.css", "/static/font-awesome/css/all.min.css"}
 
+	var wasmHandler WASMExecHandler
+
 	wd, _ := os.Getwd()
-	uiDir := filepath.Join(wd, "..")
+	uiDir := filepath.Join(wd, ".")
 	l := ":8875"
 	log.Printf("Starting HTTP Server at %q", l)
 	h := simplehttp.New(uiDir, true)
+	http.Handle("/wasm_exec.js", &wasmHandler) // A hack to circumvent the old hardcoded path in simplehttp. TODO: Seek alternative to the simplehttp dev server
 	http.Handle("/", h)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(filepath.Join(uiDir, "static")))))
 

@@ -62,8 +62,7 @@ If you use Visual Studio Code, you only have to start the debugger (F5).
 Otherwise run
 
 ``` bash
-cd ./scripts
-go run ./devserver.go
+go run ./scripts/devserver
 ```
 
 Once the server is running, you can connect via [http://localhost:8875](http://localhost:8875).
@@ -74,7 +73,7 @@ The server will compile the project every time you reload the browser.
 If you want to host it with any available webserver, just run
 
 ``` bash
-go run ./scripts/dist.go
+go run ./scripts/dist
 ```
 
 This will create a `dist` directory that contains all files needed to serve the application from a webserver.
@@ -85,7 +84,7 @@ If the application is not served from the root directory of your domain, you nee
 Assuming you want to access the application via `example.com/some/sub/folder`, you have to use:
 
 ``` bash
-go run ./scripts/dist.go -urlpathprefix /some/sub/folder
+go run ./scripts/dist -urlpathprefix /some/sub/folder
 ```
 
 ## Issues
