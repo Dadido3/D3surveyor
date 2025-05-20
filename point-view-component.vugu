@@ -1,4 +1,4 @@
-<div vg-attr="c.AttrMap" class="d3-q43t0iuhqa" @click='c.Navigate("/point/" + c.PointKey, nil)' :style='fmt.Sprintf("width:%.0fpx;height:%.0fpx;position:relative;cursor:pointer;", c.Width, c.Height)'>
+<div vg-attr="c.AttrMap" class="d3-q43t0iuhqa" @click='c.handleClick(event)' :style='fmt.Sprintf("width:%.0fpx;height:%.0fpx;position:relative;cursor:pointer;", c.Width, c.Height)'>
 	<img vg-if='c.imageURL != ""' :src="c.imageURL" class="d3-0q248htg0qp" :style='fmt.Sprintf("width:%.0fpx;height:%.0fpx;top:%.0fpx;left:%.0fpx;position:absolute;", c.imgWidth, c.imgHeight, c.top, c.left)'></img>
 	<svg :width="c.Width" :height="c.Height" style="position:absolute;">
 		<animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0 0 0" to="360 0 0" dur="10s" repeatCount="indefinite"></animateTransform>

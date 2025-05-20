@@ -1,4 +1,4 @@
-// Copyright (C) 2021 David Vogel
+// Copyright (C) 2021-2025 David Vogel
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"image"
 	"math"
+	"sort"
 	"time"
 
 	"github.com/go-gl/mathgl/mgl64"
@@ -333,4 +334,20 @@ func (cp *CameraPhoto) GetCameraViewMatrix() mgl64.Mat4 {
 	rotationMatrix := quat.Mat4()
 	translationMatrix := mgl64.Translate3D(float64(-cp.Position.X()), float64(-cp.Position.Y()), float64(-cp.Position.Z()))
 	return rotationMatrix.Mul4(translationMatrix)
+}
+
+// PhotosSorted returns the mappings of the photo as a list sorted by date.
+// TODO: Replace with generics once they are available. It's one of the few cases where they are really needed
+func (cp *CameraPhoto) MappingsSorted() []*CameraPhotoMapping {
+	mappings := make([]*CameraPhotoMapping, 0, len(cp.Mappings))
+
+	for _, mapping := range cp.Mappings {
+		mappings = append(mappings, mapping)
+	}
+
+	sort.Slice(mappings, func(i, j int) bool {
+		return mappings[i].CreatedAt.After(mappings[j].CreatedAt)
+	})
+
+	return mappings
 }

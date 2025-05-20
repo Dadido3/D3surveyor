@@ -25,7 +25,10 @@ type PointViewComponent struct {
 
 	Site *Site
 
-	PointKey string
+	PointKey      string
+	MappingKey    string // If non empty, we will only consider photos with this mapping.
+	NavigationURL string // If non empty, the link this will navigate to upon clicking.
+
 	imageURL string // The URL of the image as string.
 
 	AttrMap vugu.AttrMap
@@ -46,19 +49,49 @@ func (c *PointViewComponent) Compute(ctx vugu.ComputeCtx) {
 	// Find camera that contains photo that contains the point we are looking for. Don't use suggested point mappings.
 	for _, camera := range c.Site.CamerasSorted() {
 		for _, photo := range camera.Photos {
-			for _, mapping := range photo.Mappings {
-				if !mapping.Suggested && mapping.PointKey == c.PointKey {
-					// Found point. Set everything up.
+			var mapping *CameraPhotoMapping
+			if c.MappingKey != "" {
+				mapping = photo.Mappings[c.MappingKey]
+			}
 
-					c.imgWidth, c.imgHeight = float64(photo.imageSize.X())*scaling, float64(photo.imageSize.Y())*scaling
-					c.left, c.top = c.Width/2-float64(mapping.Position.X())*scaling, c.Height/2-float64(mapping.Position.Y())*scaling
-					c.imageURL = photo.jsImageURL.String()
-
-					return
+			if mapping == nil {
+				// Fallback: Randomly pick some mapping for the given PointKey.
+				for _, m := range photo.Mappings {
+					if !m.Suggested && m.PointKey == c.PointKey {
+						mapping = m
+					}
 				}
+			}
+
+			if mapping != nil {
+				// Found mapping. Prepare all values for the UI.
+
+				c.imgWidth, c.imgHeight = float64(photo.imageSize.X())*scaling, float64(photo.imageSize.Y())*scaling
+				c.left, c.top = c.Width/2-float64(mapping.Position.X())*scaling, c.Height/2-float64(mapping.Position.Y())*scaling
+				c.imageURL = photo.jsImageURL.String()
+
+				return
 			}
 		}
 	}
 
 	c.imageURL = ""
+}
+
+func (c *PointViewComponent) handleClick(event vugu.DOMEvent) {
+	switch {
+	case c.NavigationURL != "":
+		c.Navigate(c.NavigationURL, nil)
+	case c.PointKey != "":
+		c.Navigate("/point/"+c.PointKey, nil)
+	case c.MappingKey != "":
+		for _, camera := range c.Site.CamerasSorted() {
+			for _, photo := range camera.Photos {
+				if _, ok := photo.Mappings[c.MappingKey]; ok {
+					c.Navigate("/camera/"+camera.Key()+"/photo/"+photo.Key(), nil)
+					return
+				}
+			}
+		}
+	}
 }

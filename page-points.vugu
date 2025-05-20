@@ -4,24 +4,24 @@
 		<button class="w3-bar-item w3-button w3-right w3-large w3-ripple w3-teal" @click="c.handleAdd()"><i class="fas fa-plus"></i></button>
 	</main:TitleBar>
 
-	<div class="d3-flex-grid-container">
-		<div vg-for="_, point := range c.Site.PointsSorted()" class="d3-flex-grid-container-item w3-card-4">
-			<main:PointViewComponent :Width="200" :Height="200" :Scale="1" :Site="c.Site" :PointKey="point.Key()"></main:PointViewComponent>
-			<div style="display:flex; flex-direction:column; flex-grow:1;">
-				<div style="margin:8px;">
-					<span class="w3-large" vg-content="point.Name"></span>
-					<span vg-content="point.Key()"></span><br>
-					<main:CoordinateOptimizableComponent style="display:flex; flex-direction:column;" :BindValue="&point.Position"></main:CoordinateOptimizableComponent>
-				</div>
-				<div style="flex-grow:1;"></div>
-				<div style="display:flex;">
-					<span @click='c.Navigate("/point/" + point.Key(), nil)' class="w3-button w3-large"><i class="far fa-edit"></i></span>
+	<div style="padding:16px;">
+		<div class="d3-flex-grid-container">
+			<div vg-for="_, point := range c.Site.PointsSorted()" class="d3-flex-grid-container-item w3-card-4">
+				<main:PointViewComponent :Width="200" :Height="200" :Scale="1" :Site="c.Site" :PointKey="point.Key()"></main:PointViewComponent>
+				<div style="display:flex; flex-direction:column; flex-grow:1;">
+					<span class="w3-large" vg-content='point.DisplayName()' style="margin:8px;"></span>
 					<div style="flex-grow:1;"></div>
-					<span @click="point.Delete()" class="w3-button w3-large w3-red"><i class="far fa-trash-alt"></i></span>
+					<main:CoordinateOptimizableComponent style="display:flex; flex-direction:column; margin:8px;" :BindValue="&point.Position"></main:CoordinateOptimizableComponent>
+					<div style="flex-grow:1;"></div>
+					<div style="display:flex;">
+						<span @click='c.Navigate("/point/" + point.Key(), nil)' class="w3-button w3-large"><i class="far fa-edit"></i></span>
+						<div style="flex-grow:1;"></div>
+						<span @click="point.Delete()" class="w3-button w3-large w3-red"><i class="far fa-trash-alt"></i></span>
+					</div>
 				</div>
 			</div>
+			<div style="flex-grow:100;"></div>
 		</div>
-		<div style="flex-grow:100;"></div>
 	</div>
 </div>
 

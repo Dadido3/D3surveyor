@@ -1,24 +1,26 @@
 <div>
 	<main:TitleBar>
 		<button class="w3-bar-item w3-button w3-large w3-ripple w3-teal" @click='c.Navigate("/points", nil)'><i class="fas fa-arrow-left"></i></button>
-		<span class="w3-bar-item w3-large" vg-content='fmt.Sprintf("Point %s", c.Key())'></span>
+		<span class="w3-bar-item w3-large" vg-content='fmt.Sprintf("Point %s", c.DisplayName())'></span>
+		<button class="w3-bar-item w3-button w3-large w3-ripple w3-teal" @click='Prompt("Enter a new name:", GeneralInputStringPtr{&c.Name})'><i class="far fa-edit"></i></button>
 	</main:TitleBar>
 
-	<div class="w3-container w3-row-padding">
-		<div class="w3-third">
-			<label>Name</label>
-			<main:GeneralInputComponent InputType="text" :BindValue="GeneralInputStringPtr{&c.Name}"></main:GeneralInputComponent>
+	<div style="display:flex; flex-direction:column; padding:16px;">
+		<div class="d3-flex-grid-container">
+			<div class="w3-card-4">
+				<header class="w3-container w3-light-grey">
+					<span class="w3-large">Position</span>
+				</header>
+				<div class="w3-container">
+					<main:CoordinateOptimizableComponent :Editable="true" class="" :BindValue="&c.Position"></main:CoordinateOptimizableComponent>
+				</div>
+			</div>
 		</div>
-
-		<div class="w3-third">
-			<label>Point 1 preview</label>
-			<main:PointViewComponent :Width="300" :Height="300" :Scale="1" :Site="c.site" :PointKey="c.Key()"></main:PointViewComponent>
-		</div>
-
-		<div class="w3-third">
-			<div class="w3-card">
-				<div class="w3-container w3-green w3-large">Position</div>
-				<main:CoordinateOptimizableComponent :Editable="true" :BindValue="&c.Position"></main:CoordinateOptimizableComponent>
+		<h3>Mapped photos</h3>
+		<span vg-if="len(c.CameraPhotoMappings()) == 0">There are no mapped photos.</span>
+		<div class="d3-flex-grid-container" style="justify-content:flex-start;">
+			<div vg-for="_, mapping := range c.CameraPhotoMappings()" class="w3-card-4">
+				<main:PointViewComponent :Width="300" :Height="300" :Scale="1" :Site="c.site" :MappingKey="mapping.Key()"></main:PointViewComponent>
 			</div>
 		</div>
 	</div>

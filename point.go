@@ -1,4 +1,4 @@
-// Copyright (C) 2021 David Vogel
+// Copyright (C) 2021-2025 David Vogel
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -60,6 +60,15 @@ func (p *Point) Key() string {
 	return p.key
 }
 
+// DisplayName returns either the name, or if that is empty the key.
+func (p *Point) DisplayName() string {
+	if p.Name != "" {
+		return p.Name
+	}
+
+	return "(" + p.Key() + ")"
+}
+
 // Delete removes the parent's reference to this object.
 func (p *Point) Delete() {
 	delete(p.site.Points, p.Key())
@@ -95,4 +104,21 @@ func (p *Point) UnmarshalJSON(data []byte) error {
 // GetTweakablesAndResiduals returns a list of tweakable variables and residuals.
 func (p *Point) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 	return p.Position.GetTweakablesAndResiduals()
+}
+
+// CameraPhotoMappings returns a list of all non suggested mappings.
+func (p *Point) CameraPhotoMappings() []*CameraPhotoMapping {
+	mappings := make([]*CameraPhotoMapping, 0)
+
+	for _, camera := range p.site.CamerasSorted() {
+		for _, photo := range camera.PhotosSorted() {
+			for _, mapping := range photo.MappingsSorted() {
+				if !mapping.Suggested && mapping.PointKey == p.key {
+					mappings = append(mappings, mapping)
+				}
+			}
+		}
+	}
+
+	return mappings
 }

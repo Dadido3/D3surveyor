@@ -3,7 +3,6 @@
 	flex-wrap: wrap;
 	justify-content: space-between;
 	gap: 16px;
-	padding: 16px;
 }
 
 .d3-flex-grid-container-item {
