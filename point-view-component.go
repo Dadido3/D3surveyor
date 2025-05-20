@@ -16,10 +16,13 @@
 package main
 
 import (
+	"github.com/vugu/vgrouter"
 	"github.com/vugu/vugu"
 )
 
 type PointViewComponent struct {
+	vgrouter.NavigatorRef `json:"-"`
+
 	Site *Site
 
 	PointKey string
