@@ -15,6 +15,7 @@
         "Residualer",
         "semver",
         "shortid",
+        "Sprintf",
         "tagname",
         "teris",
         "tweakable",

@@ -1,4 +1,4 @@
-// Copyright (C) 2021 David Vogel
+// Copyright (C) 2021-2025 David Vogel
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -28,13 +28,17 @@ type PointViewComponent struct {
 	AttrMap vugu.AttrMap
 
 	Width, Height       float64 // Width and height in DOM pixels.
+	Scale               float64 // The scale of the image. Larger values scale the image up. Defaults to 1 when not set.
 	top, left           float64 // Image offset in DOM pixels.
 	imgWidth, imgHeight float64 // Image width and height in DOM pixels.
 }
 
 func (c *PointViewComponent) Compute(ctx vugu.ComputeCtx) {
 
-	scaling := 0.5
+	scaling := 1.0
+	if c.Scale >= 0 {
+		scaling = c.Scale
+	}
 
 	// Find camera that contains photo that contains the point we are looking for. Don't use suggested point mappings.
 	for _, camera := range c.Site.CamerasSorted() {

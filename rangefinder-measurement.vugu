@@ -12,7 +12,7 @@
 
 		<div class="w3-twothird">
 			<label>Point 1 preview</label>
-			<main:PointViewComponent :Width="300" :Height="300" :Site="c.rangefinder.site" :PointKey="c.P1"></main:PointViewComponent>
+			<main:PointViewComponent :Width="300" :Height="300" :Scale="0.5" :Site="c.rangefinder.site" :PointKey="c.P1"></main:PointViewComponent>
 		</div>
 
 		<div class="w3-third">
@@ -22,7 +22,7 @@
 
 		<div class="w3-twothird">
 			<label>Point 2 preview</label>
-			<main:PointViewComponent :Width="300" :Height="300" :Site="c.rangefinder.site" :PointKey="c.P2"></main:PointViewComponent>
+			<main:PointViewComponent :Width="300" :Height="300" :Scale="0.5" :Site="c.rangefinder.site" :PointKey="c.P2"></main:PointViewComponent>
 		</div>
 
 		<div class="w3-third">

@@ -10,7 +10,7 @@
 				<span @click="point.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
 				<span @click='c.Navigate("/point/" + point.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>
 				<div class="w3-bar-item">
-					<main:PointViewComponent :Width="200" :Height="100" :Site="c.Site" :PointKey="point.Key()"></main:PointViewComponent>
+					<main:PointViewComponent :Width="200" :Height="100" :Scale="0.5" :Site="c.Site" :PointKey="point.Key()"></main:PointViewComponent>
 				</div>
 				<div class="w3-bar-item">
 					<span class="w3-large" vg-content="point.Name"></span>

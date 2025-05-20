@@ -15,7 +15,7 @@
 
 		<div class="w3-third">
 			<label>Point preview</label>
-			<main:PointViewComponent :Width="300" :Height="300" :Site="c.tripod.site" :PointKey="c.PointKey"></main:PointViewComponent>
+			<main:PointViewComponent :Width="300" :Height="300" :Scale="0.5" :Site="c.tripod.site" :PointKey="c.PointKey"></main:PointViewComponent>
 		</div>
 
 		<div class="w3-third">
