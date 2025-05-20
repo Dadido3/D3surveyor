@@ -1,5 +1,12 @@
-<div vg-attr="c.AttrMap" class="d3-q43t0iuhqa" :style='fmt.Sprintf("width:%.0fpx;height:%.0fpx;", c.Width, c.Height)'>
-	<img vg-if='c.imageURL != ""' :src="c.imageURL" class="d3-0q248htg0qp" :style='fmt.Sprintf("width:%.0fpx;height:%.0fpx;top:%.0fpx;left:%.0fpx;", c.imgWidth, c.imgHeight, c.top, c.left)'></img>
+<div vg-attr="c.AttrMap" class="d3-q43t0iuhqa" :style='fmt.Sprintf("width:%.0fpx;height:%.0fpx;position:relative;", c.Width, c.Height)'>
+	<img vg-if='c.imageURL != ""' :src="c.imageURL" class="d3-0q248htg0qp" :style='fmt.Sprintf("width:%.0fpx;height:%.0fpx;top:%.0fpx;left:%.0fpx;position:absolute;", c.imgWidth, c.imgHeight, c.top, c.left)'></img>
+	<svg :width="c.Width" :height="c.Height" style="position:absolute;">
+		<animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0 0 0" to="360 0 0" dur="10s" repeatCount="indefinite"></animateTransform>
+		<g :transform='fmt.Sprintf("translate(%f %f)", c.Width/2, c.Height/2)'>
+			<circle r="15" stroke="white" stroke-width="0.25" fill="transparent"></circle>
+			<path d="M0,0 m-20,0 l40,0 m-20,-20 l0,40" stroke="white" stroke-width="0.25"></path>
+		</g>
+	</svg>
 </div>
 
 <style>
