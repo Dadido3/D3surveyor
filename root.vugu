@@ -24,7 +24,7 @@
 					</div>
 
 					<div style="flex-grow:1;"></div>
-					<div class="w3-container w3-teal" vg-content='fmt.Sprintf("D3surveyor v%s", version)'></div>
+					<div class="w3-container w3-teal" vg-content='fmt.Sprintf("D3surveyor %s", version)'></div>
 				</div>
 			</div>
 
