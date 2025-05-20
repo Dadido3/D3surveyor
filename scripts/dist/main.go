@@ -74,7 +74,7 @@ func main() {
 	template.Must(template.New("_page_").Parse(pageTemplateSource)).Execute(indexFile, map[string]interface{}{
 		"Request":    req,
 		"Title":      "D3surveyor",
-		"CSSFiles":   []string{*urlPathPrefix + "/static/css/w3.css", *urlPathPrefix + "/static/font-awesome/css/all.min.css"},
+		"CSSFiles":   []string{*urlPathPrefix + "/static/css/w3.css", *urlPathPrefix + "/static/font-awesome/css/all.min.css", *urlPathPrefix + "/static/css/styles.css"},
 		"MetaTags":   map[string]string{"viewport": "width=device-width, initial-scale=1"},
 		"PathPrefix": *urlPathPrefix,
 	})

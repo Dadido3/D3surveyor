@@ -29,7 +29,7 @@ func main() {
 	// A hackish way to insert metadata and other stuff into the head tag.
 	simplehttp.DefaultStaticData["MetaTags"] = map[string]string{"viewport": "width=device-width, initial-scale=1"}
 	simplehttp.DefaultStaticData["Title"] = "D3surveyor dev"
-	simplehttp.DefaultStaticData["CSSFiles"] = []string{"/static/css/w3.css", "/static/font-awesome/css/all.min.css"}
+	simplehttp.DefaultStaticData["CSSFiles"] = []string{"/static/css/w3.css", "/static/font-awesome/css/all.min.css", "/static/css/styles.css"}
 
 	var wasmHandler WASMExecHandler
 
