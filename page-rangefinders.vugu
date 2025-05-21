@@ -8,7 +8,7 @@
 		<ul class="w3-ul w3-card">
 			<li vg-for="_, rangefinder := range c.Site.RangefindersSorted()" class="w3-bar">
 				<span @click="rangefinder.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
-				<span @click='c.Navigate("/rangefinder/" + rangefinder.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>
+				<span @click='c.Navigate("/rangefinder/" + rangefinder.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-eye"></i></span>
 				<div class="w3-bar-item">
 					<span class="w3-large" vg-content="rangefinder.Name"></span>
 					<span vg-content="rangefinder.Key()"></span><br>
@@ -19,7 +19,7 @@
 					<ul class="w3-ul w3-card">
 						<li vg-for="_, measurement := range rangefinder.MeasurementsSorted()" class="w3-bar">
 							<span @click="measurement.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
-							<span @click='c.Navigate("/rangefinder/" + rangefinder.Key() + "/measurement/" + measurement.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>
+							<span @click='c.Navigate("/rangefinder/" + rangefinder.Key() + "/measurement/" + measurement.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-eye"></i></span>
 							<div class="w3-bar-item">
 								<main:PointViewComponent :Width="150" :Height="100" :Scale="0.5" :Site="c.Site" :PointKey="measurement.P1"></main:PointViewComponent>
 							</div>

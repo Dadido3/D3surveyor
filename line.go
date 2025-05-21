@@ -1,4 +1,4 @@
-// Copyright (C) 2021 David Vogel
+// Copyright (C) 2021-2025 David Vogel
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -64,6 +64,11 @@ func (l *Line) initReferences(newParent *Site, newKey string) {
 
 func (l *Line) Key() string {
 	return l.key
+}
+
+// DisplayName returns either the name, or if that is empty the key.
+func (l *Line) DisplayName() string {
+	return "(" + l.Key() + ")"
 }
 
 func (l *Line) Delete() {

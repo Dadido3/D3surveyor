@@ -1,4 +1,4 @@
-// Copyright (C) 2021 David Vogel
+// Copyright (C) 2021-2025 David Vogel
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -77,6 +77,15 @@ func (t *Tripod) handleAdd(event vugu.DOMEvent) {
 
 func (t *Tripod) Key() string {
 	return t.key
+}
+
+// DisplayName returns either the name, or if that is empty the key.
+func (t *Tripod) DisplayName() string {
+	if t.Name != "" {
+		return t.Name
+	}
+
+	return "(" + t.Key() + ")"
 }
 
 func (t *Tripod) Delete() {

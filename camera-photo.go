@@ -78,6 +78,11 @@ func (cp *CameraPhoto) Key() string {
 	return cp.key
 }
 
+// DisplayName returns either the name, or if that is empty the key.
+func (cp *CameraPhoto) DisplayName() string {
+	return "(" + cp.Key() + ")"
+}
+
 func (cp *CameraPhoto) Delete() {
 	delete(cp.camera.Photos, cp.Key())
 

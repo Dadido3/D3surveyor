@@ -106,7 +106,7 @@ func (p *Point) GetTweakablesAndResiduals() ([]Tweakable, []Residualer) {
 	return p.Position.GetTweakablesAndResiduals()
 }
 
-// CameraPhotoMappings returns a list of all non suggested mappings.
+// CameraPhotoMappings returns a list of all non suggested mappings related to this point.
 func (p *Point) CameraPhotoMappings() []*CameraPhotoMapping {
 	mappings := make([]*CameraPhotoMapping, 0)
 
@@ -121,4 +121,47 @@ func (p *Point) CameraPhotoMappings() []*CameraPhotoMapping {
 	}
 
 	return mappings
+}
+
+// Lines returns a list of all lines that are related to this point.
+func (p *Point) Lines() []*Line {
+	lines := make([]*Line, 0)
+
+	for _, line := range p.site.LinesSorted() {
+		if line.P1 == p.key || line.P2 == p.key {
+			lines = append(lines, line)
+		}
+	}
+
+	return lines
+}
+
+// RangefinderMeasurements returns a list of all Rangefinder measurements that are related to this point.
+func (p *Point) RangefinderMeasurements() []*RangefinderMeasurement {
+	measurements := make([]*RangefinderMeasurement, 0)
+
+	for _, rangefinder := range p.site.RangefindersSorted() {
+		for _, measurement := range rangefinder.MeasurementsSorted() {
+			if measurement.P1 == p.key || measurement.P2 == p.key {
+				measurements = append(measurements, measurement)
+			}
+		}
+	}
+
+	return measurements
+}
+
+// TripodMeasurements returns a list of all tripod measurements that are related to this point.
+func (p *Point) TripodMeasurements() []*TripodMeasurement {
+	measurements := make([]*TripodMeasurement, 0)
+
+	for _, tripod := range p.site.TripodsSorted() {
+		for _, measurement := range tripod.MeasurementsSorted() {
+			if measurement.PointKey == p.key {
+				measurements = append(measurements, measurement)
+			}
+		}
+	}
+
+	return measurements
 }

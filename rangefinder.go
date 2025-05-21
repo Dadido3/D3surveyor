@@ -1,4 +1,4 @@
-// Copyright (C) 2021 David Vogel
+// Copyright (C) 2021-2025 David Vogel
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -69,6 +69,15 @@ func (r *Rangefinder) handleAdd() {
 
 func (r *Rangefinder) Key() string {
 	return r.key
+}
+
+// DisplayName returns either the name, or if that is empty the key.
+func (r *Rangefinder) DisplayName() string {
+	if r.Name != "" {
+		return r.Name
+	}
+
+	return "(" + r.Key() + ")"
 }
 
 func (r *Rangefinder) Delete() {

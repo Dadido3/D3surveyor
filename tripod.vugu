@@ -40,7 +40,7 @@
 		<ul class="w3-ul w3-card">
 			<li vg-for="_, measurement := range c.MeasurementsSorted()" class="w3-bar">
 				<span @click="measurement.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
-				<span @click='c.Navigate("/tripod/" + c.Key() + "/measurement/" + measurement.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>
+				<span @click='c.Navigate("/tripod/" + c.Key() + "/measurement/" + measurement.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-eye"></i></span>
 				<div class="w3-bar-item">
 					<main:PointViewComponent :Width="150" :Height="100" :Scale="0.5" :Site="c.site" :PointKey="measurement.PointKey"></main:PointViewComponent>
 				</div>

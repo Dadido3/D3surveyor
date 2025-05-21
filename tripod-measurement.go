@@ -1,4 +1,4 @@
-// Copyright (C) 2021 David Vogel
+// Copyright (C) 2021-2025 David Vogel
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -64,6 +64,11 @@ func (tm *TripodMeasurement) initReferences(newParent *Tripod, newKey string) {
 
 func (tm *TripodMeasurement) Key() string {
 	return tm.key
+}
+
+// DisplayName returns either the name, or if that is empty the key.
+func (tm *TripodMeasurement) DisplayName() string {
+	return "(" + tm.Key() + ")"
 }
 
 func (tm *TripodMeasurement) Delete() {

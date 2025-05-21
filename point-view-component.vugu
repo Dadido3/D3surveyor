@@ -7,6 +7,7 @@
 			<path d="M0,0 m-20,0 l40,0 m-20,-20 l0,40" stroke="white" stroke-width="0.25"></path>
 		</g>
 	</svg>
+	<div class="w3-small d3-qegxth9s68r" vg-content='c.captionText()'></div>
 </div>
 
 <style>
@@ -17,5 +18,13 @@
 
 	.d3-0q248htg0qp {
 		position: relative;
+	}
+
+	.d3-qegxth9s68r {
+		color: #FFF;
+		padding: 8px;
+		position:absolute;
+		width: 100%;
+		background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent);
 	}
 </style>

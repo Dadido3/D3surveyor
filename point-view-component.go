@@ -59,6 +59,7 @@ func (c *PointViewComponent) Compute(ctx vugu.ComputeCtx) {
 				for _, m := range photo.Mappings {
 					if !m.Suggested && m.PointKey == c.PointKey {
 						mapping = m
+						break
 					}
 				}
 			}
@@ -76,6 +77,25 @@ func (c *PointViewComponent) Compute(ctx vugu.ComputeCtx) {
 	}
 
 	c.imageURL = ""
+}
+
+func (c *PointViewComponent) captionText() string {
+	switch {
+	case c.PointKey != "":
+		if point, ok := c.Site.Points[c.PointKey]; ok {
+			return "Point " + point.DisplayName()
+		}
+	case c.MappingKey != "":
+		for _, camera := range c.Site.CamerasSorted() {
+			for _, photo := range camera.Photos {
+				if _, ok := photo.Mappings[c.MappingKey]; ok {
+					return "Photo " + photo.DisplayName()
+				}
+			}
+		}
+	}
+
+	return ""
 }
 
 func (c *PointViewComponent) handleClick(event vugu.DOMEvent) {

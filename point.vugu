@@ -23,6 +23,58 @@
 				<main:PointViewComponent :Width="300" :Height="300" :Scale="1" :Site="c.site" :MappingKey="mapping.Key()"></main:PointViewComponent>
 			</div>
 		</div>
+		<h3>Related lines</h3>
+		<span vg-if="len(c.Lines()) == 0">There are no related lines.</span>
+		<div class="d3-flex-grid-container" style="justify-content:flex-start;">
+			<div vg-for="_, line := range c.Lines()" class="d3-flex-grid-container-item w3-card-4" style="flex-grow:0; flex-wrap:wrap;">
+				<main:PointViewComponent :Width="200" :Height="200" :Scale="0.5" :Site="c.site" :PointKey="line.P1"></main:PointViewComponent>
+				<main:PointViewComponent :Width="200" :Height="200" :Scale="0.5" :Site="c.site" :PointKey="line.P2"></main:PointViewComponent>
+				<div style="display:flex; flex-direction:column; flex-grow:1;">
+					<span class="w3-large" vg-content='"Line " + line.DisplayName()' style="margin:8px;"></span>
+					<div style="flex-grow:1;"></div>
+					<div style="display:flex;">
+						<span @click='c.Navigate("/line/" + line.Key(), nil)' class="w3-button w3-large"><i class="far fa-eye"></i></span>
+						<div style="flex-grow:1;"></div>
+						<span @click="line.Delete()" class="w3-button w3-large w3-red"><i class="far fa-trash-alt"></i></span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<h3>Related rangefinder measurements</h3>
+		<span vg-if="len(c.RangefinderMeasurements()) == 0">There are no related measurements.</span>
+		<div class="d3-flex-grid-container" style="justify-content:flex-start;">
+			<div vg-for="_, measurement := range c.RangefinderMeasurements()" class="d3-flex-grid-container-item w3-card-4" style="flex-grow:0; flex-wrap:wrap;">
+				<main:PointViewComponent :Width="200" :Height="200" :Scale="0.5" :Site="c.site" :PointKey="measurement.P1"></main:PointViewComponent>
+				<main:PointViewComponent :Width="200" :Height="200" :Scale="0.5" :Site="c.site" :PointKey="measurement.P2"></main:PointViewComponent>
+				<div style="display:flex; flex-direction:column; flex-grow:1;">
+					<span class="w3-large" vg-content='"Measurement " + measurement.DisplayName()' style="margin:8px;"></span>
+					<span class="w3-large" vg-content='fmt.Sprintf("Dist: %.4f", measurement.MeasuredDistance)' style="margin:8px;"></span>
+					<div style="flex-grow:1;"></div>
+					<div style="display:flex;">
+						<span @click='c.Navigate("/rangefinder/" + measurement.rangefinder.Key() + "/measurement/" + measurement.Key(), nil)' class="w3-button w3-large"><i class="far fa-eye"></i></span>
+						<div style="flex-grow:1;"></div>
+						<span @click="measurement.Delete()" class="w3-button w3-large w3-red"><i class="far fa-trash-alt"></i></span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<h3>Related tripod measurements</h3>
+		<span vg-if="len(c.TripodMeasurements()) == 0">There are no related measurements.</span>
+		<div class="d3-flex-grid-container" style="justify-content:flex-start;">
+			<div vg-for="_, measurement := range c.TripodMeasurements()" class="d3-flex-grid-container-item w3-card-4" style="flex-grow:0; flex-wrap:wrap;">
+				<div style="display:flex; flex-direction:column; flex-grow:1;">
+					<span class="w3-large" vg-content='"Tripod " + measurement.tripod.DisplayName()' style="margin:8px;"></span>
+					<span class="w3-large" vg-content='"Measurement " + measurement.DisplayName()' style="margin:8px;"></span>
+					<span class="w3-large" vg-content='fmt.Sprintf("Dist: %.4f", measurement.MeasuredDistance)' style="margin:8px;"></span>
+					<div style="flex-grow:1;"></div>
+					<div style="display:flex;">
+						<span @click='c.Navigate("/tripod/" + measurement.tripod.Key() + "/measurement/" + measurement.Key(), nil)' class="w3-button w3-large"><i class="far fa-eye"></i></span>
+						<div style="flex-grow:1;"></div>
+						<span @click="measurement.Delete()" class="w3-button w3-large w3-red"><i class="far fa-trash-alt"></i></span>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 
 </div>

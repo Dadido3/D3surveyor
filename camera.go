@@ -1,4 +1,4 @@
-// Copyright (C) 2021 David Vogel
+// Copyright (C) 2021-2025 David Vogel
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -95,6 +95,15 @@ func (c *Camera) initReferences(newParent *Site, newKey string) {
 
 func (c *Camera) Key() string {
 	return c.key
+}
+
+// DisplayName returns either the name, or if that is empty the key.
+func (c *Camera) DisplayName() string {
+	if c.Name != "" {
+		return c.Name
+	}
+
+	return "(" + c.Key() + ")"
 }
 
 func (c *Camera) Delete() {

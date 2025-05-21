@@ -8,7 +8,7 @@
 		<ul class="w3-ul w3-card">
 			<li vg-for="_, tripod := range c.Site.TripodsSorted()" class="w3-bar">
 				<span @click="tripod.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
-				<span @click='c.Navigate("/tripod/" + tripod.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>
+				<span @click='c.Navigate("/tripod/" + tripod.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-eye"></i></span>
 				<div class="w3-bar-item">
 					<span class="w3-large" vg-content="tripod.Name"></span>
 					<span vg-content="tripod.Key()"></span><br>
@@ -19,7 +19,7 @@
 					<ul class="w3-ul w3-card">
 						<li vg-for="_, measurement := range tripod.MeasurementsSorted()" class="w3-bar">
 							<span @click="measurement.Delete()" class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-trash-alt"></i></span>
-							<span @click='c.Navigate("/tripod/" + tripod.Key() + "/measurement/" + measurement.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-edit"></i></span>
+							<span @click='c.Navigate("/tripod/" + tripod.Key() + "/measurement/" + measurement.Key(), nil)' class="w3-bar-item w3-button w3-large w3-right"><i class="far fa-eye"></i></span>
 							<div class="w3-bar-item">
 								<main:PointViewComponent :Width="150" :Height="100" :Scale="0.5" :Site="c.Site" :PointKey="measurement.PointKey"></main:PointViewComponent>
 							</div>

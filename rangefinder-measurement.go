@@ -1,4 +1,4 @@
-// Copyright (C) 2021 David Vogel
+// Copyright (C) 2021-2025 David Vogel
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -57,6 +57,11 @@ func (rm *RangefinderMeasurement) initReferences(newParent *Rangefinder, newKey 
 
 func (rm *RangefinderMeasurement) Key() string {
 	return rm.key
+}
+
+// DisplayName returns either the name, or if that is empty the key.
+func (rm *RangefinderMeasurement) DisplayName() string {
+	return "(" + rm.Key() + ")"
 }
 
 func (rm *RangefinderMeasurement) Delete() {
