@@ -6,7 +6,7 @@
 
 	<div style="padding:16px;">
 		<div class="d3-flex-grid-container">
-			<div vg-for="_, point := range c.Site.PointsSorted()" class="d3-flex-grid-container-item w3-card-4">
+			<div vg-for="_, point := range c.Site.PointsSorted()" class="d3-flex-grid-container-item w3-card-4" style="flex-wrap:wrap;">
 				<main:PointViewComponent :Width="200" :Height="200" :Scale="1" :Site="c.Site" :PointKey="point.Key()"></main:PointViewComponent>
 				<div style="display:flex; flex-direction:column; flex-grow:1;">
 					<main:CoordinateOptimizableComponent style="display:flex; flex-direction:column; margin:8px;" :BindValue="&point.Position"></main:CoordinateOptimizableComponent>
